@@ -1,5 +1,7 @@
 import isDev from 'electron-is-dev';
 import { app, BrowserWindow, ipcMain } from 'electron';
+// const windowStateKeeper = require('electron-window-state');
+import windowStateKeeper from 'electron-window-state';
 
 import menu from './menu';
 import { checkNewVersion } from './update-checker';
@@ -14,13 +16,28 @@ app.setName('LosslessCut');
 let mainWindow;
 
 function createWindow() {
+  // Remember size and position
+  const mainWindowState = windowStateKeeper({
+    defaultWidth: 800,
+    defaultHeight: 600,
+  });
+
   mainWindow = new BrowserWindow({
+    x: mainWindowState.x,
+    y: mainWindowState.y,
+    width: mainWindowState.width,
+    height: mainWindowState.height,
     darkTheme: true,
     webPreferences: {
       nodeIntegration: true,
     },
-
   });
+
+  // Let us register listeners on the window, so we can update the state
+  // automatically (the listeners will be removed when the window is closed)
+  // and restore the maximized or full screen state
+  mainWindowState.manage(mainWindow);
+
   mainWindow.loadFile(isDev ? 'index.html' : 'build/index.html');
 
   mainWindow.on('closed', () => {
