@@ -1,9 +1,8 @@
-const _ = require('lodash');
-const path = require('path');
-const fs = require('fs');
-const swal = require('sweetalert2');
-
-const randomColor = require('./random-color');
+import path from 'path';
+import fs from 'fs';
+import { padStart } from 'lodash';
+import swal from 'sweetalert2';
+import randomColor from './random-color';
 
 
 function formatDuration(_seconds, fileNameFriendly) {
@@ -11,10 +10,10 @@ function formatDuration(_seconds, fileNameFriendly) {
   const minutes = seconds / 60;
   const hours = minutes / 60;
 
-  const hoursPadded = _.padStart(Math.floor(hours), 2, '0');
-  const minutesPadded = _.padStart(Math.floor(minutes % 60), 2, '0');
-  const secondsPadded = _.padStart(Math.floor(seconds) % 60, 2, '0');
-  const msPadded = _.padStart(Math.floor((seconds - Math.floor(seconds)) * 1000), 3, '0');
+  const hoursPadded = padStart(Math.floor(hours), 2, '0');
+  const minutesPadded = padStart(Math.floor(minutes % 60), 2, '0');
+  const secondsPadded = padStart(Math.floor(seconds) % 60, 2, '0');
+  const msPadded = padStart(Math.floor((seconds - Math.floor(seconds)) * 1000), 3, '0');
 
   // Be nice to filenames and use .
   const delim = fileNameFriendly ? '.' : ':';
@@ -108,7 +107,7 @@ function generateColor() {
   return randomColor(1, 0.95);
 }
 
-module.exports = {
+export {
   formatDuration,
   parseDuration,
   getOutPath,

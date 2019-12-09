@@ -1,5 +1,5 @@
-const React = require('react');
-const PropTypes = require('prop-types');
+import React from 'react';
+import PropTypes from 'prop-types';
 
 const TimelineSeg = ({
   isCutRangeValid, duration: durationRaw, cutStartTime, cutEndTime, apparentCutStart,
@@ -80,4 +80,4 @@ TimelineSeg.defaultProps = {
   cutEndTime: undefined,
 };
 
-module.exports = TimelineSeg;
+export default TimelineSeg;

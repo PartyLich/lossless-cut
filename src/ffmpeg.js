@@ -1,19 +1,20 @@
-const execa = require('execa');
-const bluebird = require('bluebird');
-const path = require('path');
-const fileType = require('file-type');
-const readChunk = require('read-chunk');
-const flatMap = require('lodash/flatMap');
-const sum = require('lodash/sum');
-const sortBy = require('lodash/sortBy');
-const readline = require('readline');
-const moment = require('moment');
-const stringToStream = require('string-to-stream');
-const trash = require('trash');
-const isDev = require('electron-is-dev');
-const os = require('os');
-
-const { formatDuration, getOutPath, transferTimestamps } = require('./util');
+import os from 'os';
+import path from 'path';
+import execa from 'execa';
+import bluebird from 'bluebird';
+import fileType from 'file-type';
+import readChunk from 'read-chunk';
+import {
+  flatMap,
+  sum,
+  sortBy,
+} from 'lodash';
+import readline from 'readline';
+import moment from 'moment';
+import stringToStream from 'string-to-stream';
+import trash from 'trash';
+import isDev from 'electron-is-dev';
+import { formatDuration, getOutPath, transferTimestamps } from './util';
 
 function getPath(type) {
   const platform = os.platform();
@@ -395,7 +396,7 @@ async function renderFrame(timestamp, filePath, rotation) {
 }
 
 
-module.exports = {
+export {
   cutMultiple,
   getFormat,
   html5ify,
