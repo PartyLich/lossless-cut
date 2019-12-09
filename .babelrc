@@ -1,12 +1,20 @@
 {
   "presets": [
-    ["env", {
-      "targets": { "electron": "1.8" }
-    }],
-    "react"
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "usage",
+        "exclude": [
+          "babel-plugin-transform-classes",
+          "@babel/plugin-transform-classes"
+        ],
+        "targets": { "electron": "1.8" },
+        "corejs": 2
+      }
+    ],
+    ["@babel/react"]
   ],
   "plugins": [
-    "transform-class-properties",
-    ["transform-object-rest-spread", { "useBuiltIns": true }]
+    "@babel/plugin-proposal-class-properties"
   ]
 }
