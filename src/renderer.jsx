@@ -28,7 +28,6 @@ import {
 
 // local
 import HelpSheet from './HelpSheet';
-import TimelineSeg from './TimelineSeg';
 import { showMergeDialog, showOpenAndMergeDialog } from './merge/merge';
 import captureFrame from './capture-frame';
 import {
@@ -41,6 +40,7 @@ import {
 import {
   DragDropField,
   Player,
+  TimelineSeg,
 } from './components';
 
 const { dialog } = remote;
