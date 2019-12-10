@@ -38,6 +38,10 @@ import {
   promptTimeOffset, generateColor,
 } from './util';
 
+import {
+  DragDropField,
+} from './components';
+
 // Stylesheets
 import './font-awesome-4.6.3/scss/font-awesome.scss';
 import './main.css';
@@ -90,7 +94,7 @@ function createSegment({ start, end } = {}) {
 
 function doesPlayerSupportFile(streams) {
   // TODO improve, whitelist supported codecs instead
-  return !streams.find(s => ['hevc', 'prores'].includes(s.codec_name));
+  return !streams.find((s) => ['hevc', 'prores'].includes(s.codec_name));
   // return true;
 }
 
@@ -241,7 +245,7 @@ class App extends React.Component {
       }
     });
 
-    document.ondragover = ev => ev.preventDefault();
+    document.ondragover = (ev) => ev.preventDefault();
     document.ondragend = document.ondragover;
 
     document.body.ondrop = (ev) => {
@@ -249,7 +253,7 @@ class App extends React.Component {
       const { files } = ev.dataTransfer;
       if (files.length < 1) return;
       if (files.length === 1) load(files[0].path);
-      else showMergeDialog(Array.from(files).map(f => f.path), this.mergeFiles);
+      else showMergeDialog(Array.from(files).map((f) => f.path), this.mergeFiles);
     };
 
     Mousetrap.bind('space', () => this.playCommand());
@@ -335,7 +339,7 @@ class App extends React.Component {
   }
 
   getRotationStr() {
-    return `${this.getRotation()}°`;
+    return `${ this.getRotation() }°`;
   }
 
   getCutSeg(i) {
@@ -576,7 +580,7 @@ class App extends React.Component {
       console.error('stderr:', err.stderr);
 
       if (err.code === 1 || err.code === 'ENOENT') {
-        errorToast(`Whoops! ffmpeg was unable to cut this video. Try each the following things before attempting to cut again:\n1. Select a different output format from the ${fileFormat} button (matroska takes almost everything).\n2. toggle the button "all" to "ps"`);
+        errorToast(`Whoops! ffmpeg was unable to cut this video. Try each the following things before attempting to cut again:\n1. Select a different output format from the ${ fileFormat } button (matroska takes almost everything).\n2. toggle the button "all" to "ps"`);
         return;
       }
 
@@ -661,7 +665,7 @@ class App extends React.Component {
       <input
         style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
         type="text"
-        onChange={e => handleCutTimeInput(e.target.value)}
+        onChange={(e) => handleCutTimeInput(e.target.value)}
         value={isCutTimeManualSet()
           ? this.state[cutTimeManualKey]
           : formatDuration(cutTime + this.state.startTimeOffset)
@@ -677,10 +681,10 @@ class App extends React.Component {
       captureFormat, helpVisible, currentSeg, cutSegments, autoMerge,
     } = this.state;
 
-    const selectableFormats = ['mov', 'mp4', 'matroska'].filter(f => f !== detectedFileFormat);
+    const selectableFormats = ['mov', 'mp4', 'matroska'].filter((f) => f !== detectedFileFormat);
 
     const duration = durationRaw || 1;
-    const currentTimePos = currentTime !== undefined && `${(currentTime / duration) * 100}%`;
+    const currentTimePos = currentTime !== undefined && `${ (currentTime / duration) * 100 }%`;
 
     const segColor = this.getCutSeg().color;
     const segBgColor = segColor.alpha(0.5).string();
@@ -695,23 +699,20 @@ class App extends React.Component {
     return (
       <div>
         {!filePath && (
-          <div id="drag-drop-field">
-            <div style={{ fontSize: '9vw' }}>DROP VIDEO</div>
-            <div>PRESS H FOR HELP</div>
-          </div>
+          <DragDropField />
         )}
         {working && (
-        <div style={{
-          color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: 0, left: 0,
-        }}
-        >
-          <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle', width: '1em', height: '1em' }} />
-          {cutProgress != null && (
-            <span style={{ color: 'rgba(255, 255, 255, 0.7)', paddingLeft: '.4em' }}>
-              {`${Math.floor(cutProgress * 100)} %`}
-            </span>
-          )}
-        </div>
+          <div style={{
+            color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: 0, left: 0,
+          }}
+          >
+            <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle', width: '1em', height: '1em' }} />
+            {cutProgress != null && (
+              <span style={{ color: 'rgba(255, 255, 255, 0.7)', paddingLeft: '.4em' }}>
+                {`${ Math.floor(cutProgress * 100) } %`}
+              </span>
+            )}
+          </div>
         )}
 
         {this.state.rotationPreviewRequested && (
@@ -730,7 +731,7 @@ class App extends React.Component {
             onRateChange={this.playbackRateChange}
             onPlay={() => this.onPlayingChange(true)}
             onPause={() => this.onPlayingChange(false)}
-            onDurationChange={e => this.onDurationChange(e.target.duration)}
+            onDurationChange={(e) => this.onDurationChange(e.target.duration)}
             onTimeUpdate={this.onTimeUpdate}
           />
 
@@ -760,7 +761,7 @@ class App extends React.Component {
                   key={seg.uuid}
                   segNum={i}
                   color={seg.color}
-                  onSegClick={currentSegNew => this.setState({ currentSeg: currentSegNew })}
+                  onSegClick={(currentSegNew) => this.setState({ currentSeg: currentSegNew })}
                   isActive={i === currentSeg}
                   isCutRangeValid={this.isCutRangeValid(i)}
                   duration={duration}
@@ -804,7 +805,7 @@ class App extends React.Component {
             />
             <i
               className={classnames({
-                button: true, fa: true, 'fa-pause': playing, 'fa-play': !playing,
+                'button': true, 'fa': true, 'fa-pause': playing, 'fa-play': !playing,
               })}
               role="button"
               tabIndex="0"
@@ -873,14 +874,14 @@ class App extends React.Component {
         </div>
 
         <div className="left-menu">
-          <select style={{ width: 60 }} defaultValue="" value={fileFormat} title="Format of current file" onChange={withBlur(e => this.setState({ fileFormat: e.target.value }))}>
+          <select style={{ width: 60 }} defaultValue="" value={fileFormat} title="Format of current file" onChange={withBlur((e) => this.setState({ fileFormat: e.target.value }))}>
             <option key="" value="" disabled>Out fmt</option>
             {detectedFileFormat && (
               <option key={detectedFileFormat} value={detectedFileFormat}>
                 {detectedFileFormat}
               </option>
             )}
-            {selectableFormats.map(f => <option key={f} value={f}>{f}</option>)}
+            {selectableFormats.map((f) => <option key={f} value={f}>{f}</option>)}
           </select>
 
           <span style={infoSpanStyle} title="Playback rate">
@@ -891,7 +892,7 @@ class App extends React.Component {
             style={{ ...infoSpanStyle, background: segBgColor, color: 'white' }}
             disabled={cutSegments.length < 2}
             type="button"
-            title={`Delete selected segment ${currentSeg + 1}`}
+            title={`Delete selected segment ${ currentSeg + 1 }`}
             onClick={withBlur(() => this.removeCutSegment())}
           >
             d
@@ -908,7 +909,7 @@ class App extends React.Component {
 
           <button
             type="button"
-            title={`Auto merge segments to one file after export (and trash segments)? ${autoMerge ? 'Auto merge enabled' : 'No merging'}`}
+            title={`Auto merge segments to one file after export (and trash segments)? ${ autoMerge ? 'Auto merge enabled' : 'No merging' }`}
             onClick={withBlur(this.toggleAutoMerge)}
           >
             {autoMerge ? 'am' : 'nm'}
@@ -918,7 +919,7 @@ class App extends React.Component {
         <div className="right-menu">
           <button
             type="button"
-            title={`Cut mode ${keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
+            title={`Cut mode ${ keyframeCut ? 'nearest keyframe cut' : 'normal cut' }`}
             onClick={withBlur(this.toggleKeyframeCut)}
           >
             {keyframeCut ? 'kc' : 'nc'}
@@ -926,7 +927,7 @@ class App extends React.Component {
 
           <button
             type="button"
-            title={`Set output streams. Current: ${includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams'}`}
+            title={`Set output streams. Current: ${ includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams' }`}
             onClick={withBlur(this.toggleIncludeAllStreams)}
           >
             {includeAllStreams ? 'all' : 'ps'}
@@ -934,7 +935,7 @@ class App extends React.Component {
 
           <button
             type="button"
-            title={`Delete audio? Current: ${stripAudio ? 'delete audio tracks' : 'keep audio tracks'}`}
+            title={`Delete audio? Current: ${ stripAudio ? 'delete audio tracks' : 'keep audio tracks' }`}
             onClick={withBlur(this.toggleStripAudio)}
           >
             {stripAudio ? 'da' : 'ka'}
@@ -942,7 +943,7 @@ class App extends React.Component {
 
           <button
             type="button"
-            title={`Set output rotation. Current: ${this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify'}`}
+            title={`Set output rotation. Current: ${ this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify' }`}
             onClick={withBlur(this.increaseRotation)}
           >
             {this.isRotationSet() ? this.getRotationStr() : '-°'}
@@ -950,7 +951,7 @@ class App extends React.Component {
 
           <button
             type="button"
-            title={`Custom output dir (cancel to restore default). Current: ${this.getOutputDir() || 'Not set (use input dir)'}`}
+            title={`Custom output dir (cancel to restore default). Current: ${ this.getOutputDir() || 'Not set (use input dir)' }`}
             onClick={withBlur(this.setOutputDir)}
           >
             {this.getOutputDir() ? 'cd' : 'id'}
