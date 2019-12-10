@@ -40,6 +40,7 @@ import {
 
 import {
   DragDropField,
+  Player,
 } from './components';
 
 const { dialog } = remote;
@@ -720,26 +721,16 @@ class App extends React.Component {
         )}
 
         {/* eslint-disable jsx-a11y/media-has-caption */}
-        <div id="player">
-          <video
-            src={this.getFileUri()}
-            onRateChange={this.playbackRateChange}
-            onPlay={() => this.onPlayingChange(true)}
-            onPause={() => this.onPlayingChange(false)}
-            onDurationChange={e => this.onDurationChange(e.target.duration)}
-            onTimeUpdate={this.onTimeUpdate}
-          />
-
-          {this.state.framePath && this.frameRenderEnabled() && (
-            <img
-              style={{
-                width: '100%', height: '100%', objectFit: 'contain', left: 0, right: 0, top: 0, bottom: 0, position: 'absolute', background: 'black',
-              }}
-              src={this.state.framePath}
-              alt=""
-            />
-          )}
-        </div>
+        <Player
+          src={this.getFileUri()}
+          onRateChange={this.playbackRateChange}
+          onPlay={() => this.onPlayingChange(true)}
+          onPause={() => this.onPlayingChange(false)}
+          onDurationChange={(e) => this.onDurationChange(e.target.duration)}
+          onTimeUpdate={this.onTimeUpdate}
+          frameRender={this.state.framePath && this.frameRenderEnabled()}
+          framePath={this.state.framePath}
+        />
         {/* eslint-enable jsx-a11y/media-has-caption */}
 
         <div className="controls-wrapper">
