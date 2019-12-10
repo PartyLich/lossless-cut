@@ -38,6 +38,10 @@ import {
   promptTimeOffset, generateColor,
 } from './util';
 
+import {
+  DragDropField,
+} from './components';
+
 const { dialog } = remote;
 
 function getVideo() {
@@ -690,10 +694,7 @@ class App extends React.Component {
     return (
       <div>
         {!filePath && (
-          <div id="drag-drop-field">
-            <div style={{ fontSize: '9vw' }}>DROP VIDEO</div>
-            <div>PRESS H FOR HELP</div>
-          </div>
+          <DragDropField />
         )}
         {working && (
         <div style={{
