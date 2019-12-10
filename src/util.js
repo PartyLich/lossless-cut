@@ -4,9 +4,7 @@ import { padStart } from 'lodash';
 import swal from 'sweetalert2';
 import randomColor from './random-color';
 
-
-function formatDuration(_seconds, fileNameFriendly) {
-  const seconds = _seconds || 0;
+function formatDuration(seconds = 0, fileNameFriendly) {
   const minutes = seconds / 60;
   const hours = minutes / 60;
 
@@ -82,12 +80,12 @@ function setFileNameTitle(filePath) {
   document.title = filePath ? `${appName} - ${path.basename(filePath)}` : 'appName';
 }
 
-async function promptTimeOffset(inputValue) {
+async function promptTimeOffset(inputValue = '') {
   const { value } = await swal.fire({
     title: 'Set custom start time offset',
     text: 'Instead of video apparently starting at 0, you can offset by a specified value (useful for viewing/cutting videos according to timecodes)',
     input: 'text',
-    inputValue: inputValue || '',
+    inputValue,
     showCancelButton: true,
     inputPlaceholder: '00:00:00.000',
   });
