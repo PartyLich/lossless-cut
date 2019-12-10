@@ -20,7 +20,8 @@
     "prerelease": "yarn build-js",
     "release": "electron-builder",
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
-    "lint": "eslint --ext .jsx --ext .js ."
+    "lint": "eslint --ext .jsx --ext .js .",
+    "test": "babel-tape-runner test/*.test.js"
   },
   "author": {
     "name": "Mikael Finstad",
@@ -47,6 +48,7 @@
     "babel-eslint": "^10.0.1",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-tape-runner": "^3.0.0",
     "electron-builder": "21",
     "eslint": "^5.6.1",
     "eslint-config-airbnb": "^17.1.0",
@@ -54,7 +56,8 @@
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.1",
     "eslint-plugin-react": "^7.11.1",
-    "svg2png": "^4.1.1"
+    "svg2png": "^4.1.1",
+    "tape": "^4.11.0"
   },
   "dependencies": {
     "bluebird": "^3.4.6",
