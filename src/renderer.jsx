@@ -1,35 +1,45 @@
-const electron = require('electron'); // eslint-disable-line
-const $ = require('jquery');
-const Mousetrap = require('mousetrap');
-const round = require('lodash/round');
-const clamp = require('lodash/clamp');
-const clone = require('lodash/clone');
-const throttle = require('lodash/throttle');
-const Hammer = require('react-hammerjs').default;
-const path = require('path');
-const trash = require('trash');
-const uuid = require('uuid');
+import path from 'path';
+import $ from 'jquery';
+import { ipcRenderer, remote } from 'electron';
+import Mousetrap from 'mousetrap';
+import {
+  round,
+  clamp,
+  clone,
+  throttle,
+} from 'lodash';
+import Hammer from 'react-hammerjs';
+import trash from 'trash';
+import uuid from 'uuid';
+import classnames from 'classnames';
+import PQueue from 'p-queue';
 
-const React = require('react');
-const ReactDOM = require('react-dom');
-const classnames = require('classnames');
-const { default: PQueue } = require('p-queue');
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {
+  cutMultiple,
+  extractAllStreams,
+  getFormat,
+  getAllStreams,
+  html5ifyDummy,
+  html5ify,
+  autoMergeSegments,
+  renderFrame,
+} from './ffmpeg';
 
-
-const HelpSheet = require('./HelpSheet');
-const TimelineSeg = require('./TimelineSeg');
-const { showMergeDialog, showOpenAndMergeDialog } = require('./merge/merge');
-
-const captureFrame = require('./capture-frame');
-const ffmpeg = require('./ffmpeg');
-
-
-const {
-  getOutPath, parseDuration, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
+// local
+import HelpSheet from './HelpSheet';
+import TimelineSeg from './TimelineSeg';
+import { showMergeDialog, showOpenAndMergeDialog } from './merge/merge';
+import captureFrame from './capture-frame';
+import {
+  getOutPath, parseDuration, formatDuration,
+  toast, errorToast, showFfmpegFail,
+  setFileNameTitle,
   promptTimeOffset, generateColor,
-} = require('./util');
+} from './util';
 
-const { dialog } = electron.remote;
+const { dialog } = remote;
 
 function getVideo() {
   return $('#player video')[0];
@@ -136,13 +146,13 @@ class App extends React.Component {
       this.setState({ working: true });
 
       try {
-        const fileFormat = await ffmpeg.getFormat(filePath);
+        const fileFormat = await getFormat(filePath);
         if (!fileFormat) {
           errorToast('Unsupported file');
           return;
         }
 
-        const { streams } = await ffmpeg.getAllStreams(filePath);
+        const { streams } = await getAllStreams(filePath);
 
         setFileNameTitle(filePath);
         this.setState({
@@ -158,7 +168,7 @@ class App extends React.Component {
         } else if (!doesPlayerSupportFile(streams)) {
           const { customOutDir } = this.state;
           const html5ifiedDummyPath = getOutPath(customOutDir, filePath, 'html5ified-dummy.mkv');
-          await ffmpeg.html5ifyDummy(filePath, html5ifiedDummyPath);
+          await html5ifyDummy(filePath, html5ifiedDummyPath);
           this.setState({ html5FriendlyPath: html5ifiedDummyPath });
           this.throttledRenderFrame(0);
         }
@@ -173,19 +183,19 @@ class App extends React.Component {
       }
     };
 
-    electron.ipcRenderer.on('file-opened', (event, filePaths) => {
+    ipcRenderer.on('file-opened', (event, filePaths) => {
       if (!filePaths || filePaths.length !== 1) return;
       load(filePaths[0]);
     });
 
-    electron.ipcRenderer.on('html5ify', async (event, encodeVideo) => {
+    ipcRenderer.on('html5ify', async (event, encodeVideo) => {
       const { filePath, customOutDir } = this.state;
       if (!filePath) return;
 
       try {
         this.setState({ working: true });
         const html5ifiedPath = getOutPath(customOutDir, filePath, 'html5ified.mp4');
-        await ffmpeg.html5ify(filePath, html5ifiedPath, encodeVideo);
+        await html5ify(filePath, html5ifiedPath, encodeVideo);
         this.setState({ working: false });
         load(filePath, html5ifiedPath);
       } catch (err) {
@@ -195,13 +205,13 @@ class App extends React.Component {
       }
     });
 
-    electron.ipcRenderer.on('show-merge-dialog', () => showOpenAndMergeDialog({
+    ipcRenderer.on('show-merge-dialog', () => showOpenAndMergeDialog({
       dialog,
       defaultPath: this.getOutputDir(),
       onMergeClick: this.mergeFiles,
     }));
 
-    electron.ipcRenderer.on('set-start-offset', async () => {
+    ipcRenderer.on('set-start-offset', async () => {
       const { startTimeOffset: startTimeOffsetOld } = this.state;
       const startTimeOffset = await promptTimeOffset(
         startTimeOffsetOld !== undefined ? formatDuration(startTimeOffsetOld) : undefined,
@@ -212,13 +222,13 @@ class App extends React.Component {
       this.setState({ startTimeOffset });
     });
 
-    electron.ipcRenderer.on('extract-all-streams', async () => {
+    ipcRenderer.on('extract-all-streams', async () => {
       const { filePath, customOutDir } = this.state;
       if (!filePath) return;
 
       try {
         this.setState({ working: true });
-        await ffmpeg.extractAllStreams({ customOutDir, filePath });
+        await extractAllStreams({ customOutDir, filePath });
         this.setState({ working: false });
       } catch (err) {
         errorToast('Failed to extract all streams');
@@ -254,7 +264,7 @@ class App extends React.Component {
     Mousetrap.bind('+', () => this.addCutSegment());
     Mousetrap.bind('backspace', () => this.removeCutSegment());
 
-    electron.ipcRenderer.send('renderer-ready');
+    ipcRenderer.send('renderer-ready');
   }
 
   onPlayingChange(playing) {
@@ -368,7 +378,7 @@ class App extends React.Component {
       const { customOutDir } = this.state;
 
       // console.log('merge', paths);
-      await ffmpeg.mergeAnyFiles({ customOutDir, paths });
+      await mergeAnyFiles({ customOutDir, paths });
     } catch (err) {
       errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
       console.error('Failed to merge files', err);
@@ -395,7 +405,7 @@ class App extends React.Component {
 
         try {
           if (this.state.framePath) URL.revokeObjectURL(this.state.framePath);
-          const framePath = await ffmpeg.renderFrame(currentTime, filePath, rotation);
+          const framePath = await renderFrame(currentTime, filePath, rotation);
           this.setState({ framePath });
         } catch (err) {
           console.error(err);
@@ -534,7 +544,7 @@ class App extends React.Component {
         cutToApparent: this.getApparentCutEndTime(i),
       }));
 
-      const outFiles = await ffmpeg.cutMultiple({
+      const outFiles = await cutMultiple({
         customOutDir,
         filePath,
         format: fileFormat,
@@ -550,7 +560,7 @@ class App extends React.Component {
       if (outFiles.length > 1 && autoMerge) {
         this.onCutProgress(0); // TODO
 
-        await ffmpeg.autoMergeSegments({
+        await autoMergeSegments({
           customOutDir,
           sourceFile: filePath,
           segmentPaths: outFiles,

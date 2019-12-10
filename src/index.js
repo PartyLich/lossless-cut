@@ -1,12 +1,8 @@
-const electron = require('electron'); // eslint-disable-line
-const isDev = require('electron-is-dev');
+import isDev from 'electron-is-dev';
+import { app, BrowserWindow, ipcMain } from 'electron';
 
-const menu = require('./menu');
-
-const { checkNewVersion } = require('./update-checker');
-
-const { app } = electron;
-const { BrowserWindow } = electron;
+import menu from './menu';
+import { checkNewVersion } from './update-checker';
 
 app.setName('LosslessCut');
 
@@ -60,7 +56,7 @@ app.on('activate', () => {
   }
 });
 
-electron.ipcMain.on('renderer-ready', () => {
+ipcMain.on('renderer-ready', () => {
   if (!isDev) {
     const fileToOpen = process.argv[1];
     if (fileToOpen) mainWindow.webContents.send('file-opened', [fileToOpen]);

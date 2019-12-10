@@ -1,9 +1,12 @@
-const bluebird = require('bluebird');
-const fs = require('fs');
-const mime = require('mime-types');
-const strongDataUri = require('strong-data-uri');
-
-const { formatDuration, getOutPath, transferTimestampsWithOffset } = require('./util');
+import bluebird from 'bluebird';
+import fs from 'fs';
+import mime from 'mime-types';
+import strongDataUri from 'strong-data-uri';
+import {
+  formatDuration,
+  getOutPath,
+  transferTimestampsWithOffset,
+} from './util';
 
 bluebird.promisifyAll(fs);
 
@@ -31,4 +34,4 @@ async function captureFrame(customOutDir, filePath, video, currentTime, captureF
   return transferTimestampsWithOffset(filePath, outPath, offset);
 }
 
-module.exports = captureFrame;
+export default captureFrame;

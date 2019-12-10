@@ -1,7 +1,5 @@
-const GitHub = require('github-api');
-const electron = require('electron');
-
-const { app } = electron;
+import { app } from 'electron';
+import GitHub from 'github-api';
 
 const gh = new GitHub();
 const repo = gh.getRepo('mifi', 'lossless-cut');
@@ -28,4 +26,4 @@ async function checkNewVersion() {
   }
 }
 
-module.exports = { checkNewVersion };
+export { checkNewVersion };
