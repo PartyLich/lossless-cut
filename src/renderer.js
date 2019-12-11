@@ -38,6 +38,7 @@ import {
 } from './util';
 
 import {
+  CutControls,
   DragDropField,
   Player,
   TimelineSeg,
@@ -830,38 +831,14 @@ class App extends React.Component {
             />
           </div>
 
-          <div>
-            <i
-              style={{ background: segBgColor }}
-              title="Set cut start to current position"
-              className="button fa fa-angle-left"
-              role="button"
-              tabIndex="0"
-              onClick={this.setCutStart}
-            />
-            <i
-              title={cutSegments.length > 1 ? 'Export all segments' : 'Export selection'}
-              className="button fa fa-scissors"
-              role="button"
-              tabIndex="0"
-              onClick={this.cutClick}
-            />
-            <i
-              title="Delete source file"
-              className="button fa fa-trash"
-              role="button"
-              tabIndex="0"
-              onClick={this.deleteSourceClick}
-            />
-            <i
-              style={{ background: segBgColor }}
-              title="Set cut end to current position"
-              className="button fa fa-angle-right"
-              role="button"
-              tabIndex="0"
-              onClick={this.setCutEnd}
-            />
-          </div>
+          <CutControls
+            background={segBgColor}
+            cutTitle={cutSegments.length > 1 ? 'Export all segments' : 'Export selection'}
+            cutClick={this.cutClick}
+            setCutStart={this.setCutStart}
+            setCutEnd={this.setCutEnd}
+            deleteSourceClick={this.deleteSourceClick}
+          />
         </div>
 
         <div className="left-menu">
