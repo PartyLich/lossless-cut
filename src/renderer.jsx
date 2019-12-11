@@ -41,6 +41,7 @@ import {
   DragDropField,
   LeftMenu,
   Player,
+  RightMenu,
   TimelineSeg,
 } from './components';
 
@@ -848,64 +849,23 @@ class App extends React.Component {
           autoMergeToggle={withBlur(this.toggleAutoMerge)}
         />
 
-        <div className="right-menu">
-          <button
-            type="button"
-            title={`Cut mode ${keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
-            onClick={withBlur(this.toggleKeyframeCut)}
-          >
-            {keyframeCut ? 'kc' : 'nc'}
-          </button>
+        <RightMenu
+          keyframeCut={keyframeCut}
+          stripAudio={stripAudio}
+          captureFormat={captureFormat}
+          includeAllStreams={includeAllStreams}
+          rotationStr={this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify'}
+          isRotationSet={this.isRotationSet()}
+          outputDir={this.getOutputDir()}
 
-          <button
-            type="button"
-            title={`Set output streams. Current: ${includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams'}`}
-            onClick={withBlur(this.toggleIncludeAllStreams)}
-          >
-            {includeAllStreams ? 'all' : 'ps'}
-          </button>
-
-          <button
-            type="button"
-            title={`Delete audio? Current: ${stripAudio ? 'delete audio tracks' : 'keep audio tracks'}`}
-            onClick={withBlur(this.toggleStripAudio)}
-          >
-            {stripAudio ? 'da' : 'ka'}
-          </button>
-
-          <button
-            type="button"
-            title={`Set output rotation. Current: ${this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify'}`}
-            onClick={withBlur(this.increaseRotation)}
-          >
-            {this.isRotationSet() ? this.getRotationStr() : '-°'}
-          </button>
-
-          <button
-            type="button"
-            title={`Custom output dir (cancel to restore default). Current: ${this.getOutputDir() || 'Not set (use input dir)'}`}
-            onClick={withBlur(this.setOutputDir)}
-          >
-            {this.getOutputDir() ? 'cd' : 'id'}
-          </button>
-
-          <i
-            title="Capture frame"
-            style={{ margin: '-.4em -.2em' }}
-            className="button fa fa-camera"
-            role="button"
-            tabIndex="0"
-            onClick={this.capture}
-          />
-
-          <button
-            type="button"
-            title="Capture frame format"
-            onClick={withBlur(this.toggleCaptureFormat)}
-          >
-            {captureFormat}
-          </button>
-        </div>
+          toggleKeyframeCut={withBlur(this.toggleKeyframeCut)}
+          toggleIncludeAllStreams={withBlur(this.toggleIncludeAllStreams)}
+          toggleCaptureFormat={withBlur(this.toggleCaptureFormat)}
+          toggleStripAudio={withBlur(this.toggleStripAudio)}
+          increaseRotation={withBlur(this.increaseRotation)}
+          setOutputDir={withBlur(this.setOutputDir)}
+          captureFrame={this.capture}
+        />
 
         <HelpSheet visible={!!helpVisible} />
       </div>
