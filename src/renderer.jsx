@@ -42,6 +42,7 @@ import {
   DragDropField,
   LeftMenu,
   Player,
+  ProgressIndicator,
   RightMenu,
   TimelineSeg,
 } from './components';
@@ -660,17 +661,7 @@ class App extends React.Component {
           <DragDropField />
         )}
         {working && (
-        <div style={{
-          color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: 0, left: 0,
-        }}
-        >
-          <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle', width: '1em', height: '1em' }} />
-          {cutProgress != null && (
-            <span style={{ color: 'rgba(255, 255, 255, 0.7)', paddingLeft: '.4em' }}>
-              {`${Math.floor(cutProgress * 100)} %`}
-            </span>
-          )}
-        </div>
+          <ProgressIndicator cutProgress={cutProgress} />
         )}
 
         {this.state.rotationPreviewRequested && (
