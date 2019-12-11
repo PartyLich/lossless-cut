@@ -2,7 +2,6 @@ import path from 'path';
 import { ipcRenderer, remote } from 'electron';
 import Mousetrap from 'mousetrap';
 import {
-  round,
   clamp,
   clone,
   throttle,
@@ -40,6 +39,7 @@ import {
 import {
   CutControls,
   DragDropField,
+  LeftMenu,
   Player,
   TimelineSeg,
 } from './components';
@@ -689,9 +689,6 @@ class App extends React.Component {
     const jumpCutButtonStyle = {
       position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px',
     };
-    const infoSpanStyle = {
-      background: 'rgba(255, 255, 255, 0.4)', padding: '.1em .4em', margin: '0 3px', fontSize: 13, borderRadius: '.3em',
-    };
 
     return (
       <div>
@@ -836,48 +833,20 @@ class App extends React.Component {
           />
         </div>
 
-        <div className="left-menu">
-          <select style={{ width: 60 }} defaultValue="" value={fileFormat} title="Format of current file" onChange={withBlur(e => this.setState({ fileFormat: e.target.value }))}>
-            <option key="" value="" disabled>Out fmt</option>
-            {detectedFileFormat && (
-              <option key={detectedFileFormat} value={detectedFileFormat}>
-                {detectedFileFormat}
-              </option>
-            )}
-            {selectableFormats.map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
-
-          <span style={infoSpanStyle} title="Playback rate">
-            {round(playbackRate, 1) || 1}
-          </span>
-
-          <button
-            style={{ ...infoSpanStyle, background: segBgColor, color: 'white' }}
-            disabled={cutSegments.length < 2}
-            type="button"
-            title={`Delete selected segment ${currentSeg + 1}`}
-            onClick={withBlur(() => this.removeCutSegment())}
-          >
-            d
-            {currentSeg + 1}
-          </button>
-
-          <button
-            type="button"
-            title="Add cut segment"
-            onClick={withBlur(() => this.addCutSegment())}
-          >
-            c+
-          </button>
-
-          <button
-            type="button"
-            title={`Auto merge segments to one file after export (and trash segments)? ${autoMerge ? 'Auto merge enabled' : 'No merging'}`}
-            onClick={withBlur(this.toggleAutoMerge)}
-          >
-            {autoMerge ? 'am' : 'nm'}
-          </button>
-        </div>
+        <LeftMenu
+          autoMerge={autoMerge}
+          currentSeg={currentSeg}
+          cutSegments={cutSegments}
+          detectedFileFormat={detectedFileFormat}
+          selectableFormats={selectableFormats}
+          fileFormat={fileFormat}
+          playbackRate={playbackRate}
+          segBgColor={segBgColor}
+          selectOnChange={withBlur((e) => this.setState({ fileFormat: e.target.value }))}
+          deleteSegmentHandler={withBlur(() => this.removeCutSegment())}
+          addCutSegmentHandler={withBlur(() => this.addCutSegment())}
+          autoMergeToggle={withBlur(this.toggleAutoMerge)}
+        />
 
         <div className="right-menu">
           <button
