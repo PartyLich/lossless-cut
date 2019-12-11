@@ -1,5 +1,4 @@
 import path from 'path';
-import $ from 'jquery';
 import { ipcRenderer, remote } from 'electron';
 import Mousetrap from 'mousetrap';
 import {
@@ -42,7 +41,7 @@ import {
 const { dialog } = remote;
 
 function getVideo() {
-  return $('#player video')[0];
+  return document.querySelector('#player video');
 }
 
 function seekAbs(val) {
@@ -481,10 +480,11 @@ class App extends React.Component {
 
   /* eslint-disable react/sort-comp */
   handleTap = throttle((e) => {
-    const $target = $('.timeline-wrapper');
-    const parentOffset = $target.offset();
-    const relX = e.srcEvent.pageX - parentOffset.left;
-    setCursor((relX / $target[0].offsetWidth) * (this.state.duration || 0));
+    const target = document.querySelector('.timeline-wrapper');
+    const parentOffset = target.getBoundingClientRect().left +
+      document.body.scrollLeft;
+    const relX = e.srcEvent.pageX - parentOffset;
+    setCursor((relX / target.offsetWidth) * (this.state.duration || 0));
   }, 200);
   /* eslint-enable react/sort-comp */
 
