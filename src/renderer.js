@@ -30,7 +30,7 @@ import HelpSheet from './HelpSheet';
 import { showMergeDialog, showOpenAndMergeDialog } from './merge/merge';
 import captureFrame from './capture-frame';
 import {
-  getOutPath, parseDuration, formatDuration,
+  getOutPath, formatDuration,
   toast, errorToast, showFfmpegFail,
   setFileNameTitle,
   promptTimeOffset, generateColor,
@@ -38,6 +38,7 @@ import {
 
 import {
   CutControls,
+  CutTimeInput,
   DragDropField,
   LeftMenu,
   Player,
@@ -638,44 +639,6 @@ class App extends React.Component {
     this.setState(({ helpVisible }) => ({ helpVisible: !helpVisible }));
   }
 
-  renderCutTimeInput(type) {
-    const cutTimeManualKey = type === 'start' ? 'cutStartTimeManual' : 'cutEndTimeManual';
-    const cutTimeInputStyle = { width: '8em', textAlign: type === 'start' ? 'right' : 'left' };
-
-    const isCutTimeManualSet = () => this.state[cutTimeManualKey] !== undefined;
-
-    const handleCutTimeInput = (text) => {
-      // Allow the user to erase
-      if (text.length === 0) {
-        this.setState({ [cutTimeManualKey]: undefined });
-        return;
-      }
-
-      const time = parseDuration(text);
-      if (time === undefined) {
-        this.setState({ [cutTimeManualKey]: text });
-        return;
-      }
-
-      this.setState({ [cutTimeManualKey]: undefined });
-
-      this.setCutTime(type, time - this.state.startTimeOffset);
-    };
-
-    const cutTime = type === 'start' ? this.getApparentCutStartTime() : this.getApparentCutEndTime();
-
-    return (
-      <input
-        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
-        type="text"
-        onChange={(e) => handleCutTimeInput(e.target.value)}
-        value={isCutTimeManualSet()
-          ? this.state[cutTimeManualKey]
-          : formatDuration(cutTime + this.state.startTimeOffset)
-        }
-      />
-    );
-  }
 
   render() {
     const {
@@ -776,7 +739,12 @@ class App extends React.Component {
             />
 
             <div style={{ position: 'relative' }}>
-              {this.renderCutTimeInput('start')}
+              <CutTimeInput
+                type="start"
+                startTimeOffset={this.state.startTimeOffset}
+                setCutTime={this.setCutTime.bind(this)}
+                getApparentCutTime={this.getApparentCutStartTime.bind(this)}
+              />
               <i
                 style={{ ...jumpCutButtonStyle, left: 0 }}
                 className="fa fa-step-backward"
@@ -809,7 +777,12 @@ class App extends React.Component {
             />
 
             <div style={{ position: 'relative' }}>
-              {this.renderCutTimeInput('end')}
+              <CutTimeInput
+                type="end"
+                startTimeOffset={this.state.startTimeOffset}
+                setCutTime={this.setCutTime.bind(this)}
+                getApparentCutTime={this.getApparentCutEndTime.bind(this)}
+              />
               <i
                 style={{ ...jumpCutButtonStyle, right: 0 }}
                 className="fa fa-step-forward"
