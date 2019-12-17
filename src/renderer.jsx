@@ -711,7 +711,7 @@ class App extends React.Component {
                 />
               ))}
 
-              <div id="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
+              <div className="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
             </div>
           </Hammer>
 
