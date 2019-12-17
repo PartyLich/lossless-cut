@@ -69,7 +69,7 @@ function seekRel(val) {
 }
 
 function shortStep(dir) {
-  seekRel((1 / 60) * dir);
+  seekRel(dir / 60);
 }
 
 function withBlur(cb) {
