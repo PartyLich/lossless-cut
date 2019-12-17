@@ -38,6 +38,11 @@ import {
   promptTimeOffset, generateColor,
 } from './util';
 
+// Stylesheets
+import './font-awesome-4.6.3/scss/font-awesome.scss';
+import './main.css';
+
+
 const { dialog } = remote;
 
 function getVideo() {
