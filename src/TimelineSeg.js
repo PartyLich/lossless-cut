@@ -2,16 +2,24 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 const TimelineSeg = ({
-  isCutRangeValid, duration: durationRaw, cutStartTime, cutEndTime, apparentCutStart,
-  apparentCutEnd, isActive, segNum, onSegClick, color,
+  isCutRangeValid,
+  duration: durationRaw,
+  cutStartTime,
+  cutEndTime,
+  apparentCutStart,
+  apparentCutEnd,
+  isActive,
+  segNum,
+  onSegClick,
+  color,
 }) => {
   const markerWidth = 4;
   const duration = durationRaw || 1;
-  const cutSectionWidth = `calc(${((apparentCutEnd - apparentCutStart) / duration) * 100}% - ${markerWidth * 2}px)`;
+  const cutSectionWidth = `calc(${ ((apparentCutEnd - apparentCutStart) / duration) * 100 }% - ${ markerWidth * 2 }px)`;
 
-  const startTimePos = `${(apparentCutStart / duration) * 100}%`;
-  const endTimePos = `${(apparentCutEnd / duration) * 100}%`;
-  const markerBorder = isActive ? `2px solid ${color.string()}` : undefined;
+  const startTimePos = `${ (apparentCutStart / duration) * 100 }%`;
+  const endTimePos = `${ (apparentCutEnd / duration) * 100 }%`;
+  const markerBorder = isActive ? `2px solid ${ color.string() }` : undefined;
   const markerBorderRadius = 5;
 
   const startMarkerStyle = {
@@ -43,9 +51,16 @@ const TimelineSeg = ({
   return (
     <React.Fragment>
       {cutStartTime !== undefined && (
-        <div style={startMarkerStyle} className="cut-time-marker" role="button" tabIndex="0" onClick={onThisSegClick} />
+        <div
+          style={startMarkerStyle}
+          className="cut-time-marker"
+          role="button"
+          tabIndex="0"
+          onClick={onThisSegClick}
+        />
       )}
-      {isCutRangeValid && (cutStartTime !== undefined || cutEndTime !== undefined) && (
+      {isCutRangeValid &&
+        (cutStartTime !== undefined || cutEndTime !== undefined) && (
         <div
           className="cut-section"
           style={cutSectionStyle}
@@ -55,7 +70,13 @@ const TimelineSeg = ({
         />
       )}
       {cutEndTime !== undefined && (
-        <div style={endMarkerStyle} className="cut-time-marker" role="button" tabIndex="0" onClick={onThisSegClick} />
+        <div
+          style={endMarkerStyle}
+          className="cut-time-marker"
+          role="button"
+          tabIndex="0"
+          onClick={onThisSegClick}
+        />
       )}
     </React.Fragment>
   );

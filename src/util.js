@@ -15,7 +15,7 @@ function formatDuration(seconds = 0, fileNameFriendly) {
 
   // Be nice to filenames and use .
   const delim = fileNameFriendly ? '.' : ':';
-  return `${hoursPadded}${delim}${minutesPadded}${delim}${secondsPadded}.${msPadded}`;
+  return `${ hoursPadded }${ delim }${ minutesPadded }${ delim }${ secondsPadded }.${ msPadded }`;
 }
 
 function parseDuration(str) {
@@ -38,8 +38,8 @@ function getOutPath(customOutDir, filePath, nameSuffix) {
   const basename = path.basename(filePath);
 
   return customOutDir
-    ? path.join(customOutDir, `${basename}-${nameSuffix}`)
-    : `${filePath}-${nameSuffix}`;
+    ? path.join(customOutDir, `${ basename }-${ nameSuffix }`)
+    : `${ filePath }-${ nameSuffix }`;
 }
 
 async function transferTimestamps(inPath, outPath) {
@@ -68,19 +68,19 @@ const toast = swal.mixin({
   timer: 5000,
 });
 
-const errorToast = title => toast.fire({
+const errorToast = (title) => toast.fire({
   type: 'error',
   title,
 });
 
 async function showFfmpegFail(err) {
   console.error(err);
-  return errorToast(`Failed to run ffmpeg: ${err.stack}`);
+  return errorToast(`Failed to run ffmpeg: ${ err.stack }`);
 }
 
 function setFileNameTitle(filePath) {
   const appName = 'LosslessCut';
-  document.title = filePath ? `${appName} - ${path.basename(filePath)}` : 'appName';
+  document.title = filePath ? `${ appName } - ${ path.basename(filePath) }` : 'appName';
 }
 
 async function promptTimeOffset(inputValue = '') {
@@ -93,9 +93,7 @@ async function promptTimeOffset(inputValue = '') {
     inputPlaceholder: '00:00:00.000',
   });
 
-  if (value === undefined) {
-    return undefined;
-  }
+  if (value === undefined) return undefined;
 
   const duration = parseDuration(value);
   // Invalid, try again
@@ -104,9 +102,7 @@ async function promptTimeOffset(inputValue = '') {
   return duration;
 }
 
-function generateColor() {
-  return randomColor(1, 0.95);
-}
+const generateColor = () => randomColor(1, 0.95);
 
 export {
   formatDuration,

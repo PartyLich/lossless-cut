@@ -15,7 +15,7 @@ async function checkNewVersion() {
     console.log('Current version', currentVersion);
     console.log('Newest version', tagName);
 
-    if (tagName !== `v${currentVersion}`) return tagName;
+    if (tagName !== `v${ currentVersion }`) return tagName;
     return undefined;
   } catch (e) {
     console.error('Failed to check github version');
