@@ -21,7 +21,7 @@
     "prerelease": "yarn build-js",
     "release": "electron-builder",
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
-    "lint": "eslint --ext .jsx --ext .js .",
+    "lint": "eslint --ext .jsx --ext .js ./src",
     "test": "babel-tape-runner test/*.test.js"
   },
   "author": {
