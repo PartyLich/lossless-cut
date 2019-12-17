@@ -9,7 +9,8 @@
           "@babel/plugin-transform-classes"
         ],
         "targets": { "electron": "1.8" },
-        "corejs": 2
+        "corejs": 2,
+        "modules": false
       }
     ],
     ["@babel/react"]

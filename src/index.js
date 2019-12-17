@@ -6,7 +6,8 @@ import { checkNewVersion } from './update-checker';
 
 app.setName('LosslessCut');
 
-if (!isDev) process.env.NODE_ENV = 'production';
+// Not sure what the original author was trying to do here
+// if (!isDev) process.env.NODE_ENV = 'production';
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.

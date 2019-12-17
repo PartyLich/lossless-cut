@@ -38,6 +38,11 @@ import {
   promptTimeOffset, generateColor,
 } from './util';
 
+// Stylesheets
+import './font-awesome-4.6.3/scss/font-awesome.scss';
+import './main.css';
+
+
 const { dialog } = remote;
 
 function getVideo() {
@@ -977,4 +982,4 @@ class App extends React.Component {
 
 ReactDOM.render(<App />, document.getElementById('app'));
 
-console.log('Version', electron.remote.app.getVersion());
+console.log('Version', remote.app.getVersion());
