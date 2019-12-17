@@ -1,0 +1,28 @@
+.timeline-wrapper {
+  width: 100%;
+  position: relative;
+  background-color: #444;
+  
+  .current-time, 
+  .cut-section, 
+  .cut-time-marker {
+    position: absolute;
+    bottom: 0;
+    top: 0;
+  }
+  
+  .cut-section {
+    z-index: 1;
+  }
+  
+  .cut-time-marker {
+    z-index: 2;
+    box-sizing: border-box;
+  }
+  
+  .current-time {
+    z-index: 3;
+    background-color: rgba(255, 255, 255, 1);
+    width: 1px;
+  }
+}
