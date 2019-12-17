@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { round } from 'lodash';
 
+import './LeftMenu.scss';
+
 const infoSpanStyle = {
   background: 'rgba(255, 255, 255, 0.4)',
   padding: '.1em .4em',
