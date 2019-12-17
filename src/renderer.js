@@ -982,4 +982,4 @@ class App extends React.Component {
 
 ReactDOM.render(<App />, document.getElementById('app'));
 
-console.log('Version', electron.remote.app.getVersion());
+console.log('Version', remote.app.getVersion());
