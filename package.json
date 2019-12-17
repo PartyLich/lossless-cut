@@ -7,9 +7,10 @@
   "main": "build/index.js",
   "scripts": {
     "start": "electron watch-build",
-    "watch": "babel src -d watch-build --copy-files -w",
+    "watch": "webpack -w --progress",
     "icon-gen": "mkdir -p icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
-    "build-js": "rm -rf build && babel src -d build --copy-files",
+    "clean": "rm -rf build",
+    "build-js": "npm run clean && NODE_ENV=production webpack --progress",
     "postinstall": "electron-builder install-app-deps",
     "pack-mac": "electron-builder --mac",
     "prepack-mac": "yarn build-js",
