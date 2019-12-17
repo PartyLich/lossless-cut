@@ -29,9 +29,10 @@ function getPath(type) {
 
   if (!subPath) throw new Error(`Unsupported platform ${platform}`);
 
+  const localPath = `node_modules/${ type }-static/bin/${ subPath }`;
   return isDev
-    ? `node_modules/${type}-static/bin/${subPath}`
-    : path.join(window.process.resourcesPath, `node_modules/${type}-static/bin/${subPath}`);
+    ? localPath
+    : path.join(window.process.resourcesPath, localPath);
 }
 
 async function runFfprobe(args) {
