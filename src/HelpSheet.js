@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import './components/HelpSheet.scss';
+
 /* eslint-disable react/jsx-one-expression-per-line */
 const HelpSheet = ({ visible }) => {
   if (visible) {
