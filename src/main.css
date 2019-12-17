@@ -44,21 +44,6 @@ input, button, textarea, :focus {
   background: #ccc;
 }
 
-
-.right-menu {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  padding: .3em;
-}
-
-.left-menu {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  padding: .3em;
-}
-
 .controls-wrapper {
   position: absolute;
   left: 0;
