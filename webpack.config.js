@@ -16,7 +16,7 @@ const config = {
   context: path.join(__dirname, 'src'),
   // Entry
   entry: {
-    renderer: './renderer.jsx',
+    renderer: './renderer.js',
     vendor: [
       'react',
       'react-dom',
@@ -104,7 +104,7 @@ const config = {
 const rendererConfig = Object.assign({}, config, {
   target: 'electron-renderer',
   entry: {
-    renderer: './renderer.jsx',
+    renderer: './renderer.js',
     vendor: [
       'react',
       'react-dom',
