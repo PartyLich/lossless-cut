@@ -1,6 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import './TimelineSeg.scss';
+
+
+const startMarkerClass = 'cut-time-marker--start';
+const endMarkerClass = 'cut-time-marker--end';
+
 const TimelineSeg = ({
   isCutRangeValid,
   duration: durationRaw,
@@ -20,28 +26,19 @@ const TimelineSeg = ({
   const startTimePos = `${ (apparentCutStart / duration) * 100 }%`;
   const endTimePos = `${ (apparentCutEnd / duration) * 100 }%`;
   const markerBorder = isActive ? `2px solid ${ color.string() }` : undefined;
-  const markerBorderRadius = 5;
 
   const startMarkerStyle = {
     background: color.alpha(0.5).string(),
-    width: markerWidth,
     left: startTimePos,
     borderLeft: markerBorder,
-    borderTopLeftRadius: markerBorderRadius,
-    borderBottomLeftRadius: markerBorderRadius,
   };
   const endMarkerStyle = {
     background: color.alpha(0.5).string(),
-    width: markerWidth,
-    marginLeft: -markerWidth,
     left: endTimePos,
     borderRight: markerBorder,
-    borderTopRightRadius: markerBorderRadius,
-    borderBottomRightRadius: markerBorderRadius,
   };
   const cutSectionStyle = {
     background: color.alpha(0.5).string(),
-    marginLeft: markerWidth,
     left: startTimePos,
     width: cutSectionWidth,
   };
@@ -53,7 +50,7 @@ const TimelineSeg = ({
       {cutStartTime !== undefined && (
         <div
           style={startMarkerStyle}
-          className="cut-time-marker"
+          className={`cut-time-marker ${ startMarkerClass }`}
           role="button"
           tabIndex="0"
           onClick={onThisSegClick}
@@ -72,7 +69,7 @@ const TimelineSeg = ({
       {cutEndTime !== undefined && (
         <div
           style={endMarkerStyle}
-          className="cut-time-marker"
+          className={`cut-time-marker ${ endMarkerClass }`}
           role="button"
           tabIndex="0"
           onClick={onThisSegClick}

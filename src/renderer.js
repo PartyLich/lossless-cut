@@ -50,6 +50,7 @@ import {
 // Stylesheets
 import './font-awesome-4.6.3/scss/font-awesome.scss';
 import './main.css';
+import './components/TimelineWrapper.scss';
 
 
 const { dialog } = remote;
@@ -716,7 +717,7 @@ class App extends React.Component {
                 />
               ))}
 
-              <div id="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
+              <div className="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
             </div>
           </Hammer>
 

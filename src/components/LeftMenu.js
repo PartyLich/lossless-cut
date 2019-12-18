@@ -2,13 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { round } from 'lodash';
 
-const infoSpanStyle = {
-  background: 'rgba(255, 255, 255, 0.4)',
-  padding: '.1em .4em',
-  margin: '0 3px',
-  fontSize: 13,
-  borderRadius: '.3em',
-};
+import './LeftMenu.scss';
+
 
 const LeftMenu = ({
   autoMerge,
@@ -41,12 +36,19 @@ const LeftMenu = ({
       {selectableFormats.map((f) => <option key={f} value={f}>{f}</option>)}
     </select>
 
-    <span style={infoSpanStyle} title="Playback rate">
+    <span
+      className="left-menu__infospan"
+      title="Playback rate"
+    >
       {round(playbackRate, 1) || 1}
     </span>
 
     <button
-      style={{ ...infoSpanStyle, background: segBgColor, color: 'white' }}
+      className="left-menu__infospan"
+      style={{
+        background: segBgColor,
+        color: 'white',
+      }}
       disabled={cutSegments.length < 2}
       type="button"
       title={`Delete selected segment ${ currentSeg + 1 }`}
