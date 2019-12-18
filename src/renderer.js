@@ -56,7 +56,7 @@ import './components/TimelineWrapper.scss';
 const { dialog } = remote;
 
 function getVideo() {
-  return document.querySelector('#player video');
+  return document.querySelector('.Player__video');
 }
 
 function seekAbs(val) {
