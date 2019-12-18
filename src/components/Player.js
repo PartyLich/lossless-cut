@@ -4,20 +4,6 @@ import PropTypes from 'prop-types';
 import './Player.scss';
 
 
-const FrameImg = ({ framePath }) => (
-  <>
-    <img
-      className="Player__frameImg"
-      src={framePath}
-      alt=""
-    />
-  </>
-);
-
-FrameImg.propTypes = {
-  framePath: PropTypes.string.isRequired,
-};
-
 /* eslint-disable jsx-a11y/media-has-caption */
 const Player = ({
   src,
@@ -43,8 +29,10 @@ const Player = ({
     />
 
     {frameRender && (
-      <FrameImg
-        framePath={framePath}
+      <img
+        className="Player__frameImg"
+        src={framePath}
+        alt=""
       />
     )}
   </div>
