@@ -657,10 +657,6 @@ class App extends React.Component {
     const segColor = this.getCutSeg().color;
     const segBgColor = segColor.alpha(0.5).string();
 
-    const jumpCutButtonStyle = {
-      position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px',
-    };
-
     return (
       <div>
         {!filePath && (
@@ -735,8 +731,7 @@ class App extends React.Component {
                 getApparentCutTime={this.getApparentCutStartTime.bind(this)}
               />
               <i
-                style={{ ...jumpCutButtonStyle, left: 0 }}
-                className="fa fa-step-backward"
+                className="fa fa-step-backward jump-cut-button--start"
                 title="Jump to cut start"
                 role="button"
                 tabIndex="0"
@@ -773,8 +768,7 @@ class App extends React.Component {
                 getApparentCutTime={this.getApparentCutEndTime.bind(this)}
               />
               <i
-                style={{ ...jumpCutButtonStyle, right: 0 }}
-                className="fa fa-step-forward"
+                className="fa fa-step-forward jump-cut-button--end"
                 title="Jump to cut end"
                 role="button"
                 tabIndex="0"

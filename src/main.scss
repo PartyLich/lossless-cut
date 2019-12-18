@@ -80,3 +80,19 @@ input, button, textarea, :focus {
   right: 1em;
   color: white;
 }
+
+.jump-cut-button {
+  position: absolute;
+  color: black;
+  bottom: 0;
+  top: 0;
+  padding: 2px 8px;
+
+  &--start {
+    left: 0;
+  }
+
+  &--end {
+    right: 0;
+  }
+}
