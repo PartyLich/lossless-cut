@@ -3,22 +3,11 @@ import PropTypes from 'prop-types';
 
 import './Player.scss';
 
-const FRAME_IMG_STYLE = {
-  width: '100%',
-  height: '100%',
-  objectFit: 'contain',
-  left: 0,
-  right: 0,
-  top: 0,
-  bottom: 0,
-  position: 'absolute',
-  background: 'black',
-};
 
 const FrameImg = ({ framePath }) => (
   <>
     <img
-      style={FRAME_IMG_STYLE}
+      className="Player__frameImg"
       src={framePath}
       alt=""
     />
@@ -40,8 +29,9 @@ const Player = ({
   frameRender,
   framePath,
 }) => (
-  <div id="player">
+  <div className="Player">
     <video
+      className="Player__video"
       {...{
         src,
         onRateChange,
