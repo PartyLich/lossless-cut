@@ -671,10 +671,7 @@ class App extends React.Component {
         )}
 
         {this.state.rotationPreviewRequested && (
-          <div style={{
-            position: 'absolute', zIndex: 1, top: '1em', right: '1em', color: 'white',
-          }}
-          >
+          <div className="RotationPreview">
             Lossless rotation preview
           </div>
         )}
