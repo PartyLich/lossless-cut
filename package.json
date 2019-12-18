@@ -10,6 +10,7 @@
     "watch": "webpack -w --progress",
     "icon-gen": "mkdir -p icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
     "clean": "rm -rf build",
+    "build:dev": "webpack --progress",
     "build-js": "npm run clean && NODE_ENV=production webpack --progress",
     "postinstall": "electron-builder install-app-deps",
     "pack-mac": "electron-builder --mac",
