@@ -49,14 +49,14 @@ import {
 
 // Stylesheets
 import './font-awesome-4.6.3/scss/font-awesome.scss';
-import './main.css';
+import './main.scss';
 import './components/TimelineWrapper.scss';
 
 
 const { dialog } = remote;
 
 function getVideo() {
-  return document.querySelector('#player video');
+  return document.querySelector('.Player__video');
 }
 
 function seekAbs(val) {
@@ -671,10 +671,7 @@ class App extends React.Component {
         )}
 
         {this.state.rotationPreviewRequested && (
-          <div style={{
-            position: 'absolute', zIndex: 1, top: '1em', right: '1em', color: 'white',
-          }}
-          >
+          <div className="RotationPreview">
             Lossless rotation preview
           </div>
         )}

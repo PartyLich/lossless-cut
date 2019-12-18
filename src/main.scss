@@ -72,3 +72,11 @@ input, button, textarea, :focus {
 .dragging-helper-class {
   color: rgba(0,0,0,0.5);
 }
+
+.RotationPreview {
+  position: absolute;
+  z-index: 1;
+  top: 1em;
+  right: 1em;
+  color: white;
+}
