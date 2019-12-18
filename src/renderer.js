@@ -49,7 +49,7 @@ import {
 
 // Stylesheets
 import './font-awesome-4.6.3/scss/font-awesome.scss';
-import './main.css';
+import './main.scss';
 import './components/TimelineWrapper.scss';
 
 
