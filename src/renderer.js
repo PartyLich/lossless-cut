@@ -2,7 +2,6 @@ import path from 'path';
 import { ipcRenderer, remote } from 'electron';
 import Mousetrap from 'mousetrap';
 import {
-  round,
   clamp,
   clone,
   throttle,
@@ -28,15 +27,25 @@ import {
 
 // local
 import HelpSheet from './HelpSheet';
-import TimelineSeg from './TimelineSeg';
 import { showMergeDialog, showOpenAndMergeDialog } from './merge/merge';
 import captureFrame from './capture-frame';
 import {
-  getOutPath, parseDuration, formatDuration,
+  getOutPath, formatDuration,
   toast, errorToast, showFfmpegFail,
   setFileNameTitle,
   promptTimeOffset, generateColor,
 } from './util';
+
+import {
+  CutControls,
+  CutTimeInput,
+  DragDropField,
+  LeftMenu,
+  Player,
+  ProgressIndicator,
+  RightMenu,
+  TimelineSeg,
+} from './components';
 
 // Stylesheets
 import './font-awesome-4.6.3/scss/font-awesome.scss';
@@ -90,7 +99,7 @@ function createSegment({ start, end } = {}) {
 
 function doesPlayerSupportFile(streams) {
   // TODO improve, whitelist supported codecs instead
-  return !streams.find(s => ['hevc', 'prores'].includes(s.codec_name));
+  return !streams.find((s) => ['hevc', 'prores'].includes(s.codec_name));
   // return true;
 }
 
@@ -241,7 +250,7 @@ class App extends React.Component {
       }
     });
 
-    document.ondragover = ev => ev.preventDefault();
+    document.ondragover = (ev) => ev.preventDefault();
     document.ondragend = document.ondragover;
 
     document.body.ondrop = (ev) => {
@@ -249,7 +258,7 @@ class App extends React.Component {
       const { files } = ev.dataTransfer;
       if (files.length < 1) return;
       if (files.length === 1) load(files[0].path);
-      else showMergeDialog(Array.from(files).map(f => f.path), this.mergeFiles);
+      else showMergeDialog(Array.from(files).map((f) => f.path), this.mergeFiles);
     };
 
     Mousetrap.bind('space', () => this.playCommand());
@@ -335,7 +344,7 @@ class App extends React.Component {
   }
 
   getRotationStr() {
-    return `${this.getRotation()}°`;
+    return `${ this.getRotation() }°`;
   }
 
   getCutSeg(i) {
@@ -576,7 +585,7 @@ class App extends React.Component {
       console.error('stderr:', err.stderr);
 
       if (err.code === 1 || err.code === 'ENOENT') {
-        errorToast(`Whoops! ffmpeg was unable to cut this video. Try each the following things before attempting to cut again:\n1. Select a different output format from the ${fileFormat} button (matroska takes almost everything).\n2. toggle the button "all" to "ps"`);
+        errorToast(`Whoops! ffmpeg was unable to cut this video. Try each the following things before attempting to cut again:\n1. Select a different output format from the ${ fileFormat } button (matroska takes almost everything).\n2. toggle the button "all" to "ps"`);
         return;
       }
 
@@ -631,44 +640,6 @@ class App extends React.Component {
     this.setState(({ helpVisible }) => ({ helpVisible: !helpVisible }));
   }
 
-  renderCutTimeInput(type) {
-    const cutTimeManualKey = type === 'start' ? 'cutStartTimeManual' : 'cutEndTimeManual';
-    const cutTimeInputStyle = { width: '8em', textAlign: type === 'start' ? 'right' : 'left' };
-
-    const isCutTimeManualSet = () => this.state[cutTimeManualKey] !== undefined;
-
-    const handleCutTimeInput = (text) => {
-      // Allow the user to erase
-      if (text.length === 0) {
-        this.setState({ [cutTimeManualKey]: undefined });
-        return;
-      }
-
-      const time = parseDuration(text);
-      if (time === undefined) {
-        this.setState({ [cutTimeManualKey]: text });
-        return;
-      }
-
-      this.setState({ [cutTimeManualKey]: undefined });
-
-      this.setCutTime(type, time - this.state.startTimeOffset);
-    };
-
-    const cutTime = type === 'start' ? this.getApparentCutStartTime() : this.getApparentCutEndTime();
-
-    return (
-      <input
-        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
-        type="text"
-        onChange={e => handleCutTimeInput(e.target.value)}
-        value={isCutTimeManualSet()
-          ? this.state[cutTimeManualKey]
-          : formatDuration(cutTime + this.state.startTimeOffset)
-        }
-      />
-    );
-  }
 
   render() {
     const {
@@ -677,10 +648,10 @@ class App extends React.Component {
       captureFormat, helpVisible, currentSeg, cutSegments, autoMerge,
     } = this.state;
 
-    const selectableFormats = ['mov', 'mp4', 'matroska'].filter(f => f !== detectedFileFormat);
+    const selectableFormats = ['mov', 'mp4', 'matroska'].filter((f) => f !== detectedFileFormat);
 
     const duration = durationRaw || 1;
-    const currentTimePos = currentTime !== undefined && `${(currentTime / duration) * 100}%`;
+    const currentTimePos = currentTime !== undefined && `${ (currentTime / duration) * 100 }%`;
 
     const segColor = this.getCutSeg().color;
     const segBgColor = segColor.alpha(0.5).string();
@@ -688,30 +659,14 @@ class App extends React.Component {
     const jumpCutButtonStyle = {
       position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px',
     };
-    const infoSpanStyle = {
-      background: 'rgba(255, 255, 255, 0.4)', padding: '.1em .4em', margin: '0 3px', fontSize: 13, borderRadius: '.3em',
-    };
 
     return (
       <div>
         {!filePath && (
-          <div id="drag-drop-field">
-            <div style={{ fontSize: '9vw' }}>DROP VIDEO</div>
-            <div>PRESS H FOR HELP</div>
-          </div>
+          <DragDropField />
         )}
         {working && (
-        <div style={{
-          color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: 0, left: 0,
-        }}
-        >
-          <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle', width: '1em', height: '1em' }} />
-          {cutProgress != null && (
-            <span style={{ color: 'rgba(255, 255, 255, 0.7)', paddingLeft: '.4em' }}>
-              {`${Math.floor(cutProgress * 100)} %`}
-            </span>
-          )}
-        </div>
+          <ProgressIndicator cutProgress={cutProgress} />
         )}
 
         {this.state.rotationPreviewRequested && (
@@ -724,26 +679,16 @@ class App extends React.Component {
         )}
 
         {/* eslint-disable jsx-a11y/media-has-caption */}
-        <div id="player">
-          <video
-            src={this.getFileUri()}
-            onRateChange={this.playbackRateChange}
-            onPlay={() => this.onPlayingChange(true)}
-            onPause={() => this.onPlayingChange(false)}
-            onDurationChange={e => this.onDurationChange(e.target.duration)}
-            onTimeUpdate={this.onTimeUpdate}
-          />
-
-          {this.state.framePath && this.frameRenderEnabled() && (
-            <img
-              style={{
-                width: '100%', height: '100%', objectFit: 'contain', left: 0, right: 0, top: 0, bottom: 0, position: 'absolute', background: 'black',
-              }}
-              src={this.state.framePath}
-              alt=""
-            />
-          )}
-        </div>
+        <Player
+          src={this.getFileUri()}
+          onRateChange={this.playbackRateChange}
+          onPlay={() => this.onPlayingChange(true)}
+          onPause={() => this.onPlayingChange(false)}
+          onDurationChange={(e) => this.onDurationChange(e.target.duration)}
+          onTimeUpdate={this.onTimeUpdate}
+          frameRender={this.state.framePath && this.frameRenderEnabled()}
+          framePath={this.state.framePath}
+        />
         {/* eslint-enable jsx-a11y/media-has-caption */}
 
         <div className="controls-wrapper">
@@ -760,7 +705,7 @@ class App extends React.Component {
                   key={seg.uuid}
                   segNum={i}
                   color={seg.color}
-                  onSegClick={currentSegNew => this.setState({ currentSeg: currentSegNew })}
+                  onSegClick={(currentSegNew) => this.setState({ currentSeg: currentSegNew })}
                   isActive={i === currentSeg}
                   isCutRangeValid={this.isCutRangeValid(i)}
                   duration={duration}
@@ -785,7 +730,12 @@ class App extends React.Component {
             />
 
             <div style={{ position: 'relative' }}>
-              {this.renderCutTimeInput('start')}
+              <CutTimeInput
+                type="start"
+                startTimeOffset={this.state.startTimeOffset}
+                setCutTime={this.setCutTime.bind(this)}
+                getApparentCutTime={this.getApparentCutStartTime.bind(this)}
+              />
               <i
                 style={{ ...jumpCutButtonStyle, left: 0 }}
                 className="fa fa-step-backward"
@@ -804,7 +754,7 @@ class App extends React.Component {
             />
             <i
               className={classnames({
-                button: true, fa: true, 'fa-pause': playing, 'fa-play': !playing,
+                'button': true, 'fa': true, 'fa-pause': playing, 'fa-play': !playing,
               })}
               role="button"
               tabIndex="0"
@@ -818,7 +768,12 @@ class App extends React.Component {
             />
 
             <div style={{ position: 'relative' }}>
-              {this.renderCutTimeInput('end')}
+              <CutTimeInput
+                type="end"
+                startTimeOffset={this.state.startTimeOffset}
+                setCutTime={this.setCutTime.bind(this)}
+                getApparentCutTime={this.getApparentCutEndTime.bind(this)}
+              />
               <i
                 style={{ ...jumpCutButtonStyle, right: 0 }}
                 className="fa fa-step-forward"
@@ -838,141 +793,48 @@ class App extends React.Component {
             />
           </div>
 
-          <div>
-            <i
-              style={{ background: segBgColor }}
-              title="Set cut start to current position"
-              className="button fa fa-angle-left"
-              role="button"
-              tabIndex="0"
-              onClick={this.setCutStart}
-            />
-            <i
-              title={cutSegments.length > 1 ? 'Export all segments' : 'Export selection'}
-              className="button fa fa-scissors"
-              role="button"
-              tabIndex="0"
-              onClick={this.cutClick}
-            />
-            <i
-              title="Delete source file"
-              className="button fa fa-trash"
-              role="button"
-              tabIndex="0"
-              onClick={this.deleteSourceClick}
-            />
-            <i
-              style={{ background: segBgColor }}
-              title="Set cut end to current position"
-              className="button fa fa-angle-right"
-              role="button"
-              tabIndex="0"
-              onClick={this.setCutEnd}
-            />
-          </div>
-        </div>
-
-        <div className="left-menu">
-          <select style={{ width: 60 }} defaultValue="" value={fileFormat} title="Format of current file" onChange={withBlur(e => this.setState({ fileFormat: e.target.value }))}>
-            <option key="" value="" disabled>Out fmt</option>
-            {detectedFileFormat && (
-              <option key={detectedFileFormat} value={detectedFileFormat}>
-                {detectedFileFormat}
-              </option>
-            )}
-            {selectableFormats.map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
-
-          <span style={infoSpanStyle} title="Playback rate">
-            {round(playbackRate, 1) || 1}
-          </span>
-
-          <button
-            style={{ ...infoSpanStyle, background: segBgColor, color: 'white' }}
-            disabled={cutSegments.length < 2}
-            type="button"
-            title={`Delete selected segment ${currentSeg + 1}`}
-            onClick={withBlur(() => this.removeCutSegment())}
-          >
-            d
-            {currentSeg + 1}
-          </button>
-
-          <button
-            type="button"
-            title="Add cut segment"
-            onClick={withBlur(() => this.addCutSegment())}
-          >
-            c+
-          </button>
-
-          <button
-            type="button"
-            title={`Auto merge segments to one file after export (and trash segments)? ${autoMerge ? 'Auto merge enabled' : 'No merging'}`}
-            onClick={withBlur(this.toggleAutoMerge)}
-          >
-            {autoMerge ? 'am' : 'nm'}
-          </button>
-        </div>
-
-        <div className="right-menu">
-          <button
-            type="button"
-            title={`Cut mode ${keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
-            onClick={withBlur(this.toggleKeyframeCut)}
-          >
-            {keyframeCut ? 'kc' : 'nc'}
-          </button>
-
-          <button
-            type="button"
-            title={`Set output streams. Current: ${includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams'}`}
-            onClick={withBlur(this.toggleIncludeAllStreams)}
-          >
-            {includeAllStreams ? 'all' : 'ps'}
-          </button>
-
-          <button
-            type="button"
-            title={`Delete audio? Current: ${stripAudio ? 'delete audio tracks' : 'keep audio tracks'}`}
-            onClick={withBlur(this.toggleStripAudio)}
-          >
-            {stripAudio ? 'da' : 'ka'}
-          </button>
-
-          <button
-            type="button"
-            title={`Set output rotation. Current: ${this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify'}`}
-            onClick={withBlur(this.increaseRotation)}
-          >
-            {this.isRotationSet() ? this.getRotationStr() : '-°'}
-          </button>
-
-          <button
-            type="button"
-            title={`Custom output dir (cancel to restore default). Current: ${this.getOutputDir() || 'Not set (use input dir)'}`}
-            onClick={withBlur(this.setOutputDir)}
-          >
-            {this.getOutputDir() ? 'cd' : 'id'}
-          </button>
-
-          <i
-            title="Capture frame"
-            style={{ margin: '-.4em -.2em' }}
-            className="button fa fa-camera"
-            role="button"
-            tabIndex="0"
-            onClick={this.capture}
+          <CutControls
+            background={segBgColor}
+            cutTitle={cutSegments.length > 1 ? 'Export all segments' : 'Export selection'}
+            cutClick={this.cutClick}
+            setCutStart={this.setCutStart}
+            setCutEnd={this.setCutEnd}
+            deleteSourceClick={this.deleteSourceClick}
           />
-
-          <button
-            type="button"
-            title="Capture frame format"
-            onClick={withBlur(this.toggleCaptureFormat)}
-          >
-            {captureFormat}
-          </button>
         </div>
+
+        <LeftMenu
+          autoMerge={autoMerge}
+          currentSeg={currentSeg}
+          cutSegments={cutSegments}
+          detectedFileFormat={detectedFileFormat}
+          selectableFormats={selectableFormats}
+          fileFormat={fileFormat}
+          playbackRate={playbackRate}
+          segBgColor={segBgColor}
+          selectOnChange={withBlur((e) => this.setState({ fileFormat: e.target.value }))}
+          deleteSegmentHandler={withBlur(() => this.removeCutSegment())}
+          addCutSegmentHandler={withBlur(() => this.addCutSegment())}
+          autoMergeToggle={withBlur(this.toggleAutoMerge)}
+        />
+
+        <RightMenu
+          keyframeCut={keyframeCut}
+          stripAudio={stripAudio}
+          captureFormat={captureFormat}
+          includeAllStreams={includeAllStreams}
+          rotationStr={this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify'}
+          isRotationSet={this.isRotationSet()}
+          outputDir={this.getOutputDir()}
+
+          toggleKeyframeCut={withBlur(this.toggleKeyframeCut)}
+          toggleIncludeAllStreams={withBlur(this.toggleIncludeAllStreams)}
+          toggleCaptureFormat={withBlur(this.toggleCaptureFormat)}
+          toggleStripAudio={withBlur(this.toggleStripAudio)}
+          increaseRotation={withBlur(this.increaseRotation)}
+          setOutputDir={withBlur(this.setOutputDir)}
+          captureFrame={this.capture}
+        />
 
         <HelpSheet visible={!!helpVisible} />
       </div>
