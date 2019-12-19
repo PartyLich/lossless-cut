@@ -4,11 +4,9 @@ import execa from 'execa';
 import bluebird from 'bluebird';
 import fileType from 'file-type';
 import readChunk from 'read-chunk';
-import {
-  flatMap,
-  sum,
-  sortBy,
-} from 'lodash';
+import flatMap from 'lodash/flatMap';
+import sum from 'lodash/sum';
+import sortBy from 'lodash/sortBy';
 import readline from 'readline';
 import moment from 'moment';
 import stringToStream from 'string-to-stream';

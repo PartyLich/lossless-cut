@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { padStart } from 'lodash';
+import padStart from 'lodash/padStart';
 import swal from 'sweetalert2';
 import randomColor from './random-color';
 
