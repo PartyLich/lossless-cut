@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { round } from 'lodash';
+import round from 'lodash/round';
 
 import './LeftMenu.scss';
 

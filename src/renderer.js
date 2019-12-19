@@ -1,11 +1,9 @@
 import path from 'path';
 import { ipcRenderer, remote } from 'electron';
 import Mousetrap from 'mousetrap';
-import {
-  clamp,
-  clone,
-  throttle,
-} from 'lodash';
+import clamp from 'lodash/clamp';
+import clone from 'lodash/clone';
+import throttle from 'lodash/throttle';
 import Hammer from 'react-hammerjs';
 import trash from 'trash';
 import uuid from 'uuid';
