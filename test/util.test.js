@@ -4,6 +4,7 @@ import {
   formatDuration,
   parseDuration,
   getOutPath,
+  parseTimeSpan,
 } from '../src/util';
 
 
@@ -79,6 +80,41 @@ test('getOutPath()', (t) => {
     const filename = basename(__filename);
     const expected = `${ customDir }${ filename }-${ '' }`;
     const actual = getOutPath(customDir, filePath, '');
+    t.equal(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('parseTimeSpan()', (t) => {
+  {
+    const msg = 'parse hours';
+    const expected = 23;
+    const actual = parseTimeSpan('23:59:59.999').hr;
+    t.equal(actual, expected, msg);
+  }
+  {
+    const msg = 'parse minutes';
+    const expected = 59;
+    const actual = parseTimeSpan('23:59:59').min;
+    t.equal(actual, expected, msg);
+  }
+  {
+    const msg = 'parse seconds';
+    const expected = 59;
+    const actual = parseTimeSpan('23:59:59').sec;
+    t.equal(actual, expected, msg);
+  }
+  {
+    const msg = 'parse partial seconds';
+    const expected = 59.999;
+    const actual = parseTimeSpan('23:59:59.999').sec;
+    t.equal(actual, expected, msg);
+  }
+  {
+    const msg = 'calculate entire duration in seconds';
+    const expected = 86399.999;
+    const actual = parseTimeSpan('23:59:59.999').toSeconds();
     t.equal(actual, expected, msg);
   }
 

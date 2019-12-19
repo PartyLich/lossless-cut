@@ -104,6 +104,32 @@ async function promptTimeOffset(inputValue = '') {
 
 const generateColor = () => randomColor(1, 0.95);
 
+/**
+ * parse ASP.NET style time span string
+ * @param  {string} str time span string
+ * @return {object}
+ */
+const parseTimeSpan = (str) => {
+  let [, hr, min, sec] = str.match(/(\d{2}):(\d{2}):(\d{2}.*)/);
+  hr = parseInt(hr, 10);
+  min = parseInt(min, 10);
+  sec = parseFloat(sec);
+
+  return {
+    hr,
+    min,
+    sec,
+
+    /**
+     * convert to seconds
+     * @return {number}
+     */
+    toSeconds() {
+      return (hr * 3600) + (min * 60) + sec;
+    },
+  };
+};
+
 export {
   formatDuration,
   parseDuration,
@@ -116,4 +142,5 @@ export {
   setFileNameTitle,
   promptTimeOffset,
   generateColor,
+  parseTimeSpan,
 };
