@@ -729,7 +729,7 @@ class App extends React.Component {
                 getApparentCutTime={this.getApparentCutStartTime.bind(this)}
               />
               <i
-                className="fa fa-step-backward jump-cut-button--start"
+                className="fa fa-step-backward jump-cut-button jump-cut-button--start"
                 title="Jump to cut start"
                 role="button"
                 tabIndex="0"
@@ -766,7 +766,7 @@ class App extends React.Component {
                 getApparentCutTime={this.getApparentCutEndTime.bind(this)}
               />
               <i
-                className="fa fa-step-forward jump-cut-button--end"
+                className="fa fa-step-forward jump-cut-button jump-cut-button--end"
                 title="Jump to cut end"
                 role="button"
                 tabIndex="0"
