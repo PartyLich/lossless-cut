@@ -2,17 +2,17 @@
   width: 4;
 
   &--start {
-    borderTopLeftRadius: 5;
-    borderBottomLeftRadius: 5;
+    border-top-left-radius: 5;
+    border-bottom-left-radius: 5;
   }
 
   &--end {
-    marginLeft: -4;
-    borderTopRightRadius: 5;
-    borderBottomRightRadius: 5;
+    margin-left: -4;
+    border-top-right-radius: 5;
+    border-bottom-right-radius: 5;
   }
 }
 
 .cut-section {
-  marginLeft: 4;
+  margin-left: 4;
 }
