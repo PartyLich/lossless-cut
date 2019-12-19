@@ -8,11 +8,15 @@ import flatMap from 'lodash/flatMap';
 import sum from 'lodash/sum';
 import sortBy from 'lodash/sortBy';
 import readline from 'readline';
-import moment from 'moment';
 import stringToStream from 'string-to-stream';
 import trash from 'trash';
 import isDev from 'electron-is-dev';
-import { formatDuration, getOutPath, transferTimestamps } from './util';
+import {
+  formatDuration,
+  getOutPath,
+  transferTimestamps,
+  parseTimeSpan,
+} from './util';
 
 function getPath(type) {
   const platform = os.platform();
@@ -53,8 +57,8 @@ function handleProgress(process, cutDuration, onProgress) {
 
       const str = match[1];
       console.log(str);
-      const progressTime = moment.duration(str).asSeconds();
-      console.log(progressTime);
+      const progressTime = parseTimeSpan(str).toSeconds();
+      console.log(`progressTime: ${ progressTime }`);
       onProgress(progressTime / cutDuration);
     } catch (err) {
       console.log('Failed to parse ffmpeg progress line', err);
