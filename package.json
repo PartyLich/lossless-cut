@@ -23,6 +23,7 @@
     "release": "electron-builder",
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
     "lint": "eslint --ext .jsx --ext .js ./src",
+    "lint:css": "stylelint src/**/*.scss --cache",
     "test": "babel-tape-runner test/*.test.js"
   },
   "author": {
@@ -65,6 +66,9 @@
     "mini-css-extract-plugin": "^0.8.0",
     "node-sass": "^4.13.0",
     "sass-loader": "^8.0.0",
+    "stylelint": "^12.0.0",
+    "stylelint-config-recommended-scss": "^4.1.0",
+    "stylelint-scss": "^3.13.0",
     "svg2png": "^4.1.1",
     "tape": "^4.11.0",
     "url-loader": "^3.0.0",
