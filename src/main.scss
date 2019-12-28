@@ -1,0 +1,98 @@
+html {
+  font-family: sans-serif;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  color: white;
+  background: black;
+}
+
+:not(input):not(textarea),
+:not(input):not(textarea)::after,
+:not(input):not(textarea)::before {
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+input, button, textarea, :focus {
+    outline: none; // You should add some other style for :focus to help UX/a11y
+}
+
+.button {
+  border-radius: 3px;
+  padding: .4em;
+  vertical-align: middle;
+}
+
+.controls-wrapper button, .right-menu button, .left-menu button, .controls-wrapper input {
+  background: white;
+  border-radius: .3em;
+  color: rgba(0, 0, 0, 0.7);
+  font-size: 13px;
+  vertical-align: middle;
+  padding: 0 .5em;
+  margin: 0 3px;
+  border: none;
+  height: 18px;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.controls-wrapper button:active, .right-menu button:active, .left-menu button:active  {
+  background: #ccc;
+}
+
+.controls-wrapper {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5.75rem;
+  background: #6b6b6b;
+  text-align: center;
+}
+
+.current-time-display {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  padding: .5em;
+}
+
+#drag-drop-field {
+  padding: 15vw 0;
+  border: 2vw dashed #252525;
+  color: #303030;
+  margin: 7vw;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.dragging-helper-class {
+  color: rgba(0,0,0,0.5);
+}
+
+.RotationPreview {
+  position: absolute;
+  z-index: 1;
+  top: 1em;
+  right: 1em;
+  color: white;
+}
+
+.jump-cut-button {
+  position: absolute;
+  color: black;
+  bottom: 0;
+  top: 0;
+  padding: 2px 8px;
+
+  &--start {
+    left: 0;
+  }
+
+  &--end {
+    right: 0;
+  }
+}

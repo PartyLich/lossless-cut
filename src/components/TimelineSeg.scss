@@ -1,0 +1,18 @@
+.cut-time-marker {
+  width: 4;
+
+  &--start {
+    border-top-left-radius: 5;
+    border-bottom-left-radius: 5;
+  }
+
+  &--end {
+    margin-left: -4;
+    border-top-right-radius: 5;
+    border-bottom-right-radius: 5;
+  }
+}
+
+.cut-section {
+  margin-left: 4;
+}

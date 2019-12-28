@@ -1,5 +1,7 @@
-const React = require('react');
-const PropTypes = require('prop-types');
+import React from 'react';
+import PropTypes from 'prop-types';
+
+import './components/HelpSheet.scss';
 
 /* eslint-disable react/jsx-one-expression-per-line */
 const HelpSheet = ({ visible }) => {
@@ -35,4 +37,4 @@ HelpSheet.propTypes = {
   visible: PropTypes.bool.isRequired,
 };
 
-module.exports = HelpSheet;
+export default HelpSheet;

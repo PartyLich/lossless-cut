@@ -1,38 +1,60 @@
-const electron = require('electron'); // eslint-disable-line
-const $ = require('jquery');
-const Mousetrap = require('mousetrap');
-const round = require('lodash/round');
-const clamp = require('lodash/clamp');
-const clone = require('lodash/clone');
-const throttle = require('lodash/throttle');
-const Hammer = require('react-hammerjs').default;
-const path = require('path');
-const trash = require('trash');
-const uuid = require('uuid');
+import path from 'path';
+import { ipcRenderer, remote } from 'electron';
+import Mousetrap from 'mousetrap';
+import clamp from 'lodash/clamp';
+import clone from 'lodash/clone';
+import throttle from 'lodash/throttle';
+import Hammer from 'react-hammerjs';
+import trash from 'trash';
+import uuid from 'uuid';
+import classnames from 'classnames';
+import PQueue from 'p-queue';
 
-const React = require('react');
-const ReactDOM = require('react-dom');
-const classnames = require('classnames');
-const { default: PQueue } = require('p-queue');
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {
+  cutMultiple,
+  extractAllStreams,
+  getFormat,
+  getAllStreams,
+  html5ifyDummy,
+  html5ify,
+  autoMergeSegments,
+  renderFrame,
+} from './ffmpeg';
 
-
-const HelpSheet = require('./HelpSheet');
-const TimelineSeg = require('./TimelineSeg');
-const { showMergeDialog, showOpenAndMergeDialog } = require('./merge/merge');
-
-const captureFrame = require('./capture-frame');
-const ffmpeg = require('./ffmpeg');
-
-
-const {
-  getOutPath, parseDuration, formatDuration, toast, errorToast, showFfmpegFail, setFileNameTitle,
+// local
+import HelpSheet from './HelpSheet';
+import { showMergeDialog, showOpenAndMergeDialog } from './merge/merge';
+import captureFrame from './capture-frame';
+import {
+  getOutPath, formatDuration,
+  toast, errorToast, showFfmpegFail,
+  setFileNameTitle,
   promptTimeOffset, generateColor,
-} = require('./util');
+} from './util';
 
-const { dialog } = electron.remote;
+import {
+  CutControls,
+  CutTimeInput,
+  DragDropField,
+  LeftMenu,
+  Player,
+  ProgressIndicator,
+  RightMenu,
+  TimelineSeg,
+} from './components';
+
+// Stylesheets
+import './font-awesome-4.6.3/scss/font-awesome.scss';
+import './main.scss';
+import './components/TimelineWrapper.scss';
+
+
+const { dialog } = remote;
 
 function getVideo() {
-  return $('#player video')[0];
+  return document.querySelector('.Player__video');
 }
 
 function seekAbs(val) {
@@ -55,7 +77,7 @@ function seekRel(val) {
 }
 
 function shortStep(dir) {
-  seekRel((1 / 60) * dir);
+  seekRel(dir / 60);
 }
 
 function withBlur(cb) {
@@ -76,7 +98,7 @@ function createSegment({ start, end } = {}) {
 
 function doesPlayerSupportFile(streams) {
   // TODO improve, whitelist supported codecs instead
-  return !streams.find(s => ['hevc', 'prores'].includes(s.codec_name));
+  return !streams.find((s) => ['hevc', 'prores'].includes(s.codec_name));
   // return true;
 }
 
@@ -136,13 +158,13 @@ class App extends React.Component {
       this.setState({ working: true });
 
       try {
-        const fileFormat = await ffmpeg.getFormat(filePath);
+        const fileFormat = await getFormat(filePath);
         if (!fileFormat) {
           errorToast('Unsupported file');
           return;
         }
 
-        const { streams } = await ffmpeg.getAllStreams(filePath);
+        const { streams } = await getAllStreams(filePath);
 
         setFileNameTitle(filePath);
         this.setState({
@@ -158,7 +180,7 @@ class App extends React.Component {
         } else if (!doesPlayerSupportFile(streams)) {
           const { customOutDir } = this.state;
           const html5ifiedDummyPath = getOutPath(customOutDir, filePath, 'html5ified-dummy.mkv');
-          await ffmpeg.html5ifyDummy(filePath, html5ifiedDummyPath);
+          await html5ifyDummy(filePath, html5ifiedDummyPath);
           this.setState({ html5FriendlyPath: html5ifiedDummyPath });
           this.throttledRenderFrame(0);
         }
@@ -173,19 +195,19 @@ class App extends React.Component {
       }
     };
 
-    electron.ipcRenderer.on('file-opened', (event, filePaths) => {
+    ipcRenderer.on('file-opened', (event, filePaths) => {
       if (!filePaths || filePaths.length !== 1) return;
       load(filePaths[0]);
     });
 
-    electron.ipcRenderer.on('html5ify', async (event, encodeVideo) => {
+    ipcRenderer.on('html5ify', async (event, encodeVideo) => {
       const { filePath, customOutDir } = this.state;
       if (!filePath) return;
 
       try {
         this.setState({ working: true });
         const html5ifiedPath = getOutPath(customOutDir, filePath, 'html5ified.mp4');
-        await ffmpeg.html5ify(filePath, html5ifiedPath, encodeVideo);
+        await html5ify(filePath, html5ifiedPath, encodeVideo);
         this.setState({ working: false });
         load(filePath, html5ifiedPath);
       } catch (err) {
@@ -195,13 +217,13 @@ class App extends React.Component {
       }
     });
 
-    electron.ipcRenderer.on('show-merge-dialog', () => showOpenAndMergeDialog({
+    ipcRenderer.on('show-merge-dialog', () => showOpenAndMergeDialog({
       dialog,
       defaultPath: this.getOutputDir(),
       onMergeClick: this.mergeFiles,
     }));
 
-    electron.ipcRenderer.on('set-start-offset', async () => {
+    ipcRenderer.on('set-start-offset', async () => {
       const { startTimeOffset: startTimeOffsetOld } = this.state;
       const startTimeOffset = await promptTimeOffset(
         startTimeOffsetOld !== undefined ? formatDuration(startTimeOffsetOld) : undefined,
@@ -212,13 +234,13 @@ class App extends React.Component {
       this.setState({ startTimeOffset });
     });
 
-    electron.ipcRenderer.on('extract-all-streams', async () => {
+    ipcRenderer.on('extract-all-streams', async () => {
       const { filePath, customOutDir } = this.state;
       if (!filePath) return;
 
       try {
         this.setState({ working: true });
-        await ffmpeg.extractAllStreams({ customOutDir, filePath });
+        await extractAllStreams({ customOutDir, filePath });
         this.setState({ working: false });
       } catch (err) {
         errorToast('Failed to extract all streams');
@@ -227,7 +249,7 @@ class App extends React.Component {
       }
     });
 
-    document.ondragover = ev => ev.preventDefault();
+    document.ondragover = (ev) => ev.preventDefault();
     document.ondragend = document.ondragover;
 
     document.body.ondrop = (ev) => {
@@ -235,7 +257,7 @@ class App extends React.Component {
       const { files } = ev.dataTransfer;
       if (files.length < 1) return;
       if (files.length === 1) load(files[0].path);
-      else showMergeDialog(Array.from(files).map(f => f.path), this.mergeFiles);
+      else showMergeDialog(Array.from(files).map((f) => f.path), this.mergeFiles);
     };
 
     Mousetrap.bind('space', () => this.playCommand());
@@ -254,7 +276,7 @@ class App extends React.Component {
     Mousetrap.bind('+', () => this.addCutSegment());
     Mousetrap.bind('backspace', () => this.removeCutSegment());
 
-    electron.ipcRenderer.send('renderer-ready');
+    ipcRenderer.send('renderer-ready');
   }
 
   onPlayingChange(playing) {
@@ -321,7 +343,7 @@ class App extends React.Component {
   }
 
   getRotationStr() {
-    return `${this.getRotation()}°`;
+    return `${ this.getRotation() }°`;
   }
 
   getCutSeg(i) {
@@ -368,7 +390,7 @@ class App extends React.Component {
       const { customOutDir } = this.state;
 
       // console.log('merge', paths);
-      await ffmpeg.mergeAnyFiles({ customOutDir, paths });
+      await mergeAnyFiles({ customOutDir, paths });
     } catch (err) {
       errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
       console.error('Failed to merge files', err);
@@ -395,7 +417,7 @@ class App extends React.Component {
 
         try {
           if (this.state.framePath) URL.revokeObjectURL(this.state.framePath);
-          const framePath = await ffmpeg.renderFrame(currentTime, filePath, rotation);
+          const framePath = await renderFrame(currentTime, filePath, rotation);
           this.setState({ framePath });
         } catch (err) {
           console.error(err);
@@ -471,10 +493,11 @@ class App extends React.Component {
 
   /* eslint-disable react/sort-comp */
   handleTap = throttle((e) => {
-    const $target = $('.timeline-wrapper');
-    const parentOffset = $target.offset();
-    const relX = e.srcEvent.pageX - parentOffset.left;
-    setCursor((relX / $target[0].offsetWidth) * (this.state.duration || 0));
+    const target = document.querySelector('.timeline-wrapper');
+    const parentOffset = target.getBoundingClientRect().left +
+      document.body.scrollLeft;
+    const relX = e.srcEvent.pageX - parentOffset;
+    setCursor((relX / target.offsetWidth) * (this.state.duration || 0));
   }, 200);
   /* eslint-enable react/sort-comp */
 
@@ -534,7 +557,7 @@ class App extends React.Component {
         cutToApparent: this.getApparentCutEndTime(i),
       }));
 
-      const outFiles = await ffmpeg.cutMultiple({
+      const outFiles = await cutMultiple({
         customOutDir,
         filePath,
         format: fileFormat,
@@ -550,7 +573,7 @@ class App extends React.Component {
       if (outFiles.length > 1 && autoMerge) {
         this.onCutProgress(0); // TODO
 
-        await ffmpeg.autoMergeSegments({
+        await autoMergeSegments({
           customOutDir,
           sourceFile: filePath,
           segmentPaths: outFiles,
@@ -561,7 +584,7 @@ class App extends React.Component {
       console.error('stderr:', err.stderr);
 
       if (err.code === 1 || err.code === 'ENOENT') {
-        errorToast(`Whoops! ffmpeg was unable to cut this video. Try each the following things before attempting to cut again:\n1. Select a different output format from the ${fileFormat} button (matroska takes almost everything).\n2. toggle the button "all" to "ps"`);
+        errorToast(`Whoops! ffmpeg was unable to cut this video. Try each the following things before attempting to cut again:\n1. Select a different output format from the ${ fileFormat } button (matroska takes almost everything).\n2. toggle the button "all" to "ps"`);
         return;
       }
 
@@ -616,44 +639,6 @@ class App extends React.Component {
     this.setState(({ helpVisible }) => ({ helpVisible: !helpVisible }));
   }
 
-  renderCutTimeInput(type) {
-    const cutTimeManualKey = type === 'start' ? 'cutStartTimeManual' : 'cutEndTimeManual';
-    const cutTimeInputStyle = { width: '8em', textAlign: type === 'start' ? 'right' : 'left' };
-
-    const isCutTimeManualSet = () => this.state[cutTimeManualKey] !== undefined;
-
-    const handleCutTimeInput = (text) => {
-      // Allow the user to erase
-      if (text.length === 0) {
-        this.setState({ [cutTimeManualKey]: undefined });
-        return;
-      }
-
-      const time = parseDuration(text);
-      if (time === undefined) {
-        this.setState({ [cutTimeManualKey]: text });
-        return;
-      }
-
-      this.setState({ [cutTimeManualKey]: undefined });
-
-      this.setCutTime(type, time - this.state.startTimeOffset);
-    };
-
-    const cutTime = type === 'start' ? this.getApparentCutStartTime() : this.getApparentCutEndTime();
-
-    return (
-      <input
-        style={{ ...cutTimeInputStyle, color: isCutTimeManualSet() ? '#dc1d1d' : undefined }}
-        type="text"
-        onChange={e => handleCutTimeInput(e.target.value)}
-        value={isCutTimeManualSet()
-          ? this.state[cutTimeManualKey]
-          : formatDuration(cutTime + this.state.startTimeOffset)
-        }
-      />
-    );
-  }
 
   render() {
     const {
@@ -662,73 +647,40 @@ class App extends React.Component {
       captureFormat, helpVisible, currentSeg, cutSegments, autoMerge,
     } = this.state;
 
-    const selectableFormats = ['mov', 'mp4', 'matroska'].filter(f => f !== detectedFileFormat);
+    const selectableFormats = ['mov', 'mp4', 'matroska'].filter((f) => f !== detectedFileFormat);
 
     const duration = durationRaw || 1;
-    const currentTimePos = currentTime !== undefined && `${(currentTime / duration) * 100}%`;
+    const currentTimePos = currentTime !== undefined && `${ (currentTime / duration) * 100 }%`;
 
     const segColor = this.getCutSeg().color;
     const segBgColor = segColor.alpha(0.5).string();
 
-    const jumpCutButtonStyle = {
-      position: 'absolute', color: 'black', bottom: 0, top: 0, padding: '2px 8px',
-    };
-    const infoSpanStyle = {
-      background: 'rgba(255, 255, 255, 0.4)', padding: '.1em .4em', margin: '0 3px', fontSize: 13, borderRadius: '.3em',
-    };
-
     return (
       <div>
         {!filePath && (
-          <div id="drag-drop-field">
-            <div style={{ fontSize: '9vw' }}>DROP VIDEO</div>
-            <div>PRESS H FOR HELP</div>
-          </div>
+          <DragDropField />
         )}
         {working && (
-        <div style={{
-          color: 'white', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '.5em', margin: '1em', padding: '.2em .5em', position: 'absolute', zIndex: 1, top: 0, left: 0,
-        }}
-        >
-          <i className="fa fa-cog fa-spin fa-3x fa-fw" style={{ verticalAlign: 'middle', width: '1em', height: '1em' }} />
-          {cutProgress != null && (
-            <span style={{ color: 'rgba(255, 255, 255, 0.7)', paddingLeft: '.4em' }}>
-              {`${Math.floor(cutProgress * 100)} %`}
-            </span>
-          )}
-        </div>
+          <ProgressIndicator cutProgress={cutProgress} />
         )}
 
         {this.state.rotationPreviewRequested && (
-          <div style={{
-            position: 'absolute', zIndex: 1, top: '1em', right: '1em', color: 'white',
-          }}
-          >
+          <div className="RotationPreview">
             Lossless rotation preview
           </div>
         )}
 
         {/* eslint-disable jsx-a11y/media-has-caption */}
-        <div id="player">
-          <video
-            src={this.getFileUri()}
-            onRateChange={this.playbackRateChange}
-            onPlay={() => this.onPlayingChange(true)}
-            onPause={() => this.onPlayingChange(false)}
-            onDurationChange={e => this.onDurationChange(e.target.duration)}
-            onTimeUpdate={this.onTimeUpdate}
-          />
-
-          {this.state.framePath && this.frameRenderEnabled() && (
-            <img
-              style={{
-                width: '100%', height: '100%', objectFit: 'contain', left: 0, right: 0, top: 0, bottom: 0, position: 'absolute', background: 'black',
-              }}
-              src={this.state.framePath}
-              alt=""
-            />
-          )}
-        </div>
+        <Player
+          src={this.getFileUri()}
+          onRateChange={this.playbackRateChange}
+          onPlay={() => this.onPlayingChange(true)}
+          onPause={() => this.onPlayingChange(false)}
+          onDurationChange={(e) => this.onDurationChange(e.target.duration)}
+          onTimeUpdate={this.onTimeUpdate}
+          frameRender={this.state.framePath && this.frameRenderEnabled()}
+          framePath={this.state.framePath}
+        />
         {/* eslint-enable jsx-a11y/media-has-caption */}
 
         <div className="controls-wrapper">
@@ -745,7 +697,7 @@ class App extends React.Component {
                   key={seg.uuid}
                   segNum={i}
                   color={seg.color}
-                  onSegClick={currentSegNew => this.setState({ currentSeg: currentSegNew })}
+                  onSegClick={(currentSegNew) => this.setState({ currentSeg: currentSegNew })}
                   isActive={i === currentSeg}
                   isCutRangeValid={this.isCutRangeValid(i)}
                   duration={duration}
@@ -756,7 +708,7 @@ class App extends React.Component {
                 />
               ))}
 
-              <div id="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
+              <div className="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
             </div>
           </Hammer>
 
@@ -770,10 +722,14 @@ class App extends React.Component {
             />
 
             <div style={{ position: 'relative' }}>
-              {this.renderCutTimeInput('start')}
+              <CutTimeInput
+                type="start"
+                startTimeOffset={this.state.startTimeOffset}
+                setCutTime={this.setCutTime.bind(this)}
+                getApparentCutTime={this.getApparentCutStartTime.bind(this)}
+              />
               <i
-                style={{ ...jumpCutButtonStyle, left: 0 }}
-                className="fa fa-step-backward"
+                className="fa fa-step-backward jump-cut-button jump-cut-button--start"
                 title="Jump to cut start"
                 role="button"
                 tabIndex="0"
@@ -789,7 +745,7 @@ class App extends React.Component {
             />
             <i
               className={classnames({
-                button: true, fa: true, 'fa-pause': playing, 'fa-play': !playing,
+                'button': true, 'fa': true, 'fa-pause': playing, 'fa-play': !playing,
               })}
               role="button"
               tabIndex="0"
@@ -803,10 +759,14 @@ class App extends React.Component {
             />
 
             <div style={{ position: 'relative' }}>
-              {this.renderCutTimeInput('end')}
+              <CutTimeInput
+                type="end"
+                startTimeOffset={this.state.startTimeOffset}
+                setCutTime={this.setCutTime.bind(this)}
+                getApparentCutTime={this.getApparentCutEndTime.bind(this)}
+              />
               <i
-                style={{ ...jumpCutButtonStyle, right: 0 }}
-                className="fa fa-step-forward"
+                className="fa fa-step-forward jump-cut-button jump-cut-button--end"
                 title="Jump to cut end"
                 role="button"
                 tabIndex="0"
@@ -823,141 +783,48 @@ class App extends React.Component {
             />
           </div>
 
-          <div>
-            <i
-              style={{ background: segBgColor }}
-              title="Set cut start to current position"
-              className="button fa fa-angle-left"
-              role="button"
-              tabIndex="0"
-              onClick={this.setCutStart}
-            />
-            <i
-              title={cutSegments.length > 1 ? 'Export all segments' : 'Export selection'}
-              className="button fa fa-scissors"
-              role="button"
-              tabIndex="0"
-              onClick={this.cutClick}
-            />
-            <i
-              title="Delete source file"
-              className="button fa fa-trash"
-              role="button"
-              tabIndex="0"
-              onClick={this.deleteSourceClick}
-            />
-            <i
-              style={{ background: segBgColor }}
-              title="Set cut end to current position"
-              className="button fa fa-angle-right"
-              role="button"
-              tabIndex="0"
-              onClick={this.setCutEnd}
-            />
-          </div>
-        </div>
-
-        <div className="left-menu">
-          <select style={{ width: 60 }} defaultValue="" value={fileFormat} title="Format of current file" onChange={withBlur(e => this.setState({ fileFormat: e.target.value }))}>
-            <option key="" value="" disabled>Out fmt</option>
-            {detectedFileFormat && (
-              <option key={detectedFileFormat} value={detectedFileFormat}>
-                {detectedFileFormat}
-              </option>
-            )}
-            {selectableFormats.map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
-
-          <span style={infoSpanStyle} title="Playback rate">
-            {round(playbackRate, 1) || 1}
-          </span>
-
-          <button
-            style={{ ...infoSpanStyle, background: segBgColor, color: 'white' }}
-            disabled={cutSegments.length < 2}
-            type="button"
-            title={`Delete selected segment ${currentSeg + 1}`}
-            onClick={withBlur(() => this.removeCutSegment())}
-          >
-            d
-            {currentSeg + 1}
-          </button>
-
-          <button
-            type="button"
-            title="Add cut segment"
-            onClick={withBlur(() => this.addCutSegment())}
-          >
-            c+
-          </button>
-
-          <button
-            type="button"
-            title={`Auto merge segments to one file after export (and trash segments)? ${autoMerge ? 'Auto merge enabled' : 'No merging'}`}
-            onClick={withBlur(this.toggleAutoMerge)}
-          >
-            {autoMerge ? 'am' : 'nm'}
-          </button>
-        </div>
-
-        <div className="right-menu">
-          <button
-            type="button"
-            title={`Cut mode ${keyframeCut ? 'nearest keyframe cut' : 'normal cut'}`}
-            onClick={withBlur(this.toggleKeyframeCut)}
-          >
-            {keyframeCut ? 'kc' : 'nc'}
-          </button>
-
-          <button
-            type="button"
-            title={`Set output streams. Current: ${includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams'}`}
-            onClick={withBlur(this.toggleIncludeAllStreams)}
-          >
-            {includeAllStreams ? 'all' : 'ps'}
-          </button>
-
-          <button
-            type="button"
-            title={`Delete audio? Current: ${stripAudio ? 'delete audio tracks' : 'keep audio tracks'}`}
-            onClick={withBlur(this.toggleStripAudio)}
-          >
-            {stripAudio ? 'da' : 'ka'}
-          </button>
-
-          <button
-            type="button"
-            title={`Set output rotation. Current: ${this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify'}`}
-            onClick={withBlur(this.increaseRotation)}
-          >
-            {this.isRotationSet() ? this.getRotationStr() : '-°'}
-          </button>
-
-          <button
-            type="button"
-            title={`Custom output dir (cancel to restore default). Current: ${this.getOutputDir() || 'Not set (use input dir)'}`}
-            onClick={withBlur(this.setOutputDir)}
-          >
-            {this.getOutputDir() ? 'cd' : 'id'}
-          </button>
-
-          <i
-            title="Capture frame"
-            style={{ margin: '-.4em -.2em' }}
-            className="button fa fa-camera"
-            role="button"
-            tabIndex="0"
-            onClick={this.capture}
+          <CutControls
+            background={segBgColor}
+            cutTitle={cutSegments.length > 1 ? 'Export all segments' : 'Export selection'}
+            cutClick={this.cutClick}
+            setCutStart={this.setCutStart}
+            setCutEnd={this.setCutEnd}
+            deleteSourceClick={this.deleteSourceClick}
           />
-
-          <button
-            type="button"
-            title="Capture frame format"
-            onClick={withBlur(this.toggleCaptureFormat)}
-          >
-            {captureFormat}
-          </button>
         </div>
+
+        <LeftMenu
+          autoMerge={autoMerge}
+          currentSeg={currentSeg}
+          cutSegments={cutSegments}
+          detectedFileFormat={detectedFileFormat}
+          selectableFormats={selectableFormats}
+          fileFormat={fileFormat}
+          playbackRate={playbackRate}
+          segBgColor={segBgColor}
+          selectOnChange={withBlur((e) => this.setState({ fileFormat: e.target.value }))}
+          deleteSegmentHandler={withBlur(() => this.removeCutSegment())}
+          addCutSegmentHandler={withBlur(() => this.addCutSegment())}
+          autoMergeToggle={withBlur(this.toggleAutoMerge)}
+        />
+
+        <RightMenu
+          keyframeCut={keyframeCut}
+          stripAudio={stripAudio}
+          captureFormat={captureFormat}
+          includeAllStreams={includeAllStreams}
+          rotationStr={this.isRotationSet() ? this.getRotationStr() : 'Don\'t modify'}
+          isRotationSet={this.isRotationSet()}
+          outputDir={this.getOutputDir()}
+
+          toggleKeyframeCut={withBlur(this.toggleKeyframeCut)}
+          toggleIncludeAllStreams={withBlur(this.toggleIncludeAllStreams)}
+          toggleCaptureFormat={withBlur(this.toggleCaptureFormat)}
+          toggleStripAudio={withBlur(this.toggleStripAudio)}
+          increaseRotation={withBlur(this.increaseRotation)}
+          setOutputDir={withBlur(this.setOutputDir)}
+          captureFrame={this.capture}
+        />
 
         <HelpSheet visible={!!helpVisible} />
       </div>
@@ -967,4 +834,4 @@ class App extends React.Component {
 
 ReactDOM.render(<App />, document.getElementById('app'));
 
-console.log('Version', electron.remote.app.getVersion());
+console.log('Version', remote.app.getVersion());

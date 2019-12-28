@@ -1,14 +1,11 @@
-const electron = require('electron'); // eslint-disable-line
-const defaultMenu = require('electron-default-menu');
-
-const { Menu } = electron;
-const { dialog } = electron;
+import { Menu, dialog, shell } from 'electron';
+import defaultMenu from 'electron-default-menu';
 
 const homepage = 'https://github.com/mifi/lossless-cut';
 const releasesPage = 'https://github.com/mifi/lossless-cut/releases';
 
-module.exports = (app, mainWindow, newVersion) => {
-  const menu = defaultMenu(app, electron.shell);
+export default (app, mainWindow, newVersion) => {
+  const menu = defaultMenu(app, shell);
 
   const fileMenu = {
     label: 'File',
@@ -75,7 +72,7 @@ module.exports = (app, mainWindow, newVersion) => {
       submenu: [
         {
           label: 'Learn More',
-          click() { electron.shell.openExternal(homepage); },
+          click() {shell.openExternal(homepage);},
         },
 
         ...(process.platform === 'darwin' ? [] : [{ role: 'about' }]),
@@ -89,7 +86,7 @@ module.exports = (app, mainWindow, newVersion) => {
       submenu: [
         {
           label: `Download ${newVersion}`,
-          click() { electron.shell.openExternal(releasesPage); },
+          click() {shell.openExternal(releasesPage);},
         },
       ],
     });

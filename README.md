@@ -1,10 +1,10 @@
-# LosslessCut 🎥 [![Travis](https://img.shields.io/travis/mifi/lossless-cut.svg)](https://travis-ci.org/mifi/lossless-cut) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino)
+# LosslessCut 🎥 [![Build Status](https://travis-ci.org/PartyLich/lossless-cut.svg?branch=master)](https://travis-ci.org/PartyLich/lossless-cut)
 
-Simple and ultra fast cross platform tool for lossless trimming/cutting of video and audio files. Great for saving space by rough cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. It extremely fast because it does an almost direct data copy. It is fueled by the awesome ffmpeg (included) for doing the grunt work. It also features some other lossless operations on videos.
+Simple and fast cross platform tool for lossless trimming/cutting of video and audio files. 
+
+Great for saving space by rough cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. It is extremely fast because it does an almost direct data copy. It is fueled by the awesome [**ffmpeg**](https://www.ffmpeg.org/) (included) for doing the grunt work. It also features some other lossless operations on videos.
 
 ![Demo](https://github.com/mifi/gifs/raw/master/2019-01-28-lossless-cut.gif)
-
-🆕 Shameless Plug 🆕 I made a tool for cross platform sharing of files between computer/phone over the local network: [ezshare](https://github.com/mifi/ezshare)
 
 
 ## Features
@@ -22,7 +22,7 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 
 ## Installing / running
 
-- Download [latest LosslessCut from releases](https://github.com/mifi/lossless-cut/releases)
+- Download [latest LosslessCut from releases](https://github.com/PartyLich/lossless-cut/releases)
 - Run LosslessCut app/exe
 - On macOS, to open LosslessCut.app, Right Click > Open to bypass the security warning.
 
@@ -34,7 +34,7 @@ Simple and ultra fast cross platform tool for lossless trimming/cutting of video
 ## Supported formats
 
 Since LosslessCut is based on Chromium and uses the HTML5 video player, not all ffmpeg supported formats will be supported directly.
-The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9
+The following formats/codecs should generally work: MP4, MOV, WebM, MKV, OGG, WAV, MP3, AAC, H264, Theora, VP8, VP9.
 For more information about supported formats / codecs, see https://www.chromium.org/audio-video.
 
 Unsupported files can now be remuxed (fast) or encoded (slow) to a friendly format/codec from the `File` menu. A processed version of the file (without audio) will then be created and opened in the player. The cut operation will still be performed using the original file as input, so it will be lossless. This allows for potentially opening any file that ffmpeg is able to decode.
@@ -59,7 +59,7 @@ Note: The original video files will not be modified. Instead it creates a lossle
 Press <kbd>h</kbd> To show/hide list of shortcuts
 
 ## Known issues & limitations
-- **Cutting times are not accurate and will be "rounded" to the nearest keyframe.** In the future I plan on showing keyframes in the timecale, and eventually implement a "smart cut" feature that re-encodes only the part before the keyframe. See [#126](https://github.com/mifi/lossless-cut/issues/126)
+- **Cutting times are not accurate and will be "rounded" to the nearest keyframe.** In the future I plan on showing keyframes in the timeline, and eventually implement a "smart cut" feature that re-encodes only the part before the keyframe. See [#126](https://github.com/mifi/lossless-cut/issues/126)
 - Your mileage may vary when it comes to `kc` *(keyframe cut)* vs `nc` *(normal cut)*. You may need to try both, depending on the video. GoPro 6/7 seems to require Normal Cut `nc`. See [#121](https://github.com/mifi/lossless-cut/issues/121). [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. `kc` means `-ss` *before* `-i` and `nc` means `-ss` *after* `-i`.
 - `all` *(all streams)* seems to cause wrong length in GoPro footage. Use `ps` instead. See [#146](https://github.com/mifi/lossless-cut/issues/146) and [121](https://github.com/mifi/lossless-cut/issues/121#issuecomment-522196244)
 - H265 is not yet supported natively. I have added a crude support with very low FPS preview. Alternatively convert to friendly codec (slow) from the menu, see [#88](https://github.com/mifi/lossless-cut/issues/88)
@@ -72,9 +72,9 @@ Press <kbd>h</kbd> To show/hide list of shortcuts
 
 ## Development building / running
 
-This app is built using Electron. Make sure you have at least node v8 and yarn installed. The app uses ffmpeg from PATH when developing.
+This app is built using [Electron](https://electronjs.org/). Make sure you have at least node v8 and (npm||yarn) installed. The app uses ffmpeg from PATH when developing.
 ```
-git clone https://github.com/mifi/lossless-cut.git
+git clone https://github.com/PartyLich/lossless-cut.git
 cd lossless-cut
 npm install
 ```
@@ -89,15 +89,25 @@ In another:
 npm start
 ```
 
+## Contributing
+
+Feel free to open issues, pull requests, or get in touch. 
+
+Collaboration is one of the good things about FOSS, ....right? The fork was created because there was functionality I wanted to suit my tastes, and the tool was conveniently executed with technology I had either knowledge of or interest in. I'd __love__ to have my contributions included in the upstream version, but I'm not going to wait around for that to happen. Maybe by the time anyone reads this I'll already have something merged? 🤞
+
 ## Donate 🙈
 
-This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it. Or even better [donate to ffmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a big favor 🙏
+The project will always remain free and open source, but if it's useful for you, consider supporting it. :) It will give us extra motivation to improve it. Or even better [donate to ffmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a big favor 🙏
 
-If you want to support me, press the `💜Sponsor` button on the top. If you choose to support me on github sponsors, github will support me with the same amount as you in addition 👍
+Original author:  [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino)
+
+This fork: 
 
 ## Credits
 - App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
 
 ---
 
-Made with ❤️ in 🇳🇴
+Original made with ❤️ in 🇳🇴
+
+This fork hecho en estados unidos 🇺🇸

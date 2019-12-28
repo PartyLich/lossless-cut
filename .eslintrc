@@ -1,15 +1,22 @@
 {
-  "extends": "airbnb",
+  "extends": [
+    "airbnb",
+    "partylich",
+  ],
   "parser": "babel-eslint",
   "env": {
     "node": true,
     "browser": true,
+    "es6": true
   },
   "rules": {
     "no-console": 0,
     "react/destructuring-assignment": 0,
     "react/forbid-prop-types": [1, { "forbid": ["any"] }],
     "jsx-a11y/click-events-have-key-events": 0,
+    "react/jsx-uses-vars": "error",
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+    'require-jsdoc': 'off'
   },
   "plugins": [
     "react"

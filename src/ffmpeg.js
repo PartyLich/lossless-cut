@@ -1,19 +1,22 @@
-const execa = require('execa');
-const bluebird = require('bluebird');
-const path = require('path');
-const fileType = require('file-type');
-const readChunk = require('read-chunk');
-const flatMap = require('lodash/flatMap');
-const sum = require('lodash/sum');
-const sortBy = require('lodash/sortBy');
-const readline = require('readline');
-const moment = require('moment');
-const stringToStream = require('string-to-stream');
-const trash = require('trash');
-const isDev = require('electron-is-dev');
-const os = require('os');
-
-const { formatDuration, getOutPath, transferTimestamps } = require('./util');
+import os from 'os';
+import path from 'path';
+import execa from 'execa';
+import bluebird from 'bluebird';
+import fileType from 'file-type';
+import readChunk from 'read-chunk';
+import flatMap from 'lodash/flatMap';
+import sum from 'lodash/sum';
+import sortBy from 'lodash/sortBy';
+import readline from 'readline';
+import stringToStream from 'string-to-stream';
+import trash from 'trash';
+import isDev from 'electron-is-dev';
+import {
+  formatDuration,
+  getOutPath,
+  transferTimestamps,
+  parseTimeSpan,
+} from './util';
 
 function getPath(type) {
   const platform = os.platform();
@@ -28,9 +31,10 @@ function getPath(type) {
 
   if (!subPath) throw new Error(`Unsupported platform ${platform}`);
 
+  const localPath = `node_modules/${ type }-static/bin/${ subPath }`;
   return isDev
-    ? `node_modules/${type}-static/bin/${subPath}`
-    : path.join(window.process.resourcesPath, `node_modules/${type}-static/bin/${subPath}`);
+    ? localPath
+    : path.join(window.process.resourcesPath, localPath);
 }
 
 async function runFfprobe(args) {
@@ -53,8 +57,8 @@ function handleProgress(process, cutDuration, onProgress) {
 
       const str = match[1];
       console.log(str);
-      const progressTime = moment.duration(str).asSeconds();
-      console.log(progressTime);
+      const progressTime = parseTimeSpan(str).toSeconds();
+      console.log(`progressTime: ${ progressTime }`);
       onProgress(progressTime / cutDuration);
     } catch (err) {
       console.log('Failed to parse ffmpeg progress line', err);
@@ -395,7 +399,7 @@ async function renderFrame(timestamp, filePath, rotation) {
 }
 
 
-module.exports = {
+export {
   cutMultiple,
   getFormat,
   html5ify,

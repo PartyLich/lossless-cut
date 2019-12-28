@@ -1,29 +1,43 @@
-const electron = require('electron'); // eslint-disable-line
-const isDev = require('electron-is-dev');
+import isDev from 'electron-is-dev';
+import { app, BrowserWindow, ipcMain } from 'electron';
+// const windowStateKeeper = require('electron-window-state');
+import windowStateKeeper from 'electron-window-state';
 
-const menu = require('./menu');
-
-const { checkNewVersion } = require('./update-checker');
-
-const { app } = electron;
-const { BrowserWindow } = electron;
+import menu from './menu';
+import { checkNewVersion } from './update-checker';
 
 app.setName('LosslessCut');
 
-if (!isDev) process.env.NODE_ENV = 'production';
+// Not sure what the original author was trying to do here
+// if (!isDev) process.env.NODE_ENV = 'production';
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
 function createWindow() {
+  // Remember size and position
+  const mainWindowState = windowStateKeeper({
+    defaultWidth: 800,
+    defaultHeight: 600,
+  });
+
   mainWindow = new BrowserWindow({
+    x: mainWindowState.x,
+    y: mainWindowState.y,
+    width: mainWindowState.width,
+    height: mainWindowState.height,
     darkTheme: true,
     webPreferences: {
       nodeIntegration: true,
     },
-
   });
+
+  // Let us register listeners on the window, so we can update the state
+  // automatically (the listeners will be removed when the window is closed)
+  // and restore the maximized or full screen state
+  mainWindowState.manage(mainWindow);
+
   mainWindow.loadFile(isDev ? 'index.html' : 'build/index.html');
 
   mainWindow.on('closed', () => {
@@ -60,7 +74,7 @@ app.on('activate', () => {
   }
 });
 
-electron.ipcMain.on('renderer-ready', () => {
+ipcMain.on('renderer-ready', () => {
   if (!isDev) {
     const fileToOpen = process.argv[1];
     if (fileToOpen) mainWindow.webContents.send('file-opened', [fileToOpen]);

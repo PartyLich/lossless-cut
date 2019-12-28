@@ -1,10 +1,9 @@
-const React = require('react');
-const swal = require('sweetalert2');
-const withReactContent = require('sweetalert2-react-content');
+import React from 'react';
+import swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
-const SortableFiles = require('./SortableFiles').default;
-
-const { errorToast } = require('../util');
+import SortableFiles from './SortableFiles';
+import { errorToast } from '../util';
 
 const MySwal = withReactContent(swal);
 
@@ -47,7 +46,7 @@ async function showOpenAndMergeDialog({ dialog, defaultPath, onMergeClick }) {
   showMergeDialog(filePaths, onMergeClick);
 }
 
-module.exports = {
+export {
   showMergeDialog,
   showOpenAndMergeDialog,
 };

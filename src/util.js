@@ -1,45 +1,45 @@
-const _ = require('lodash');
-const path = require('path');
-const fs = require('fs');
-const swal = require('sweetalert2');
+import path from 'path';
+import fs from 'fs';
+import padStart from 'lodash/padStart';
+import swal from 'sweetalert2';
+import randomColor from './random-color';
 
-const randomColor = require('./random-color');
-
-
-function formatDuration(_seconds, fileNameFriendly) {
-  const seconds = _seconds || 0;
+function formatDuration(seconds = 0, fileNameFriendly) {
   const minutes = seconds / 60;
   const hours = minutes / 60;
 
-  const hoursPadded = _.padStart(Math.floor(hours), 2, '0');
-  const minutesPadded = _.padStart(Math.floor(minutes % 60), 2, '0');
-  const secondsPadded = _.padStart(Math.floor(seconds) % 60, 2, '0');
-  const msPadded = _.padStart(Math.floor((seconds - Math.floor(seconds)) * 1000), 3, '0');
+  const hoursPadded = padStart(Math.floor(hours), 2, '0');
+  const minutesPadded = padStart(Math.floor(minutes % 60), 2, '0');
+  const secondsPadded = padStart(Math.floor(seconds) % 60, 2, '0');
+  const msPadded = padStart(Math.floor((seconds - Math.floor(seconds)) * 1000), 3, '0');
 
   // Be nice to filenames and use .
   const delim = fileNameFriendly ? '.' : ':';
-  return `${hoursPadded}${delim}${minutesPadded}${delim}${secondsPadded}.${msPadded}`;
+  return `${ hoursPadded }${ delim }${ minutesPadded }${ delim }${ secondsPadded }.${ msPadded }`;
 }
 
 function parseDuration(str) {
   if (!str) return undefined;
-  const match = str.trim().match(/^(\d{2}):(\d{2}):(\d{2})\.(\d{3})$/);
-  if (!match) return undefined;
-  const hours = parseInt(match[1], 10);
-  const minutes = parseInt(match[2], 10);
-  const seconds = parseInt(match[3], 10);
-  const ms = parseInt(match[4], 10);
-  if (hours > 59 || minutes > 59 || seconds > 59) return undefined;
+  try {
+    const match = str.trim().match(/^(\d{2}):(\d{2}):(\d{2})\.(\d{3})$/);
+    const hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const seconds = parseInt(match[3], 10);
+    const ms = parseInt(match[4], 10);
+    if (hours > 59 || minutes > 59 || seconds > 59) return undefined;
 
-  return ((((hours * 60) + minutes) * 60) + seconds) + (ms / 1000);
+    return ((((hours * 60) + minutes) * 60) + seconds) + (ms / 1000);
+  } catch (e) {
+    return undefined;
+  }
 }
 
 function getOutPath(customOutDir, filePath, nameSuffix) {
   const basename = path.basename(filePath);
 
   return customOutDir
-    ? path.join(customOutDir, `${basename}-${nameSuffix}`)
-    : `${filePath}-${nameSuffix}`;
+    ? path.join(customOutDir, `${ basename }-${ nameSuffix }`)
+    : `${ filePath }-${ nameSuffix }`;
 }
 
 async function transferTimestamps(inPath, outPath) {
@@ -68,34 +68,32 @@ const toast = swal.mixin({
   timer: 5000,
 });
 
-const errorToast = title => toast.fire({
+const errorToast = (title) => toast.fire({
   type: 'error',
   title,
 });
 
 async function showFfmpegFail(err) {
   console.error(err);
-  return errorToast(`Failed to run ffmpeg: ${err.stack}`);
+  return errorToast(`Failed to run ffmpeg: ${ err.stack }`);
 }
 
 function setFileNameTitle(filePath) {
   const appName = 'LosslessCut';
-  document.title = filePath ? `${appName} - ${path.basename(filePath)}` : 'appName';
+  document.title = filePath ? `${ appName } - ${ path.basename(filePath) }` : 'appName';
 }
 
-async function promptTimeOffset(inputValue) {
+async function promptTimeOffset(inputValue = '') {
   const { value } = await swal.fire({
     title: 'Set custom start time offset',
     text: 'Instead of video apparently starting at 0, you can offset by a specified value (useful for viewing/cutting videos according to timecodes)',
     input: 'text',
-    inputValue: inputValue || '',
+    inputValue,
     showCancelButton: true,
     inputPlaceholder: '00:00:00.000',
   });
 
-  if (value === undefined) {
-    return undefined;
-  }
+  if (value === undefined) return undefined;
 
   const duration = parseDuration(value);
   // Invalid, try again
@@ -104,11 +102,35 @@ async function promptTimeOffset(inputValue) {
   return duration;
 }
 
-function generateColor() {
-  return randomColor(1, 0.95);
-}
+const generateColor = () => randomColor(1, 0.95);
 
-module.exports = {
+/**
+ * parse ASP.NET style time span string
+ * @param  {string} str time span string
+ * @return {object}
+ */
+const parseTimeSpan = (str) => {
+  let [, hr, min, sec] = str.match(/(\d{2}):(\d{2}):(\d{2}.*)/);
+  hr = parseInt(hr, 10);
+  min = parseInt(min, 10);
+  sec = parseFloat(sec);
+
+  return {
+    hr,
+    min,
+    sec,
+
+    /**
+     * convert to seconds
+     * @return {number}
+     */
+    toSeconds() {
+      return (hr * 3600) + (min * 60) + sec;
+    },
+  };
+};
+
+export {
   formatDuration,
   parseDuration,
   getOutPath,
@@ -120,4 +142,5 @@ module.exports = {
   setFileNameTitle,
   promptTimeOffset,
   generateColor,
+  parseTimeSpan,
 };
