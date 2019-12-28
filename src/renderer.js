@@ -697,7 +697,11 @@ class App extends React.Component {
                   key={seg.uuid}
                   segNum={i}
                   color={seg.color}
-                  onSegClick={(currentSegNew) => this.setState({ currentSeg: currentSegNew })}
+                  onSegClick={
+                    (currentSegNew) => this.setState({
+                      currentSeg: currentSegNew,
+                    })
+                  }
                   isActive={i === currentSeg}
                   isCutRangeValid={this.isCutRangeValid(i)}
                   duration={duration}
