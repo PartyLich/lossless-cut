@@ -1,32 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import './ProgressIndicator.scss';
 
-const indicatorStyle = {
-  color: 'white',
-  background: 'rgba(0, 0, 0, 0.3)',
-  borderRadius: '.5em',
-  margin: '1em',
-  padding: '.2em .5em',
-  position: 'absolute',
-  zIndex: 1,
-  top: 0,
-  left: 0,
-};
 
-const textStyle = {
-  color: 'rgba(255, 255, 255, 0.7)',
-  paddingLeft: '.4em',
-};
+const className = 'ProgressIndicator';
 
 const ProgressIndicator = ({ cutProgress }) => (
-  <div style={indicatorStyle}>
+  <div className={className}>
     <i
       className="fa fa-cog fa-spin fa-3x fa-fw"
       style={{ verticalAlign: 'middle', width: '1em', height: '1em' }}
     />
     {cutProgress != null && (
-      <span style={textStyle}>
+      <span className={`${ className }__cutProgress`}>
         {`${ Math.floor(cutProgress * 100) } %`}
       </span>
     )}
