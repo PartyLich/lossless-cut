@@ -11,7 +11,7 @@
     "icon-gen": "mkdir -p icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
     "clean": "rm -rf build",
     "build:dev": "webpack --progress --config webpack.config.js",
-    "build:prod": "npm run clean && NODE_ENV=production webpack --progress --config webpack.config.js",
+    "build:prod": "npm run clean && NODE_ENV=production webpack -p --progress --config webpack.config.js",
     "postinstall": "electron-builder install-app-deps",
     "pack-mac": "electron-builder --mac",
     "prepack-mac": "npm run build:prod",
