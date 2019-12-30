@@ -1,0 +1,10 @@
+.CutTimeInput {
+  width: 8em;
+
+  &--start {
+    text-align: right;
+  }
+  &--end {
+    text-align: left;
+  }
+}

@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { parseDuration, formatDuration } from '../util';
+import './CutTimeInput.scss';
 
+
+const baseClassName = 'CutTimeInput';
 
 const CutTimeInput = ({
   type,
@@ -11,10 +14,7 @@ const CutTimeInput = ({
   getApparentCutTime,
 }) => {
   const [manualTime, setManualTime] = useState('');
-  const cutTimeInputStyle = {
-    width: '8em',
-    textAlign: (type === 'start') ? 'right' : 'left',
-  };
+  const className = `${ baseClassName } ${ baseClassName }--${ type }`;
 
   const isCutTimeManualSet = () => manualTime !== '';
 
@@ -34,8 +34,8 @@ const CutTimeInput = ({
 
   return (
     <input
+      className={className}
       style={{
-        ...cutTimeInputStyle,
         color: isCutTimeManualSet() ? '#dc1d1d' : undefined,
       }}
       type="text"
