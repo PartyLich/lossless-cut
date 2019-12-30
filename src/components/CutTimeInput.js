@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import { parseDuration, formatDuration } from '../util';
@@ -19,11 +19,14 @@ const CutTimeInput = ({
   });
   const [caret, setCaret] = useState(0);
   const className = `${ baseClassName } ${ baseClassName }--${ type }`;
-  let input = React.createRef();
+  const inputEl = useRef(null);
 
-  useEffect(() => {
-    input.setSelectionRange(caret, caret);
-  });
+  useEffect(
+      () => {
+        inputEl.current.setSelectionRange(caret, caret);
+      },
+      [caret],
+  );
 
   const addChar = (oldText, newText, i) => {
     const diff = newText.length - oldText.length;
@@ -47,7 +50,7 @@ const CutTimeInput = ({
     const dotPositions = [2, 5, 8];
     let { timeString, isManual } = timeState;
     let newTimeString = text;
-    let i = input.selectionStart;
+    let i = inputEl.current.selectionStart;
 
     if (text.length > timeString.length) {
       newTimeString = addChar(timeString, text, i);
@@ -76,9 +79,6 @@ const CutTimeInput = ({
   };
 
   const cutTime = getApparentCutTime();
-  const setRef = (node) => {
-    input = node;
-  };
 
   return (
     <input
@@ -87,7 +87,7 @@ const CutTimeInput = ({
         color: timeState.isManual ? '#dc1d1d' : undefined,
       }}
       type="text"
-      ref={setRef}
+      ref={inputEl}
       onChange={(e) => handleCutTimeInput(e.target.value)}
       value={timeState.isManual
         ? timeState.timeString
