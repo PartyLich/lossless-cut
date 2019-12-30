@@ -7,16 +7,16 @@ import {
 } from 'react-sortable-hoc';
 import { basename } from 'path';
 
-const rowStyle = {
-  padding: 5, fontSize: 14, margin: '7px 0', boxShadow: '0 0 5px 0px rgba(0,0,0,0.3)', overflowY: 'auto', whiteSpace: 'nowrap',
-};
+import './SortableItem.scss';
+
 
 const SortableItem = sortableElement(({ value, sortIndex }) => (
-  <div style={rowStyle} title={value}>
+  <div className="SortableItem" title={value}>
     {sortIndex + 1}
     {'. '}
     {basename(value)}
-  </div>));
+  </div>
+));
 
 const SortableContainer = sortableContainer(({ items }) => (
   <div>
