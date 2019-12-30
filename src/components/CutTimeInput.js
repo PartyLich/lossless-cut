@@ -13,19 +13,25 @@ const CutTimeInput = ({
   setCutTime,
   getApparentCutTime,
 }) => {
-  const [manualTime, setManualTime] = useState('');
+  const [timeState, setTimeState] = useState({
+    timeString: formatDuration(0),
+    isManual: false,
+  });
   const className = `${ baseClassName } ${ baseClassName }--${ type }`;
 
-  const isCutTimeManualSet = () => manualTime !== '';
-
   const handleCutTimeInput = (text) => {
-    // Allow the user to erase
-    if (text.length === 0) return setManualTime('');
-
     const time = parseDuration(text);
-    if (time === undefined) return setManualTime(text);
+    if (time === undefined) {
+      return setTimeState({
+        timeString: text,
+        isManual: true,
+      });
+    }
 
-    setManualTime('');
+    setTimeState({
+      timeString: formatDuration(time + startTimeOffset),
+      isManual: false,
+    });
     setCutTime(type, time - startTimeOffset);
     return null; // no idea what the lint error is on about
   };
@@ -36,12 +42,12 @@ const CutTimeInput = ({
     <input
       className={className}
       style={{
-        color: isCutTimeManualSet() ? '#dc1d1d' : undefined,
+        color: timeState.isManual ? '#dc1d1d' : undefined,
       }}
       type="text"
       onChange={(e) => handleCutTimeInput(e.target.value)}
-      value={isCutTimeManualSet()
-        ? manualTime
+      value={timeState.isManual
+        ? timeState.timeString
         : formatDuration(cutTime + startTimeOffset)
       }
     />
