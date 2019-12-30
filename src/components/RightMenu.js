@@ -21,7 +21,7 @@ const RightMenu = ({
   setOutputDir,
   captureFrame,
 }) => (
-  <div className="right-menu">
+  <div className="RightMenu">
     <button
       type="button"
       title={`Cut mode ${ keyframeCut ? 'nearest keyframe cut' : 'normal cut' }`}
