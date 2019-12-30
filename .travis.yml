@@ -1,8 +1,12 @@
 branches:
   only:
     - master
-    - travis-debug
+    - dev
     - /^v.*$/
+    - /^release/*$/
+    - /^hotfix/*$/
+    - travis-debug
+    - fix/travis-build
 
 os: osx
 osx_image: xcode11.2
