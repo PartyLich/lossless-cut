@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   sortableContainer,
@@ -26,41 +26,29 @@ const SortableContainer = sortableContainer(({ items }) => (
   </div>
 ));
 
-class SortableFiles extends PureComponent {
-  constructor(props) {
-    super(props);
+const SortableFiles = (props) => {
+  const [items, setItems] = useState(props.items);
+  const { helperContainer } = props;
 
-    this.state = {
-      items: props.items,
-    };
-  }
-
-  onSortEnd = ({ oldIndex, newIndex }) => {
-    const { items } = this.state;
-    const { onChange } = this.props;
+  const onSortEnd = ({ oldIndex, newIndex }) => {
     const newItems = arrayMove(items, oldIndex, newIndex);
-    this.setState({ items: newItems });
-    onChange(newItems);
+    setItems(newItems);
+    props.onChange(newItems);
   };
 
-  render() {
-    const { helperContainer } = this.props;
-    const { items } = this.state;
-
-    return (
-      <div>
-        <div><b>Sort your files for merge</b></div>
-        <SortableContainer
-          items={items}
-          onSortEnd={this.onSortEnd}
-          helperContainer={helperContainer}
-          getContainer={() => helperContainer().parentNode}
-          helperClass="dragging-helper-class"
-        />
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <div><b>Sort your files for merge</b></div>
+      <SortableContainer
+        items={items}
+        onSortEnd={onSortEnd}
+        helperContainer={helperContainer}
+        getContainer={() => helperContainer().parentNode}
+        helperClass="dragging-helper-class"
+      />
+    </div>
+  );
+};
 
 SortableFiles.propTypes = {
   onChange: PropTypes.func.isRequired,
