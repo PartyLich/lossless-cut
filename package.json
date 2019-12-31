@@ -1,6 +1,6 @@
 {
   "name": "lossless-cut",
-  "productName": "LosslessCut",
+  "productName": "losslessCut",
   "description": "Lossless video editor",
   "copyright": "Copyright © 2019 ${author}",
   "version": "2.7.3",
