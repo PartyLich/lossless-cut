@@ -11,19 +11,8 @@ const outputPath = (dev)
 
 // Webpack Configuration
 const config = {
-  target: 'electron-renderer',
   mode: dev ? 'development' : 'production',
   context: path.join(__dirname, 'src'),
-  // Entry
-  entry: {
-    renderer: './renderer.js',
-    vendor: [
-      'react',
-      'react-dom',
-      'lodash',
-      'bluebird',
-    ],
-  },
   // Output
   output: {
     path: outputPath,
@@ -83,9 +72,6 @@ const config = {
       },
     ],
   },
-  // Plugins
-  // plugins: [
-  // ],
   optimization: {
     splitChunks: {
       cacheGroups: {
@@ -108,6 +94,8 @@ const rendererConfig = Object.assign({}, config, {
     vendor: [
       'react',
       'react-dom',
+      'lodash',
+      'bluebird',
     ],
   },
   plugins: [
