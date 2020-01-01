@@ -1,5 +1,6 @@
 import combineReducers from './combineReducers';
 import cutSegments from './cutSegments';
+import globalState from './globalState';
 
 
 const logger = (state = null, { type, payload } = {}) => {
@@ -14,6 +15,7 @@ Payload: ${ JSON.stringify(payload) }`;
 };
 
 const rootReducer = combineReducers({
+  globalState,
   cutSegments,
   logger,
 });
