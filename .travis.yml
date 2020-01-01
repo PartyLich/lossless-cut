@@ -13,5 +13,6 @@ node_js:
 
 script:
   - |
+    npm test
     npm run icon-gen &&
     npm run release -- -mwl -c.snap.publish=github
