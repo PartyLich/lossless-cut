@@ -42,6 +42,7 @@ import {
   LeftMenu,
   Player,
   ProgressIndicator,
+  Provider,
   RightMenu,
   TimelineSeg,
 } from './components';
@@ -833,6 +834,11 @@ class App extends React.Component {
   }
 }
 
-ReactDOM.render(<App />, document.getElementById('app'));
+ReactDOM.render(
+  <Provider>
+    <App />
+  </Provider>,
+  document.getElementById('app')
+);
 
 console.log('Version', remote.app.getVersion());
