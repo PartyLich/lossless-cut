@@ -1,8 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useContext,
+  useCallback,
+} from 'react';
 import PropTypes from 'prop-types';
 
 import { parseDuration, formatDuration } from '../util';
 import './CutTimeInput.scss';
+import { DispatchContext } from './Provider';
+import { setCutTime as asetCutTime } from '../reducers/cutSegments';
 
 
 const addChar = (oldText, newText, i) => {
@@ -32,6 +40,7 @@ const CutTimeInput = ({
   apparentCutTime,
 }) => {
   const formattedDuration = formatDuration(apparentCutTime + startTimeOffset);
+  const dispatch = useContext(DispatchContext);
   const [timeState, setTimeState] = useState({
     timeString: formattedDuration,
     isManual: false,
@@ -47,7 +56,7 @@ const CutTimeInput = ({
       [caret],
   );
 
-  const handleCutTimeInput = (text) => {
+  const handleCutTimeInput = useCallback((text) => {
     const dotPositions = [2, 5, 8];
     let { timeString, isManual } = timeState;
     let newTimeString = text;
@@ -67,6 +76,7 @@ const CutTimeInput = ({
     if (time !== undefined) {
       timeString = formatDuration(time + startTimeOffset);
       isManual = false;
+      dispatch(asetCutTime(type, time - startTimeOffset));
       setCutTime(type, time - startTimeOffset);
     } else {
       timeString = text;
@@ -77,7 +87,7 @@ const CutTimeInput = ({
       timeString,
       isManual,
     });
-  };
+  });
 
   return (
     <input
