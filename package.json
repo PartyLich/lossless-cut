@@ -24,7 +24,7 @@
     "gifify": "gifify -p 405:299 -r 5@3 Untitled.mov-00.00.00.971-00.00.19.780.mp4",
     "lint": "eslint --ext .jsx --ext .js ./src",
     "lint:css": "stylelint src/**/*.scss --cache",
-    "test": "babel-tape-runner test/*.test.js"
+    "test": "babel-tape-runner test/*.test.js | faucet"
   },
   "author": {
     "name": "Mikael Finstad",
@@ -85,6 +85,7 @@
     "electron-is-dev": "^0.1.2",
     "electron-window-state": "^4.1.1",
     "execa": "^0.5.1",
+    "faucet": "0.0.1",
     "ffmpeg-static": "^2.7.0",
     "ffprobe-static": "^3.0.0",
     "file-type": "^12.4.0",
