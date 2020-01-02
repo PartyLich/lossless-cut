@@ -132,7 +132,6 @@ const getInitialLocalState = () => ({
 });
 
 const globalState = {
-  captureFormat: 'jpeg',
   customOutDir: undefined,
   keyframeCut: true,
   autoMerge: false,
@@ -444,8 +443,7 @@ class App extends React.Component {
   }
 
   toggleCaptureFormat = () => {
-    const isPng = this.state.captureFormat === 'png';
-    this.setState({ captureFormat: isPng ? 'jpeg' : 'png' });
+    this.dispatch(globalStateReducer.toggleCaptureFormat());
   }
 
   toggleIncludeAllStreams = () => {
@@ -614,8 +612,13 @@ class App extends React.Component {
 
   capture = async () => {
     const {
-      filePath, customOutDir: outputDir, currentTime, captureFormat,
+      filePath,
+      customOutDir: outputDir,
+      currentTime,
     } = this.state;
+    const {
+      captureFormat,
+    } = this.props.store.globalState;
     if (!filePath) return;
     try {
       await captureFrame(outputDir, filePath, getVideo(), currentTime, captureFormat);
@@ -670,7 +673,6 @@ class App extends React.Component {
       detectedFileFormat,
       playbackRate,
       keyframeCut,
-      captureFormat,
       helpVisible,
       currentSeg,
       cutSegments,
@@ -679,6 +681,7 @@ class App extends React.Component {
     const {
       includeAllStreams,
       stripAudio,
+      captureFormat,
     } = this.props.store.globalState;
 
     const selectableFormats = ['mov', 'mp4', 'matroska'].filter((f) => f !== detectedFileFormat);
