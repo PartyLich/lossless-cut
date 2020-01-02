@@ -131,9 +131,6 @@ const getInitialLocalState = () => ({
   rotationPreviewRequested: false,
 });
 
-const globalState = {
-  customOutDir: undefined,
-};
 
 class App extends React.Component {
   constructor(props) {
@@ -144,7 +141,6 @@ class App extends React.Component {
 
     this.state = {
       ...getInitialLocalState(),
-      ...globalState,
     };
 
     this.queue = new PQueue({ concurrency: 1 });
@@ -185,7 +181,7 @@ class App extends React.Component {
         if (html5FriendlyPath) {
           this.setState({ userHtml5ified: true });
         } else if (!doesPlayerSupportFile(streams)) {
-          const { customOutDir } = this.state;
+          const { customOutDir } = this.props.store.globalState;
           const html5ifiedDummyPath = getOutPath(customOutDir, filePath, 'html5ified-dummy.mkv');
           await html5ifyDummy(filePath, html5ifiedDummyPath);
           this.setState({ html5FriendlyPath: html5ifiedDummyPath });
@@ -208,7 +204,8 @@ class App extends React.Component {
     });
 
     ipcRenderer.on('html5ify', async (event, encodeVideo) => {
-      const { filePath, customOutDir } = this.state;
+      const { filePath } = this.state;
+      const { customOutDir } = this.props.store.globalState;
       if (!filePath) return;
 
       try {
@@ -242,7 +239,8 @@ class App extends React.Component {
     });
 
     ipcRenderer.on('extract-all-streams', async () => {
-      const { filePath, customOutDir } = this.state;
+      const { filePath } = this.state;
+      const { customOutDir } = this.props.store.globalState;
       if (!filePath) return;
 
       try {
@@ -324,9 +322,10 @@ class App extends React.Component {
 
   setOutputDir = async () => {
     const { filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
-    this.setState({
-      customOutDir: (filePaths && filePaths.length === 1) ? filePaths[0] : undefined,
-    });
+    const customOutDir = (filePaths && filePaths.length === 1)
+      ? filePaths[0]
+      : undefined;
+    this.dispatch(globalStateReducer.setCustomDir(customOutDir));
   }
 
   getFileUri() {
@@ -335,7 +334,8 @@ class App extends React.Component {
   }
 
   getOutputDir() {
-    const { customOutDir, filePath } = this.state;
+    const { filePath } = this.state;
+    const { customOutDir } = this.props.store.globalState;
     if (customOutDir) return customOutDir;
     if (filePath) return path.dirname(filePath);
     return undefined;
@@ -394,7 +394,7 @@ class App extends React.Component {
     try {
       this.setState({ working: true });
 
-      const { customOutDir } = this.state;
+      const { customOutDir } = this.props.store.globalState;
 
       // console.log('merge', paths);
       await mergeAnyFiles({ customOutDir, paths });
@@ -541,11 +541,14 @@ class App extends React.Component {
 
   cutClick = async () => {
     const {
-      filePath, customOutDir, fileFormat, duration,
+      filePath,
+      fileFormat,
+      duration,
       working, cutSegments,
     } = this.state;
     const {
       autoMerge,
+      customOutDir,
       includeAllStreams,
       keyframeCut,
       stripAudio,
