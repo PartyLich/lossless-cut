@@ -115,7 +115,6 @@ const getInitialLocalState = () => ({
   filePath: '', // Setting video src="" prevents memory leak in chromium
   html5FriendlyPath: undefined,
   userHtml5ified: false,
-  playing: false,
   currentTime: undefined,
   duration: undefined,
   cutSegments: [createSegment()],
@@ -285,7 +284,7 @@ class App extends React.Component {
   }
 
   onPlayingChange(playing) {
-    this.setState({ playing });
+    this.dispatch(localStateReducer.setPlaying(playing));
 
     if (!playing) {
       getVideo().playbackRate = 1;
@@ -529,7 +528,7 @@ class App extends React.Component {
 
   playCommand = () => {
     const video = getVideo();
-    if (this.state.playing) return video.pause();
+    if (this.props.store.localState.playing) return video.pause();
 
     return video.play().catch((err) => {
       console.log(err);
@@ -649,7 +648,7 @@ class App extends React.Component {
 
   changePlaybackRate(dir) {
     const video = getVideo();
-    if (!this.state.playing) {
+    if (!this.props.store.playing) {
       video.playbackRate = 0.5; // dir * 0.5;
       video.play();
     } else {
@@ -687,7 +686,6 @@ class App extends React.Component {
       duration: durationRaw,
       cutProgress,
       currentTime,
-      playing,
       fileFormat,
       detectedFileFormat,
       playbackRate,
@@ -703,6 +701,7 @@ class App extends React.Component {
       captureFormat,
     } = this.props.store.globalState;
     const {
+      playing,
       working,
     } = this.props.store.localState;
 
