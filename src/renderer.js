@@ -12,6 +12,8 @@ import PQueue from 'p-queue';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+
 import {
   cutMultiple,
   extractAllStreams,
@@ -45,6 +47,7 @@ import {
   Provider,
   RightMenu,
   TimelineSeg,
+  withStore,
 } from './components';
 
 // Stylesheets
@@ -138,6 +141,9 @@ const globalState = {
 class App extends React.Component {
   constructor(props) {
     super(props);
+
+    this.store = props.store;
+    this.dispatch = props.dispatch;
 
     this.state = {
       ...getInitialLocalState(),
@@ -834,9 +840,14 @@ class App extends React.Component {
   }
 }
 
+App.propTypes = {
+  store: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
+};
+
 ReactDOM.render(
   <Provider>
-    <App />
+    {withStore(App)}
   </Provider>,
   document.getElementById('app')
 );
