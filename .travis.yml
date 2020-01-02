@@ -2,8 +2,8 @@ branches:
   only:
     - master
     - dev
-    - /^release/*$/
-    - /^hotfix/*$/
+    - /^release\/.*$/
+    - /^hotfix\/.*$/
 
 os: osx
 osx_image: xcode11.2
@@ -11,8 +11,18 @@ language: node_js
 node_js:
   - 12
 
-script:
-  - |
-    npm test
-    npm run icon-gen &&
-    npm run release -- -mwl -c.snap.publish=github
+jobs:
+  include:
+    - stage: test
+      script:
+        - npm test
+    - stage: deploy
+      script:
+        - |
+          npm run icon-gen &&
+          npm run release -- -mwl -c.snap.publish=github
+
+stages:
+  - name: test
+  - name: deploy
+    if: branch =~ /^(master|release\/).*$/
