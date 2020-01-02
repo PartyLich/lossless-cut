@@ -52,6 +52,7 @@ const CutTimeInput = ({
     let { timeString, isManual } = timeState;
     let newTimeString = text;
     let i = inputEl.current.selectionStart;
+    if (!isManual) timeString = formattedDuration;
 
     if (text.length > timeString.length) {
       newTimeString = addChar(timeString, text, i);
