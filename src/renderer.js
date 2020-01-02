@@ -145,6 +145,8 @@ class App extends React.Component {
 
     this.queue = new PQueue({ concurrency: 1 });
 
+    this.setCutTime = this.setCutTime.bind(this);
+
     const load = async (filePath, html5FriendlyPath) => {
       const { working } = this.state;
 
@@ -730,7 +732,7 @@ class App extends React.Component {
               <CutTimeInput
                 type="start"
                 startTimeOffset={this.state.startTimeOffset}
-                setCutTime={this.setCutTime.bind(this)}
+                setCutTime={this.setCutTime}
                 apparentCutTime={this.getApparentCutStartTime()}
               />
               <JumpCutButton
@@ -764,7 +766,7 @@ class App extends React.Component {
               <CutTimeInput
                 type="end"
                 startTimeOffset={this.state.startTimeOffset}
-                setCutTime={this.setCutTime.bind(this)}
+                setCutTime={this.setCutTime}
                 apparentCutTime={this.getApparentCutEndTime()}
               />
               <JumpCutButton
