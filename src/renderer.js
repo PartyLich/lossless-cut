@@ -38,6 +38,7 @@ import {
   CutControls,
   CutTimeInput,
   DragDropField,
+  JumpCutButton,
   LeftMenu,
   Player,
   ProgressIndicator,
@@ -732,12 +733,9 @@ class App extends React.Component {
                 setCutTime={this.setCutTime.bind(this)}
                 apparentCutTime={this.getApparentCutStartTime()}
               />
-              <i
-                className="fa fa-step-backward jump-cut-button jump-cut-button--start"
-                title="Jump to cut start"
-                role="button"
-                tabIndex="0"
-                onClick={withBlur(this.jumpCutStart)}
+              <JumpCutButton
+                type="start"
+                clickHandler={withBlur(this.jumpCutStart)}
               />
             </div>
 
@@ -769,12 +767,9 @@ class App extends React.Component {
                 setCutTime={this.setCutTime.bind(this)}
                 apparentCutTime={this.getApparentCutEndTime()}
               />
-              <i
-                className="fa fa-step-forward jump-cut-button jump-cut-button--end"
-                title="Jump to cut end"
-                role="button"
-                tabIndex="0"
-                onClick={withBlur(this.jumpCutEnd)}
+              <JumpCutButton
+                type="end"
+                clickHandler={withBlur(this.jumpCutEnd)}
               />
             </div>
 
