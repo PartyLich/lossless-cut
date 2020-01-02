@@ -132,7 +132,6 @@ const getInitialLocalState = () => ({
 });
 
 const globalState = {
-  stripAudio: false,
   captureFormat: 'jpeg',
   customOutDir: undefined,
   keyframeCut: true,
@@ -453,7 +452,9 @@ class App extends React.Component {
     this.dispatch(globalStateReducer.toggleAllStreams());
   }
 
-  toggleStripAudio = () => this.setState(({ stripAudio }) => ({ stripAudio: !stripAudio }));
+  toggleStripAudio = () => {
+    this.dispatch(globalStateReducer.toggleStripAudio());
+  };
 
   toggleKeyframeCut = () => this.setState(({ keyframeCut }) => ({ keyframeCut: !keyframeCut }));
 
@@ -541,13 +542,13 @@ class App extends React.Component {
   cutClick = async () => {
     const {
       filePath, customOutDir, fileFormat, duration,
-      stripAudio,
       keyframeCut,
       autoMerge,
       working, cutSegments,
     } = this.state;
     const {
       includeAllStreams,
+      stripAudio,
     } = this.props.store.globalState;
 
     if (working) {
@@ -659,13 +660,25 @@ class App extends React.Component {
 
   render() {
     const {
-      working, filePath, duration: durationRaw, cutProgress, currentTime, playing,
-      fileFormat, detectedFileFormat, playbackRate, keyframeCut,
-      stripAudio,
-      captureFormat, helpVisible, currentSeg, cutSegments, autoMerge,
+      working,
+      filePath,
+      duration: durationRaw,
+      cutProgress,
+      currentTime,
+      playing,
+      fileFormat,
+      detectedFileFormat,
+      playbackRate,
+      keyframeCut,
+      captureFormat,
+      helpVisible,
+      currentSeg,
+      cutSegments,
+      autoMerge,
     } = this.state;
     const {
       includeAllStreams,
+      stripAudio,
     } = this.props.store.globalState;
 
     const selectableFormats = ['mov', 'mp4', 'matroska'].filter((f) => f !== detectedFileFormat);
