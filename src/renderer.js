@@ -56,6 +56,7 @@ import './main.scss';
 import './components/TimelineWrapper.scss';
 
 import * as globalStateReducer from './reducers/globalState';
+import * as localStateReducer from './reducers/localState';
 import * as cutSegmentsReducer from './reducers/cutSegments';
 
 
@@ -111,7 +112,6 @@ function doesPlayerSupportFile(streams) {
 }
 
 const getInitialLocalState = () => ({
-  working: false,
   filePath: '', // Setting video src="" prevents memory leak in chromium
   html5FriendlyPath: undefined,
   userHtml5ified: false,
@@ -149,7 +149,7 @@ class App extends React.Component {
     this.setCutTime = this.setCutTime.bind(this);
 
     const load = async (filePath, html5FriendlyPath) => {
-      const { working } = this.state;
+      const { working } = this.props.store.localState;
 
       console.log('Load', { filePath, html5FriendlyPath });
       if (working) {
@@ -158,8 +158,7 @@ class App extends React.Component {
       }
 
       this.resetState();
-
-      this.setState({ working: true });
+      this.dispatch(localStateReducer.setWorking(true));
 
       try {
         const fileFormat = await getFormat(filePath);
@@ -195,7 +194,7 @@ class App extends React.Component {
         }
         showFfmpegFail(err);
       } finally {
-        this.setState({ working: false });
+        this.dispatch(localStateReducer.setWorking(false));
       }
     };
 
@@ -210,15 +209,15 @@ class App extends React.Component {
       if (!filePath) return;
 
       try {
-        this.setState({ working: true });
+        this.dispatch(localStateReducer.setWorking(true));
         const html5ifiedPath = getOutPath(customOutDir, filePath, 'html5ified.mp4');
         await html5ify(filePath, html5ifiedPath, encodeVideo);
-        this.setState({ working: false });
+        this.dispatch(localStateReducer.setWorking(false));
         load(filePath, html5ifiedPath);
       } catch (err) {
         errorToast('Failed to html5ify file');
         console.error('Failed to html5ify file', err);
-        this.setState({ working: false });
+        this.dispatch(localStateReducer.setWorking(false));
       }
     });
 
@@ -245,13 +244,13 @@ class App extends React.Component {
       if (!filePath) return;
 
       try {
-        this.setState({ working: true });
+        this.dispatch(localStateReducer.setWorking(true));
         await extractAllStreams({ customOutDir, filePath });
-        this.setState({ working: false });
+        this.dispatch(localStateReducer.setWorking(false));
       } catch (err) {
         errorToast('Failed to extract all streams');
         console.error('Failed to extract all streams', err);
-        this.setState({ working: false });
+        this.dispatch(localStateReducer.setWorking(false));
       }
     });
 
@@ -400,7 +399,7 @@ class App extends React.Component {
 
   mergeFiles = async (paths) => {
     try {
-      this.setState({ working: true });
+      this.dispatch(localStateReducer.setWorking(true));
 
       const { customOutDir } = this.props.store.globalState;
 
@@ -410,7 +409,7 @@ class App extends React.Component {
       errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
       console.error('Failed to merge files', err);
     } finally {
-      this.setState({ working: false });
+      this.dispatch(localStateReducer.setWorking(false));
     }
   }
 
@@ -541,11 +540,12 @@ class App extends React.Component {
   }
 
   deleteSourceClick = async () => {
+    const { working } = this.props.store.localState;
     // eslint-disable-next-line no-alert
-    if (this.state.working || !window.confirm('Are you sure you want to move the source file to trash?')) return;
+    if (working || !window.confirm('Are you sure you want to move the source file to trash?')) return;
     const { filePath } = this.state;
 
-    this.setState({ working: true });
+    this.dispatch(localStateReducer.setWorking(true));
     await trash(filePath);
     this.resetState();
   }
@@ -555,7 +555,7 @@ class App extends React.Component {
       filePath,
       fileFormat,
       duration,
-      working, cutSegments,
+      cutSegments,
     } = this.state;
     const {
       autoMerge,
@@ -564,6 +564,9 @@ class App extends React.Component {
       keyframeCut,
       stripAudio,
     } = this.props.store.globalState;
+    const {
+      working,
+    } = this.props.store.localState;
 
     if (working) {
       errorToast('I\'m busy');
@@ -581,7 +584,7 @@ class App extends React.Component {
     }
 
     try {
-      this.setState({ working: true });
+      this.dispatch(localStateReducer.setWorking(true));
 
       const segments = cutSegments.map((seg, i) => ({
         cutFrom: this.getApparentCutStartTime(i),
@@ -622,7 +625,7 @@ class App extends React.Component {
 
       showFfmpegFail(err);
     } finally {
-      this.setState({ working: false });
+      this.dispatch(localStateReducer.setWorking(false));
     }
   }
 
@@ -660,6 +663,7 @@ class App extends React.Component {
     video.currentTime = 0;
     video.playbackRate = 1;
     this.setState(getInitialLocalState());
+    this.dispatch(localStateReducer.resetLocalState());
     setFileNameTitle();
   }
 
@@ -679,7 +683,6 @@ class App extends React.Component {
 
   render() {
     const {
-      working,
       filePath,
       duration: durationRaw,
       cutProgress,
@@ -699,6 +702,9 @@ class App extends React.Component {
       currentSeg,
       captureFormat,
     } = this.props.store.globalState;
+    const {
+      working,
+    } = this.props.store.localState;
 
     const selectableFormats = ['mov', 'mp4', 'matroska'].filter((f) => f !== detectedFileFormat);
 
