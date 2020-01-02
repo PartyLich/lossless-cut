@@ -56,6 +56,7 @@ import './main.scss';
 import './components/TimelineWrapper.scss';
 
 import * as globalStateReducer from './reducers/globalState';
+import * as cutSegmentsReducer from './reducers/cutSegments';
 
 
 const { dialog } = remote;
@@ -118,7 +119,6 @@ const getInitialLocalState = () => ({
   currentTime: undefined,
   duration: undefined,
   cutSegments: [createSegment()],
-  currentSeg: 0,
   cutStartTimeManual: undefined,
   cutEndTimeManual: undefined,
   fileFormat: undefined,
@@ -145,6 +145,7 @@ class App extends React.Component {
 
     this.queue = new PQueue({ concurrency: 1 });
 
+    this.setCurrentSeg = this.setCurrentSeg.bind(this);
     this.setCutTime = this.setCutTime.bind(this);
 
     const load = async (filePath, html5FriendlyPath) => {
@@ -354,7 +355,8 @@ class App extends React.Component {
   }
 
   getCutSeg(i) {
-    const { currentSeg, cutSegments } = this.state;
+    const { cutSegments } = this.state;
+    const { currentSeg } = this.props.store.cutSegments;
     return cutSegments[i !== undefined ? i : currentSeg];
   }
 
@@ -367,10 +369,16 @@ class App extends React.Component {
   }
 
   setCutTime(type, time) {
-    const { currentSeg, cutSegments } = this.state;
+    const { cutSegments } = this.state;
+    const { currentSeg } = this.props.store.cutSegments;
+
     const cloned = clone(cutSegments);
     cloned[currentSeg][type] = time;
     this.setState({ cutSegments: cloned });
+  }
+
+  setCurrentSeg(i) {
+    this.dispatch(cutSegmentsReducer.setCurrentSeg(i));
   }
 
   getApparentCutStartTime(i) {
@@ -480,11 +488,13 @@ class App extends React.Component {
     ];
 
     const currentSegNew = cutSegmentsNew.length - 1;
-    this.setState({ currentSeg: currentSegNew, cutSegments: cutSegmentsNew });
+    this.setState({ cutSegments: cutSegmentsNew });
+    this.dispatch(cutSegmentsReducer.setCurrentSeg(currentSegNew));
   }
 
   removeCutSegment = () => {
-    const { currentSeg, cutSegments } = this.state;
+    const { cutSegments } = this.state;
+    const { currentSeg } = this.props.store.cutSegments;
 
     if (cutSegments.length < 2) return;
 
@@ -492,7 +502,8 @@ class App extends React.Component {
     cutSegmentsNew.splice(currentSeg, 1);
 
     const currentSegNew = Math.min(currentSeg, cutSegmentsNew.length - 1);
-    this.setState({ currentSeg: currentSegNew, cutSegments: cutSegmentsNew });
+    this.setState({ cutSegments: cutSegmentsNew });
+    this.dispatch(cutSegmentsReducer.setCurrentSeg(currentSegNew));
   }
 
   jumpCutStart = () => {
@@ -678,7 +689,6 @@ class App extends React.Component {
       detectedFileFormat,
       playbackRate,
       helpVisible,
-      currentSeg,
       cutSegments,
     } = this.state;
     const {
@@ -686,6 +696,7 @@ class App extends React.Component {
       includeAllStreams,
       keyframeCut,
       stripAudio,
+      currentSeg,
       captureFormat,
     } = this.props.store.globalState;
 
@@ -739,11 +750,7 @@ class App extends React.Component {
                   key={seg.uuid}
                   segNum={i}
                   color={seg.color}
-                  onSegClick={
-                    (currentSegNew) => this.setState({
-                      currentSeg: currentSegNew,
-                    })
-                  }
+                  onSegClick={this.setCurrentSeg}
                   isActive={i === currentSeg}
                   isCutRangeValid={this.isCutRangeValid(i)}
                   duration={duration}
