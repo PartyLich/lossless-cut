@@ -134,7 +134,6 @@ const getInitialLocalState = () => ({
 const globalState = {
   customOutDir: undefined,
   keyframeCut: true,
-  autoMerge: false,
 };
 
 class App extends React.Component {
@@ -456,7 +455,9 @@ class App extends React.Component {
 
   toggleKeyframeCut = () => this.setState(({ keyframeCut }) => ({ keyframeCut: !keyframeCut }));
 
-  toggleAutoMerge = () => this.setState(({ autoMerge }) => ({ autoMerge: !autoMerge }));
+  toggleAutoMerge = () => {
+    this.dispatch(globalStateReducer.toggleAutoMerge());
+  }
 
   addCutSegment = () => {
     const { cutSegments, currentTime, duration } = this.state;
@@ -541,10 +542,10 @@ class App extends React.Component {
     const {
       filePath, customOutDir, fileFormat, duration,
       keyframeCut,
-      autoMerge,
       working, cutSegments,
     } = this.state;
     const {
+      autoMerge,
       includeAllStreams,
       stripAudio,
     } = this.props.store.globalState;
@@ -676,9 +677,9 @@ class App extends React.Component {
       helpVisible,
       currentSeg,
       cutSegments,
-      autoMerge,
     } = this.state;
     const {
+      autoMerge,
       includeAllStreams,
       stripAudio,
       captureFormat,
