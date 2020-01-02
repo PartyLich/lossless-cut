@@ -55,6 +55,8 @@ import './font-awesome-4.6.3/scss/font-awesome.scss';
 import './main.scss';
 import './components/TimelineWrapper.scss';
 
+import * as globalStateReducer from './reducers/globalState';
+
 
 const { dialog } = remote;
 
@@ -131,7 +133,6 @@ const getInitialLocalState = () => ({
 
 const globalState = {
   stripAudio: false,
-  includeAllStreams: true,
   captureFormat: 'jpeg',
   customOutDir: undefined,
   keyframeCut: true,
@@ -449,7 +450,7 @@ class App extends React.Component {
   }
 
   toggleIncludeAllStreams = () => {
-    this.setState(({ includeAllStreams }) => ({ includeAllStreams: !includeAllStreams }));
+    this.dispatch(globalStateReducer.toggleAllStreams());
   }
 
   toggleStripAudio = () => this.setState(({ stripAudio }) => ({ stripAudio: !stripAudio }));
@@ -539,9 +540,15 @@ class App extends React.Component {
 
   cutClick = async () => {
     const {
-      filePath, customOutDir, fileFormat, duration, includeAllStreams,
-      stripAudio, keyframeCut, autoMerge, working, cutSegments,
+      filePath, customOutDir, fileFormat, duration,
+      stripAudio,
+      keyframeCut,
+      autoMerge,
+      working, cutSegments,
     } = this.state;
+    const {
+      includeAllStreams,
+    } = this.props.store.globalState;
 
     if (working) {
       errorToast('I\'m busy');
@@ -653,9 +660,13 @@ class App extends React.Component {
   render() {
     const {
       working, filePath, duration: durationRaw, cutProgress, currentTime, playing,
-      fileFormat, detectedFileFormat, playbackRate, keyframeCut, includeAllStreams, stripAudio,
+      fileFormat, detectedFileFormat, playbackRate, keyframeCut,
+      stripAudio,
       captureFormat, helpVisible, currentSeg, cutSegments, autoMerge,
     } = this.state;
+    const {
+      includeAllStreams,
+    } = this.props.store.globalState;
 
     const selectableFormats = ['mov', 'mp4', 'matroska'].filter((f) => f !== detectedFileFormat);
 
