@@ -120,7 +120,6 @@ const getInitialLocalState = () => ({
   cutSegments: [createSegment()],
   cutStartTimeManual: undefined,
   cutEndTimeManual: undefined,
-  fileFormat: undefined,
   detectedFileFormat: undefined,
   streams: [],
   rotation: 360,
@@ -173,9 +172,9 @@ class App extends React.Component {
           streams,
           filePath,
           html5FriendlyPath,
-          fileFormat,
           detectedFileFormat: fileFormat,
         });
+        this.dispatch(localStateReducer.setFileFormat(fileFormat));
 
         if (html5FriendlyPath) {
           this.setState({ userHtml5ified: true });
@@ -379,6 +378,10 @@ class App extends React.Component {
     this.dispatch(cutSegmentsReducer.setCurrentSeg(i));
   }
 
+  setFileFormat(fileFormat) {
+    this.dispatch(localStateReducer.setFileFormat(fileFormat));
+  }
+
   getApparentCutStartTime(i) {
     const cutStartTime = this.getCutStartTime(i);
     if (cutStartTime !== undefined) return cutStartTime;
@@ -552,7 +555,6 @@ class App extends React.Component {
   cutClick = async () => {
     const {
       filePath,
-      fileFormat,
       duration,
       cutSegments,
     } = this.state;
@@ -564,6 +566,7 @@ class App extends React.Component {
       stripAudio,
     } = this.props.store.globalState;
     const {
+      fileFormat,
       working,
     } = this.props.store.localState;
 
@@ -686,7 +689,6 @@ class App extends React.Component {
       duration: durationRaw,
       cutProgress,
       currentTime,
-      fileFormat,
       detectedFileFormat,
       playbackRate,
       helpVisible,
@@ -701,6 +703,7 @@ class App extends React.Component {
       captureFormat,
     } = this.props.store.globalState;
     const {
+      fileFormat,
       playing,
       working,
     } = this.props.store.localState;
@@ -854,7 +857,7 @@ class App extends React.Component {
           fileFormat={fileFormat}
           playbackRate={playbackRate}
           segBgColor={segBgColor}
-          selectOnChange={withBlur((e) => this.setState({ fileFormat: e.target.value }))}
+          selectOnChange={withBlur((e) => this.setFileFormat(e.target.value))}
           deleteSegmentHandler={withBlur(() => this.removeCutSegment())}
           addCutSegmentHandler={withBlur(() => this.addCutSegment())}
           autoMergeToggle={withBlur(this.toggleAutoMerge)}
