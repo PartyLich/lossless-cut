@@ -66,11 +66,11 @@ function getVideo() {
 }
 
 function seekAbs(val) {
-  const video = getVideo();
   if (val == null || Number.isNaN(val)) return;
 
-  let outVal = val;
-  if (outVal < 0) outVal = 0;
+  const video = getVideo();
+
+  let outVal = Math.max(0, val);
   if (outVal > video.duration) outVal = video.duration;
 
   video.currentTime = outVal;
