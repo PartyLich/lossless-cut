@@ -94,7 +94,6 @@ const rendererConfig = Object.assign({}, config, {
     vendor: [
       'react',
       'react-dom',
-      'lodash',
       'bluebird',
     ],
   },
