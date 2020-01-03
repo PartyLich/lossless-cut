@@ -1,9 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import { parseDuration, formatDuration } from '../util';
 import './CutTimeInput.scss';
 
+
+const addChar = (oldText, newText, i) => {
+  const diff = newText.length - oldText.length;
+  return oldText.slice(0, i - diff) +
+    newText.charAt(i - 1) +
+    oldText.slice(i);
+};
+
+const delChar = (oldText, newText, i) => {
+  const diff = oldText.length - newText.length;
+  let fill = '0'.repeat(diff - 1 || 1);
+  if ([2, 5].includes(i)) fill = ':';
+  if (i === 8) fill = '.';
+
+  return oldText.slice(0, i) +
+    fill +
+    oldText.slice(i + 1);
+};
 
 const baseClassName = 'CutTimeInput';
 
@@ -11,32 +29,55 @@ const CutTimeInput = ({
   type,
   startTimeOffset,
   setCutTime,
-  getApparentCutTime,
+  apparentCutTime,
 }) => {
+  const formattedDuration = formatDuration(apparentCutTime + startTimeOffset);
   const [timeState, setTimeState] = useState({
-    timeString: formatDuration(0),
+    timeString: formattedDuration,
     isManual: false,
   });
+  const [caret, setCaret] = useState(0);
   const className = `${ baseClassName } ${ baseClassName }--${ type }`;
+  const inputEl = useRef(null);
+
+  useEffect(
+      () => {
+        inputEl.current.setSelectionRange(caret, caret);
+      },
+      [caret],
+  );
 
   const handleCutTimeInput = (text) => {
-    const time = parseDuration(text);
-    if (time === undefined) {
-      return setTimeState({
-        timeString: text,
-        isManual: true,
-      });
+    const dotPositions = [2, 5, 8];
+    let { timeString, isManual } = timeState;
+    let newTimeString = text;
+    let i = inputEl.current.selectionStart;
+    if (!isManual) timeString = formattedDuration;
+
+    if (text.length > timeString.length) {
+      newTimeString = addChar(timeString, text, i);
+      if (dotPositions.includes(i)) i += 1;
+    }
+    if (text.length < timeString.length) {
+      newTimeString = delChar(timeString, text, i);
+    }
+    setCaret(i);
+
+    const time = parseDuration(newTimeString);
+    if (time !== undefined) {
+      timeString = formatDuration(time + startTimeOffset);
+      isManual = false;
+      setCutTime(type, time - startTimeOffset);
+    } else {
+      timeString = text;
+      isManual = true;
     }
 
-    setTimeState({
-      timeString: formatDuration(time + startTimeOffset),
-      isManual: false,
+    return setTimeState({
+      timeString,
+      isManual,
     });
-    setCutTime(type, time - startTimeOffset);
-    return null; // no idea what the lint error is on about
   };
-
-  const cutTime = getApparentCutTime();
 
   return (
     <input
@@ -45,10 +86,11 @@ const CutTimeInput = ({
         color: timeState.isManual ? '#dc1d1d' : undefined,
       }}
       type="text"
+      ref={inputEl}
       onChange={(e) => handleCutTimeInput(e.target.value)}
       value={timeState.isManual
         ? timeState.timeString
-        : formatDuration(cutTime + startTimeOffset)
+        : formattedDuration
       }
     />
   );
@@ -59,7 +101,7 @@ CutTimeInput.propTypes = {
   type: PropTypes.string.isRequired,
   startTimeOffset: PropTypes.number.isRequired,
   setCutTime: PropTypes.func.isRequired,
-  getApparentCutTime: PropTypes.func.isRequired,
+  apparentCutTime: PropTypes.number.isRequired,
 };
 
 export default CutTimeInput;

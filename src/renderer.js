@@ -730,7 +730,7 @@ class App extends React.Component {
                 type="start"
                 startTimeOffset={this.state.startTimeOffset}
                 setCutTime={this.setCutTime.bind(this)}
-                getApparentCutTime={this.getApparentCutStartTime.bind(this)}
+                apparentCutTime={this.getApparentCutStartTime()}
               />
               <i
                 className="fa fa-step-backward jump-cut-button jump-cut-button--start"
@@ -767,7 +767,7 @@ class App extends React.Component {
                 type="end"
                 startTimeOffset={this.state.startTimeOffset}
                 setCutTime={this.setCutTime.bind(this)}
-                getApparentCutTime={this.getApparentCutEndTime.bind(this)}
+                apparentCutTime={this.getApparentCutEndTime()}
               />
               <i
                 className="fa fa-step-forward jump-cut-button jump-cut-button--end"
