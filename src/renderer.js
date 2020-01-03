@@ -818,12 +818,12 @@ class App extends React.Component {
           isRotationSet={this.isRotationSet()}
           outputDir={this.getOutputDir()}
 
-          toggleKeyframeCut={withBlur(this.toggleKeyframeCut)}
-          toggleIncludeAllStreams={withBlur(this.toggleIncludeAllStreams)}
-          toggleCaptureFormat={withBlur(this.toggleCaptureFormat)}
-          toggleStripAudio={withBlur(this.toggleStripAudio)}
-          increaseRotation={withBlur(this.increaseRotation)}
-          setOutputDir={withBlur(this.setOutputDir)}
+          toggleKeyframeCut={this.toggleKeyframeCut}
+          toggleIncludeAllStreams={this.toggleIncludeAllStreams}
+          toggleCaptureFormat={this.toggleCaptureFormat}
+          toggleStripAudio={this.toggleStripAudio}
+          increaseRotation={this.increaseRotation}
+          setOutputDir={this.setOutputDir}
           captureFrame={this.capture}
         />
 
