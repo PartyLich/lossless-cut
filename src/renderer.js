@@ -652,7 +652,7 @@ class App extends React.Component {
   }
 
   toggleHelp() {
-    this.setState(({ helpVisible }) => ({ helpVisible: !helpVisible }));
+    this.dispatch(localStateReducer.toggleHelp());
   }
 
 
@@ -662,7 +662,6 @@ class App extends React.Component {
       currentTime,
       detectedFileFormat,
       playbackRate,
-      helpVisible,
     } = this.state;
     const { cutSegments } = this.props.store.cutSegments;
     const {
@@ -677,6 +676,7 @@ class App extends React.Component {
       duration: durationRaw,
       fileFormat,
       filePath,
+      helpVisible,
       playing,
       working,
     } = this.props.store.localState;
@@ -856,7 +856,7 @@ class App extends React.Component {
           captureFrame={this.capture}
         />
 
-        <HelpSheet visible={!!helpVisible} />
+        <HelpSheet visible={helpVisible} />
       </div>
     );
   }

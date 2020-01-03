@@ -8,6 +8,7 @@ const PLAYING_SET = 'localState/PLAYING_SET';
 const DURATION_SET = 'localState/DURATION_SET';
 const FILE_FORMAT_SET = 'localState/FILE_FORMAT_SET';
 const FILE_PATH_SET = 'localState/FILE_PATH_SET';
+const HELP_TOGGLE = 'localState/HELP_TOGGLE';
 const ROTATION_INC = 'localState/ROTATION_INC';
 const STATE_RESET = 'localState/STATE_RESET';
 
@@ -44,6 +45,11 @@ export const increaseRotation = () => ({
   type: ROTATION_INC,
 });
 
+export const toggleHelp = () => ({
+  type: HELP_TOGGLE,
+  payload: 'helpVisible',
+});
+
 
 const initialState = {
   working: false,
@@ -61,6 +67,7 @@ const initialState = {
   startTimeOffset: 0,
   framePath: undefined,
   rotationPreviewRequested: false,
+  helpVisible: false,
 };
 
 const localState = (state = initialState, { type, payload } = {}) => {
@@ -70,6 +77,8 @@ const localState = (state = initialState, { type, payload } = {}) => {
 
     case WORKING_TOGGLE:
       return { ...state, working: !state.working };
+    case HELP_TOGGLE:
+      return { ...state, [payload]: !state[payload] };
 
     case WORKING_SET:
     case PLAYING_SET:

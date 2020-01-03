@@ -22,6 +22,7 @@ const createState = () => Object.assign({}, {
   startTimeOffset: 0,
   framePath: undefined,
   rotationPreviewRequested: false,
+  helpVisible: false,
 });
 
 test('localState reducer', (t) => {
@@ -228,6 +229,34 @@ test('localState increaseRotation', (t) => {
           state.rotation = 270;
           return state;
         },
+        (state) => reducer(state, action())
+    )();
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('localState toggleHelp', (t) => {
+  const action = actions.toggleHelp;
+
+  {
+    const msg = 'toggle help to true';
+    const expected = {
+      ...createState(),
+      helpVisible: true,
+    };
+    const actual = reducer(undefined, action());
+    t.deepEqual(actual, expected, msg);
+  }
+  {
+    const msg = 'toggle help to false';
+    const expected = createState();
+    const actual = pipe(
+        () => ({
+          ...createState(),
+          helpVisible: true,
+        }),
         (state) => reducer(state, action())
     )();
     t.deepEqual(actual, expected, msg);
