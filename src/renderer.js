@@ -116,8 +116,6 @@ const getInitialLocalState = () => ({
   userHtml5ified: false,
   currentTime: undefined,
   cutSegments: [createSegment()],
-  cutStartTimeManual: undefined,
-  cutEndTimeManual: undefined,
   detectedFileFormat: undefined,
   streams: [],
   rotation: 360,
