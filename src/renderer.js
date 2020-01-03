@@ -115,7 +115,6 @@ const getInitialLocalState = () => ({
   html5FriendlyPath: undefined,
   userHtml5ified: false,
   currentTime: undefined,
-  duration: undefined,
   cutSegments: [createSegment()],
   cutStartTimeManual: undefined,
   cutEndTimeManual: undefined,
@@ -290,7 +289,7 @@ class App extends React.Component {
   }
 
   onDurationChange(duration) {
-    this.setState({ duration });
+    this.dispatch(localStateReducer.setDuration(duration));
   }
 
   onTimeUpdate = (e) => {
@@ -391,8 +390,8 @@ class App extends React.Component {
   getApparentCutEndTime(i) {
     const cutEndTime = this.getCutEndTime(i);
     if (cutEndTime !== undefined) return cutEndTime;
-    if (this.state.duration !== undefined) return this.state.duration;
-    return 0; // Haven't gotten duration yet
+
+    return this.props.store.localState.duration;
   }
 
   getOffsetCurrentTime() {
@@ -471,7 +470,8 @@ class App extends React.Component {
   }
 
   addCutSegment = () => {
-    const { cutSegments, currentTime, duration } = this.state;
+    const { cutSegments, currentTime } = this.state;
+    const { duration } = this.props.store.localState;
 
     const cutStartTime = this.getCutStartTime();
     const cutEndTime = this.getCutEndTime();
@@ -518,11 +518,12 @@ class App extends React.Component {
 
   /* eslint-disable react/sort-comp */
   handleTap = throttle((e) => {
+    const { duration } = this.props.store.localState;
     const target = document.querySelector('.timeline-wrapper');
     const parentOffset = target.getBoundingClientRect().left +
       document.body.scrollLeft;
     const relX = e.srcEvent.pageX - parentOffset;
-    setCursor((relX / target.offsetWidth) * (this.state.duration || 0));
+    setCursor((relX / target.offsetWidth) * (duration));
   }, 200);
   /* eslint-enable react/sort-comp */
 
@@ -555,7 +556,6 @@ class App extends React.Component {
 
   cutClick = async () => {
     const {
-      duration,
       cutSegments,
     } = this.state;
     const {
@@ -566,6 +566,7 @@ class App extends React.Component {
       stripAudio,
     } = this.props.store.globalState;
     const {
+      duration,
       fileFormat,
       filePath,
       working,
@@ -686,7 +687,6 @@ class App extends React.Component {
 
   render() {
     const {
-      duration: durationRaw,
       cutProgress,
       currentTime,
       detectedFileFormat,
@@ -703,6 +703,7 @@ class App extends React.Component {
       captureFormat,
     } = this.props.store.globalState;
     const {
+      duration: durationRaw,
       fileFormat,
       filePath,
       playing,
