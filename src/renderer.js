@@ -20,6 +20,7 @@ import {
   html5ifyDummy,
   html5ify,
   autoMergeSegments,
+  mergeAnyFiles,
   renderFrame,
 } from './ffmpeg';
 
