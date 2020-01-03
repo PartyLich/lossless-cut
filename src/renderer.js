@@ -2,16 +2,16 @@ import path from 'path';
 import { ipcRenderer, remote } from 'electron';
 import Mousetrap from 'mousetrap';
 import clamp from 'lodash/clamp';
-import clone from 'lodash/clone';
 import throttle from 'lodash/throttle';
 import Hammer from 'react-hammerjs';
 import trash from 'trash';
-import uuid from 'uuid';
 import classnames from 'classnames';
 import PQueue from 'p-queue';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+
 import {
   cutMultiple,
   extractAllStreams,
@@ -20,6 +20,7 @@ import {
   html5ifyDummy,
   html5ify,
   autoMergeSegments,
+  mergeAnyFiles,
   renderFrame,
 } from './ffmpeg';
 
@@ -31,7 +32,7 @@ import {
   getOutPath, formatDuration,
   toast, errorToast, showFfmpegFail,
   setFileNameTitle,
-  promptTimeOffset, generateColor,
+  promptTimeOffset,
 } from './util';
 
 import {
@@ -42,14 +43,20 @@ import {
   LeftMenu,
   Player,
   ProgressIndicator,
+  Provider,
   RightMenu,
   TimelineSeg,
+  withStore,
 } from './components';
 
 // Stylesheets
 import './font-awesome-4.6.3/scss/font-awesome.scss';
 import './main.scss';
 import './components/TimelineWrapper.scss';
+
+import * as globalStateReducer from './reducers/globalState';
+import * as localStateReducer from './reducers/localState';
+import * as cutSegmentsReducer from './reducers/cutSegments';
 
 
 const { dialog } = remote;
@@ -59,11 +66,11 @@ function getVideo() {
 }
 
 function seekAbs(val) {
-  const video = getVideo();
   if (val == null || Number.isNaN(val)) return;
 
-  let outVal = val;
-  if (outVal < 0) outVal = 0;
+  const video = getVideo();
+
+  let outVal = Math.max(0, val);
   if (outVal > video.duration) outVal = video.duration;
 
   video.currentTime = outVal;
@@ -88,15 +95,6 @@ function withBlur(cb) {
   };
 }
 
-function createSegment({ start, end } = {}) {
-  return {
-    start,
-    end,
-    color: generateColor(),
-    uuid: uuid.v4(),
-  };
-}
-
 function doesPlayerSupportFile(streams) {
   // TODO improve, whitelist supported codecs instead
   return !streams.find((s) => ['hevc', 'prores'].includes(s.codec_name));
@@ -104,51 +102,36 @@ function doesPlayerSupportFile(streams) {
 }
 
 const getInitialLocalState = () => ({
-  working: false,
-  filePath: '', // Setting video src="" prevents memory leak in chromium
   html5FriendlyPath: undefined,
   userHtml5ified: false,
-  playing: false,
   currentTime: undefined,
-  duration: undefined,
-  cutSegments: [createSegment()],
-  currentSeg: 0,
-  cutStartTimeManual: undefined,
-  cutEndTimeManual: undefined,
-  fileFormat: undefined,
   detectedFileFormat: undefined,
   streams: [],
-  rotation: 360,
   cutProgress: undefined,
   startTimeOffset: 0,
   framePath: undefined,
   rotationPreviewRequested: false,
 });
 
-const globalState = {
-  stripAudio: false,
-  includeAllStreams: true,
-  captureFormat: 'jpeg',
-  customOutDir: undefined,
-  keyframeCut: true,
-  autoMerge: false,
-};
 
 class App extends React.Component {
   constructor(props) {
     super(props);
 
+    this.store = props.store;
+    this.dispatch = props.dispatch;
+
     this.state = {
       ...getInitialLocalState(),
-      ...globalState,
     };
 
     this.queue = new PQueue({ concurrency: 1 });
 
+    this.setCurrentSeg = this.setCurrentSeg.bind(this);
     this.setCutTime = this.setCutTime.bind(this);
 
     const load = async (filePath, html5FriendlyPath) => {
-      const { working } = this.state;
+      const { working } = this.props.store.localState;
 
       console.log('Load', { filePath, html5FriendlyPath });
       if (working) {
@@ -157,8 +140,7 @@ class App extends React.Component {
       }
 
       this.resetState();
-
-      this.setState({ working: true });
+      this.dispatch(localStateReducer.setWorking(true));
 
       try {
         const fileFormat = await getFormat(filePath);
@@ -172,16 +154,16 @@ class App extends React.Component {
         setFileNameTitle(filePath);
         this.setState({
           streams,
-          filePath,
           html5FriendlyPath,
-          fileFormat,
           detectedFileFormat: fileFormat,
         });
+        this.dispatch(localStateReducer.setFileFormat(fileFormat));
+        this.dispatch(localStateReducer.setFilePath(filePath));
 
         if (html5FriendlyPath) {
           this.setState({ userHtml5ified: true });
         } else if (!doesPlayerSupportFile(streams)) {
-          const { customOutDir } = this.state;
+          const { customOutDir } = this.props.store.globalState;
           const html5ifiedDummyPath = getOutPath(customOutDir, filePath, 'html5ified-dummy.mkv');
           await html5ifyDummy(filePath, html5ifiedDummyPath);
           this.setState({ html5FriendlyPath: html5ifiedDummyPath });
@@ -194,7 +176,7 @@ class App extends React.Component {
         }
         showFfmpegFail(err);
       } finally {
-        this.setState({ working: false });
+        this.dispatch(localStateReducer.setWorking(false));
       }
     };
 
@@ -204,19 +186,20 @@ class App extends React.Component {
     });
 
     ipcRenderer.on('html5ify', async (event, encodeVideo) => {
-      const { filePath, customOutDir } = this.state;
+      const { filePath } = this.props.store.localState;
+      const { customOutDir } = this.props.store.globalState;
       if (!filePath) return;
 
       try {
-        this.setState({ working: true });
+        this.dispatch(localStateReducer.setWorking(true));
         const html5ifiedPath = getOutPath(customOutDir, filePath, 'html5ified.mp4');
         await html5ify(filePath, html5ifiedPath, encodeVideo);
-        this.setState({ working: false });
+        this.dispatch(localStateReducer.setWorking(false));
         load(filePath, html5ifiedPath);
       } catch (err) {
         errorToast('Failed to html5ify file');
         console.error('Failed to html5ify file', err);
-        this.setState({ working: false });
+        this.dispatch(localStateReducer.setWorking(false));
       }
     });
 
@@ -238,17 +221,18 @@ class App extends React.Component {
     });
 
     ipcRenderer.on('extract-all-streams', async () => {
-      const { filePath, customOutDir } = this.state;
+      const { filePath } = this.props.store.localState;
+      const { customOutDir } = this.props.store.globalState;
       if (!filePath) return;
 
       try {
-        this.setState({ working: true });
+        this.dispatch(localStateReducer.setWorking(true));
         await extractAllStreams({ customOutDir, filePath });
-        this.setState({ working: false });
+        this.dispatch(localStateReducer.setWorking(false));
       } catch (err) {
         errorToast('Failed to extract all streams');
         console.error('Failed to extract all streams', err);
-        this.setState({ working: false });
+        this.dispatch(localStateReducer.setWorking(false));
       }
     });
 
@@ -283,7 +267,7 @@ class App extends React.Component {
   }
 
   onPlayingChange(playing) {
-    this.setState({ playing });
+    this.dispatch(localStateReducer.setPlaying(playing));
 
     if (!playing) {
       getVideo().playbackRate = 1;
@@ -291,7 +275,7 @@ class App extends React.Component {
   }
 
   onDurationChange(duration) {
-    this.setState({ duration });
+    this.dispatch(localStateReducer.setDuration(duration));
   }
 
   onTimeUpdate = (e) => {
@@ -320,25 +304,28 @@ class App extends React.Component {
 
   setOutputDir = async () => {
     const { filePaths } = await dialog.showOpenDialog({ properties: ['openDirectory'] });
-    this.setState({
-      customOutDir: (filePaths && filePaths.length === 1) ? filePaths[0] : undefined,
-    });
+    const customOutDir = (filePaths && filePaths.length === 1)
+      ? filePaths[0]
+      : undefined;
+    this.dispatch(globalStateReducer.setCustomDir(customOutDir));
   }
 
   getFileUri() {
-    const { html5FriendlyPath, filePath } = this.state;
+    const { html5FriendlyPath } = this.state;
+    const { filePath } = this.props.store.localState;
     return (html5FriendlyPath || filePath || '').replace(/#/g, '%23');
   }
 
   getOutputDir() {
-    const { customOutDir, filePath } = this.state;
+    const { filePath } = this.props.store.localState;
+    const { customOutDir } = this.props.store.globalState;
     if (customOutDir) return customOutDir;
     if (filePath) return path.dirname(filePath);
-    return undefined;
+    return '';
   }
 
   getRotation() {
-    return this.state.rotation;
+    return this.props.store.localState.rotation;
   }
 
   getEffectiveRotation() {
@@ -350,7 +337,7 @@ class App extends React.Component {
   }
 
   getCutSeg(i) {
-    const { currentSeg, cutSegments } = this.state;
+    const { currentSeg, cutSegments } = this.props.store.cutSegments;
     return cutSegments[i !== undefined ? i : currentSeg];
   }
 
@@ -363,10 +350,17 @@ class App extends React.Component {
   }
 
   setCutTime(type, time) {
-    const { currentSeg, cutSegments } = this.state;
-    const cloned = clone(cutSegments);
-    cloned[currentSeg][type] = time;
-    this.setState({ cutSegments: cloned });
+    const { currentSeg } = this.props.store.cutSegments;
+
+    this.dispatch(cutSegmentsReducer.setCutTime(currentSeg, type, time));
+  }
+
+  setCurrentSeg(i) {
+    this.dispatch(cutSegmentsReducer.setCurrentSeg(i));
+  }
+
+  setFileFormat(fileFormat) {
+    this.dispatch(localStateReducer.setFileFormat(fileFormat));
   }
 
   getApparentCutStartTime(i) {
@@ -378,8 +372,8 @@ class App extends React.Component {
   getApparentCutEndTime(i) {
     const cutEndTime = this.getCutEndTime(i);
     if (cutEndTime !== undefined) return cutEndTime;
-    if (this.state.duration !== undefined) return this.state.duration;
-    return 0; // Haven't gotten duration yet
+
+    return this.props.store.localState.duration;
   }
 
   getOffsetCurrentTime() {
@@ -388,9 +382,9 @@ class App extends React.Component {
 
   mergeFiles = async (paths) => {
     try {
-      this.setState({ working: true });
+      this.dispatch(localStateReducer.setWorking(true));
 
-      const { customOutDir } = this.state;
+      const { customOutDir } = this.props.store.globalState;
 
       // console.log('merge', paths);
       await mergeAnyFiles({ customOutDir, paths });
@@ -398,7 +392,7 @@ class App extends React.Component {
       errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
       console.error('Failed to merge files', err);
     } finally {
-      this.setState({ working: false });
+      this.dispatch(localStateReducer.setWorking(false));
     }
   }
 
@@ -414,7 +408,8 @@ class App extends React.Component {
       this.queue.add(async () => {
         if (!this.frameRenderEnabled()) return;
 
-        const { filePath, currentTime } = this.state;
+        const { currentTime } = this.state;
+        const { filePath } = this.props.store.localState;
         const rotation = this.getEffectiveRotation();
         if (currentTime == null || !filePath) return;
 
@@ -432,58 +427,56 @@ class App extends React.Component {
   };
 
   increaseRotation = () => {
-    this.setState(({ rotation }) => ({ rotation: (rotation + 90) % 450 }));
+    this.dispatch(localStateReducer.increaseRotation());
+
     this.setState({ rotationPreviewRequested: true }, () => this.throttledRenderFrame());
   }
 
   toggleCaptureFormat = () => {
-    const isPng = this.state.captureFormat === 'png';
-    this.setState({ captureFormat: isPng ? 'jpeg' : 'png' });
+    this.dispatch(globalStateReducer.toggleCaptureFormat());
   }
 
   toggleIncludeAllStreams = () => {
-    this.setState(({ includeAllStreams }) => ({ includeAllStreams: !includeAllStreams }));
+    this.dispatch(globalStateReducer.toggleAllStreams());
   }
 
-  toggleStripAudio = () => this.setState(({ stripAudio }) => ({ stripAudio: !stripAudio }));
+  toggleStripAudio = () => {
+    this.dispatch(globalStateReducer.toggleStripAudio());
+  };
 
-  toggleKeyframeCut = () => this.setState(({ keyframeCut }) => ({ keyframeCut: !keyframeCut }));
+  toggleKeyframeCut = () => {
+    this.dispatch(globalStateReducer.toggleKeyframeCut());
+  }
 
-  toggleAutoMerge = () => this.setState(({ autoMerge }) => ({ autoMerge: !autoMerge }));
+  toggleAutoMerge = () => {
+    this.dispatch(globalStateReducer.toggleAutoMerge());
+  }
 
   addCutSegment = () => {
-    const { cutSegments, currentTime, duration } = this.state;
+    const { currentTime } = this.state;
+    const { duration } = this.props.store.localState;
+    const { cutSegments } = this.props.store.cutSegments;
 
     const cutStartTime = this.getCutStartTime();
     const cutEndTime = this.getCutEndTime();
 
     if (cutStartTime === undefined && cutEndTime === undefined) return;
 
-    const suggestedStart = currentTime;
-    const suggestedEnd = suggestedStart + 10;
+    const suggestedEnd = currentTime + 10;
 
-    const cutSegmentsNew = [
-      ...cutSegments,
-      createSegment({
-        start: currentTime,
-        end: suggestedEnd <= duration ? suggestedEnd : undefined,
-      }),
-    ];
-
-    const currentSegNew = cutSegmentsNew.length - 1;
-    this.setState({ currentSeg: currentSegNew, cutSegments: cutSegmentsNew });
+    const end = suggestedEnd <= duration
+      ? suggestedEnd
+      : undefined;
+    this.dispatch(cutSegmentsReducer.addCutSegment(currentTime, end));
+    this.dispatch(cutSegmentsReducer.setCurrentSeg(cutSegments.length));
   }
 
   removeCutSegment = () => {
-    const { currentSeg, cutSegments } = this.state;
+    const { currentSeg, cutSegments } = this.props.store.cutSegments;
 
-    if (cutSegments.length < 2) return;
-
-    const cutSegmentsNew = [...cutSegments];
-    cutSegmentsNew.splice(currentSeg, 1);
-
-    const currentSegNew = Math.min(currentSeg, cutSegmentsNew.length - 1);
-    this.setState({ currentSeg: currentSegNew, cutSegments: cutSegmentsNew });
+    const currentSegNew = Math.min(currentSeg, cutSegments.length - 2);
+    this.dispatch(cutSegmentsReducer.removeCutSegment(currentSeg));
+    this.dispatch(cutSegmentsReducer.setCurrentSeg(currentSegNew));
   }
 
   jumpCutStart = () => {
@@ -496,11 +489,12 @@ class App extends React.Component {
 
   /* eslint-disable react/sort-comp */
   handleTap = throttle((e) => {
+    const { duration } = this.props.store.localState;
     const target = document.querySelector('.timeline-wrapper');
     const parentOffset = target.getBoundingClientRect().left +
       document.body.scrollLeft;
     const relX = e.srcEvent.pageX - parentOffset;
-    setCursor((relX / target.offsetWidth) * (this.state.duration || 0));
+    setCursor((relX / target.offsetWidth) * (duration));
   }, 200);
   /* eslint-enable react/sort-comp */
 
@@ -510,7 +504,7 @@ class App extends React.Component {
 
   playCommand = () => {
     const video = getVideo();
-    if (this.state.playing) return video.pause();
+    if (this.props.store.localState.playing) return video.pause();
 
     return video.play().catch((err) => {
       console.log(err);
@@ -521,20 +515,33 @@ class App extends React.Component {
   }
 
   deleteSourceClick = async () => {
+    const { working } = this.props.store.localState;
     // eslint-disable-next-line no-alert
-    if (this.state.working || !window.confirm('Are you sure you want to move the source file to trash?')) return;
-    const { filePath } = this.state;
+    if (working || !window.confirm('Are you sure you want to move the source file to trash?')) return;
+    const { filePath } = this.props.store.localState;
 
-    this.setState({ working: true });
+    this.dispatch(localStateReducer.setWorking(true));
     await trash(filePath);
     this.resetState();
   }
 
   cutClick = async () => {
     const {
-      filePath, customOutDir, fileFormat, duration, includeAllStreams,
-      stripAudio, keyframeCut, autoMerge, working, cutSegments,
-    } = this.state;
+      cutSegments,
+    } = this.props.store.cutSegments;
+    const {
+      autoMerge,
+      customOutDir,
+      includeAllStreams,
+      keyframeCut,
+      stripAudio,
+    } = this.props.store.globalState;
+    const {
+      duration,
+      fileFormat,
+      filePath,
+      working,
+    } = this.props.store.localState;
 
     if (working) {
       errorToast('I\'m busy');
@@ -552,7 +559,7 @@ class App extends React.Component {
     }
 
     try {
-      this.setState({ working: true });
+      this.dispatch(localStateReducer.setWorking(true));
 
       const segments = cutSegments.map((seg, i) => ({
         cutFrom: this.getApparentCutStartTime(i),
@@ -593,14 +600,19 @@ class App extends React.Component {
 
       showFfmpegFail(err);
     } finally {
-      this.setState({ working: false });
+      this.dispatch(localStateReducer.setWorking(false));
     }
   }
 
   capture = async () => {
     const {
-      filePath, customOutDir: outputDir, currentTime, captureFormat,
+      customOutDir: outputDir,
+      currentTime,
     } = this.state;
+    const {
+      captureFormat,
+    } = this.props.store.globalState;
+    const { filePath } = this.props.store.localState;
     if (!filePath) return;
     try {
       await captureFrame(outputDir, filePath, getVideo(), currentTime, captureFormat);
@@ -612,7 +624,7 @@ class App extends React.Component {
 
   changePlaybackRate(dir) {
     const video = getVideo();
-    if (!this.state.playing) {
+    if (!this.props.store.playing) {
       video.playbackRate = 0.5; // dir * 0.5;
       video.play();
     } else {
@@ -626,12 +638,13 @@ class App extends React.Component {
     video.currentTime = 0;
     video.playbackRate = 1;
     this.setState(getInitialLocalState());
+    this.dispatch(localStateReducer.resetLocalState());
     setFileNameTitle();
   }
 
   isRotationSet() {
     // 360 means we don't modify rotation
-    return this.state.rotation !== 360;
+    return this.props.store.localState.rotation !== 360;
   }
 
   isCutRangeValid(i) {
@@ -645,10 +658,28 @@ class App extends React.Component {
 
   render() {
     const {
-      working, filePath, duration: durationRaw, cutProgress, currentTime, playing,
-      fileFormat, detectedFileFormat, playbackRate, keyframeCut, includeAllStreams, stripAudio,
-      captureFormat, helpVisible, currentSeg, cutSegments, autoMerge,
+      cutProgress,
+      currentTime,
+      detectedFileFormat,
+      playbackRate,
+      helpVisible,
     } = this.state;
+    const { cutSegments } = this.props.store.cutSegments;
+    const {
+      autoMerge,
+      includeAllStreams,
+      keyframeCut,
+      stripAudio,
+      currentSeg,
+      captureFormat,
+    } = this.props.store.globalState;
+    const {
+      duration: durationRaw,
+      fileFormat,
+      filePath,
+      playing,
+      working,
+    } = this.props.store.localState;
 
     const selectableFormats = ['mov', 'mp4', 'matroska'].filter((f) => f !== detectedFileFormat);
 
@@ -693,18 +724,16 @@ class App extends React.Component {
             options={{ recognizers: {} }}
           >
             <div className="timeline-wrapper">
-              {currentTimePos !== undefined && <div className="current-time" style={{ left: currentTimePos }} />}
+              {currentTimePos !== undefined && (
+                <div className="current-time" style={{ left: currentTimePos }} />
+              )}
 
               {cutSegments.map((seg, i) => (
                 <TimelineSeg
                   key={seg.uuid}
                   segNum={i}
                   color={seg.color}
-                  onSegClick={
-                    (currentSegNew) => this.setState({
-                      currentSeg: currentSegNew,
-                    })
-                  }
+                  onSegClick={this.setCurrentSeg}
                   isActive={i === currentSeg}
                   isCutRangeValid={this.isCutRangeValid(i)}
                   duration={duration}
@@ -803,9 +832,9 @@ class App extends React.Component {
           fileFormat={fileFormat}
           playbackRate={playbackRate}
           segBgColor={segBgColor}
-          selectOnChange={withBlur((e) => this.setState({ fileFormat: e.target.value }))}
-          deleteSegmentHandler={withBlur(() => this.removeCutSegment())}
-          addCutSegmentHandler={withBlur(() => this.addCutSegment())}
+          selectOnChange={withBlur((e) => this.setFileFormat(e.target.value))}
+          deleteSegmentHandler={withBlur(this.removeCutSegment)}
+          addCutSegmentHandler={withBlur(this.addCutSegment)}
           autoMergeToggle={withBlur(this.toggleAutoMerge)}
         />
 
@@ -833,6 +862,16 @@ class App extends React.Component {
   }
 }
 
-ReactDOM.render(<App />, document.getElementById('app'));
+App.propTypes = {
+  store: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
+};
+
+ReactDOM.render(
+  <Provider>
+    {withStore(App)}
+  </Provider>,
+  document.getElementById('app')
+);
 
 console.log('Version', remote.app.getVersion());

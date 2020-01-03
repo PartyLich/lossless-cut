@@ -1,4 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import PropTypes from 'prop-types';
 
 import { parseDuration, formatDuration } from '../util';
@@ -47,7 +52,7 @@ const CutTimeInput = ({
       [caret],
   );
 
-  const handleCutTimeInput = (text) => {
+  const handleCutTimeInput = useCallback((text) => {
     const dotPositions = [2, 5, 8];
     let { timeString, isManual } = timeState;
     let newTimeString = text;
@@ -77,7 +82,7 @@ const CutTimeInput = ({
       timeString,
       isManual,
     });
-  };
+  });
 
   return (
     <input
