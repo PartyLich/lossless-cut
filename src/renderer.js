@@ -112,7 +112,6 @@ function doesPlayerSupportFile(streams) {
 }
 
 const getInitialLocalState = () => ({
-  filePath: '', // Setting video src="" prevents memory leak in chromium
   html5FriendlyPath: undefined,
   userHtml5ified: false,
   currentTime: undefined,
@@ -170,11 +169,11 @@ class App extends React.Component {
         setFileNameTitle(filePath);
         this.setState({
           streams,
-          filePath,
           html5FriendlyPath,
           detectedFileFormat: fileFormat,
         });
         this.dispatch(localStateReducer.setFileFormat(fileFormat));
+        this.dispatch(localStateReducer.setFilePath(filePath));
 
         if (html5FriendlyPath) {
           this.setState({ userHtml5ified: true });
@@ -202,7 +201,7 @@ class App extends React.Component {
     });
 
     ipcRenderer.on('html5ify', async (event, encodeVideo) => {
-      const { filePath } = this.state;
+      const { filePath } = this.props.store.localState;
       const { customOutDir } = this.props.store.globalState;
       if (!filePath) return;
 
@@ -237,7 +236,7 @@ class App extends React.Component {
     });
 
     ipcRenderer.on('extract-all-streams', async () => {
-      const { filePath } = this.state;
+      const { filePath } = this.props.store.localState;
       const { customOutDir } = this.props.store.globalState;
       if (!filePath) return;
 
@@ -327,16 +326,17 @@ class App extends React.Component {
   }
 
   getFileUri() {
-    const { html5FriendlyPath, filePath } = this.state;
+    const { html5FriendlyPath } = this.state;
+    const { filePath } = this.props.store.localState;
     return (html5FriendlyPath || filePath || '').replace(/#/g, '%23');
   }
 
   getOutputDir() {
-    const { filePath } = this.state;
+    const { filePath } = this.props.store.localState;
     const { customOutDir } = this.props.store.globalState;
     if (customOutDir) return customOutDir;
     if (filePath) return path.dirname(filePath);
-    return undefined;
+    return '';
   }
 
   getRotation() {
@@ -427,7 +427,8 @@ class App extends React.Component {
       this.queue.add(async () => {
         if (!this.frameRenderEnabled()) return;
 
-        const { filePath, currentTime } = this.state;
+        const { currentTime } = this.state;
+        const { filePath } = this.props.store.localState;
         const rotation = this.getEffectiveRotation();
         if (currentTime == null || !filePath) return;
 
@@ -545,7 +546,7 @@ class App extends React.Component {
     const { working } = this.props.store.localState;
     // eslint-disable-next-line no-alert
     if (working || !window.confirm('Are you sure you want to move the source file to trash?')) return;
-    const { filePath } = this.state;
+    const { filePath } = this.props.store.localState;
 
     this.dispatch(localStateReducer.setWorking(true));
     await trash(filePath);
@@ -554,7 +555,6 @@ class App extends React.Component {
 
   cutClick = async () => {
     const {
-      filePath,
       duration,
       cutSegments,
     } = this.state;
@@ -567,6 +567,7 @@ class App extends React.Component {
     } = this.props.store.globalState;
     const {
       fileFormat,
+      filePath,
       working,
     } = this.props.store.localState;
 
@@ -633,13 +634,13 @@ class App extends React.Component {
 
   capture = async () => {
     const {
-      filePath,
       customOutDir: outputDir,
       currentTime,
     } = this.state;
     const {
       captureFormat,
     } = this.props.store.globalState;
+    const { filePath } = this.props.store.localState;
     if (!filePath) return;
     try {
       await captureFrame(outputDir, filePath, getVideo(), currentTime, captureFormat);
@@ -685,7 +686,6 @@ class App extends React.Component {
 
   render() {
     const {
-      filePath,
       duration: durationRaw,
       cutProgress,
       currentTime,
@@ -704,6 +704,7 @@ class App extends React.Component {
     } = this.props.store.globalState;
     const {
       fileFormat,
+      filePath,
       playing,
       working,
     } = this.props.store.localState;
