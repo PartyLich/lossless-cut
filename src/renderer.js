@@ -724,7 +724,9 @@ class App extends React.Component {
             options={{ recognizers: {} }}
           >
             <div className="timeline-wrapper">
-              {currentTimePos !== undefined && <div className="current-time" style={{ left: currentTimePos }} />}
+              {currentTimePos !== undefined && (
+                <div className="current-time" style={{ left: currentTimePos }} />
+              )}
 
               {cutSegments.map((seg, i) => (
                 <TimelineSeg
