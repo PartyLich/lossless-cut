@@ -106,7 +106,6 @@ const getInitialLocalState = () => ({
   currentTime: undefined,
   detectedFileFormat: undefined,
   streams: [],
-  rotation: 360,
   cutProgress: undefined,
   startTimeOffset: 0,
   framePath: undefined,
@@ -325,7 +324,7 @@ class App extends React.Component {
   }
 
   getRotation() {
-    return this.state.rotation;
+    return this.props.store.localState.rotation;
   }
 
   getEffectiveRotation() {
@@ -427,7 +426,8 @@ class App extends React.Component {
   };
 
   increaseRotation = () => {
-    this.setState(({ rotation }) => ({ rotation: (rotation + 90) % 450 }));
+    this.dispatch(localStateReducer.increaseRotation());
+
     this.setState({ rotationPreviewRequested: true }, () => this.throttledRenderFrame());
   }
 
@@ -462,8 +462,6 @@ class App extends React.Component {
     if (cutStartTime === undefined && cutEndTime === undefined) return;
 
     const suggestedEnd = currentTime + 10;
-
-
 
     const end = suggestedEnd <= duration
       ? suggestedEnd
@@ -645,7 +643,7 @@ class App extends React.Component {
 
   isRotationSet() {
     // 360 means we don't modify rotation
-    return this.state.rotation !== 360;
+    return this.props.store.localState.rotation !== 360;
   }
 
   isCutRangeValid(i) {

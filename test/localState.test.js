@@ -155,3 +155,83 @@ test('localState setDuration', (t) => {
 
   t.end();
 });
+
+test('localState increaseRotation', (t) => {
+  const action = actions.increaseRotation;
+
+  {
+    const msg = 'increase rotation 360 -> 0';
+    const expected = {
+      ...createState(),
+      rotation: 0,
+    };
+    const actual = reducer(undefined, action());
+    t.deepEqual(actual, expected, msg);
+  }
+  {
+    const msg = 'increase rotation 0 -> 90';
+    const expected = {
+      ...createState(),
+      rotation: 90,
+    };
+    const actual = pipe(
+        createState,
+        (state) => {
+          state.rotation = 0;
+          return state;
+        },
+        (state) => reducer(state, action())
+    )();
+    t.deepEqual(actual, expected, msg);
+  }
+  {
+    const msg = 'increase rotation 90 -> 180';
+    const expected = {
+      ...createState(),
+      rotation: 180,
+    };
+    const actual = pipe(
+        createState,
+        (state) => {
+          state.rotation = 90;
+          return state;
+        },
+        (state) => reducer(state, action())
+    )();
+    t.deepEqual(actual, expected, msg);
+  }
+  {
+    const msg = 'increase rotation 180 -> 270';
+    const expected = {
+      ...createState(),
+      rotation: 270,
+    };
+    const actual = pipe(
+        createState,
+        (state) => {
+          state.rotation = 180;
+          return state;
+        },
+        (state) => reducer(state, action())
+    )();
+    t.deepEqual(actual, expected, msg);
+  }
+  {
+    const msg = 'increase rotation 270 -> 360';
+    const expected = {
+      ...createState(),
+      rotation: 360,
+    };
+    const actual = pipe(
+        createState,
+        (state) => {
+          state.rotation = 270;
+          return state;
+        },
+        (state) => reducer(state, action())
+    )();
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});

@@ -8,6 +8,7 @@ const PLAYING_SET = 'localState/PLAYING_SET';
 const DURATION_SET = 'localState/DURATION_SET';
 const FILE_FORMAT_SET = 'localState/FILE_FORMAT_SET';
 const FILE_PATH_SET = 'localState/FILE_PATH_SET';
+const ROTATION_INC = 'localState/ROTATION_INC';
 const STATE_RESET = 'localState/STATE_RESET';
 
 export const resetLocalState = () => ({
@@ -37,6 +38,10 @@ export const setFileFormat = (fileFormat) => ({
 export const setFilePath = (filePath) => ({
   type: FILE_PATH_SET,
   payload: { filePath },
+});
+
+export const increaseRotation = () => ({
+  type: ROTATION_INC,
 });
 
 
@@ -72,6 +77,9 @@ const localState = (state = initialState, { type, payload } = {}) => {
     case FILE_FORMAT_SET:
     case FILE_PATH_SET:
       return { ...state, ...payload };
+
+    case ROTATION_INC:
+      return { ...state, rotation: (state.rotation + 90) % 450 };
 
     default:
       return state;
