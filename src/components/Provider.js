@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import configureStore from '../configureStore';
 
@@ -16,6 +17,16 @@ const Provider = ({ initialState, children }) => {
       </DispatchContext.Provider>
     </StoreContext.Provider>
   );
+};
+
+Provider.propTypes = {
+  initialState: PropTypes.object,
+  children: PropTypes.element,
+};
+
+Provider.defaultProps = {
+  initialState: {},
+  children: null,
 };
 
 export default Provider;
