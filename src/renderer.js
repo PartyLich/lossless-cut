@@ -766,7 +766,7 @@ class App extends React.Component {
               />
               <JumpCutButton
                 type="start"
-                clickHandler={withBlur(this.jumpCutStart)}
+                clickHandler={this.jumpCutStart}
               />
             </div>
 
@@ -800,7 +800,7 @@ class App extends React.Component {
               />
               <JumpCutButton
                 type="end"
-                clickHandler={withBlur(this.jumpCutEnd)}
+                clickHandler={this.jumpCutEnd}
               />
             </div>
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import withBlur from '../withBlur';
+
 
 const JumpCutButton = ({
   type,
@@ -16,7 +18,7 @@ const JumpCutButton = ({
       title={`Jump to cut ${ type }`}
       role="button"
       tabIndex="0"
-      onClick={clickHandler}
+      onClick={withBlur(clickHandler)}
     />
   );
 };
