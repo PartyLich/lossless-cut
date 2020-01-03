@@ -2,11 +2,9 @@ import path from 'path';
 import { ipcRenderer, remote } from 'electron';
 import Mousetrap from 'mousetrap';
 import clamp from 'lodash/clamp';
-import clone from 'lodash/clone';
 import throttle from 'lodash/throttle';
 import Hammer from 'react-hammerjs';
 import trash from 'trash';
-import uuid from 'uuid';
 import classnames from 'classnames';
 import PQueue from 'p-queue';
 
@@ -33,7 +31,7 @@ import {
   getOutPath, formatDuration,
   toast, errorToast, showFfmpegFail,
   setFileNameTitle,
-  promptTimeOffset, generateColor,
+  promptTimeOffset,
 } from './util';
 
 import {
@@ -96,15 +94,6 @@ function withBlur(cb) {
   };
 }
 
-function createSegment({ start, end } = {}) {
-  return {
-    start,
-    end,
-    color: generateColor(),
-    uuid: uuid.v4(),
-  };
-}
-
 function doesPlayerSupportFile(streams) {
   // TODO improve, whitelist supported codecs instead
   return !streams.find((s) => ['hevc', 'prores'].includes(s.codec_name));
@@ -115,7 +104,6 @@ const getInitialLocalState = () => ({
   html5FriendlyPath: undefined,
   userHtml5ified: false,
   currentTime: undefined,
-  cutSegments: [createSegment()],
   detectedFileFormat: undefined,
   streams: [],
   rotation: 360,
@@ -349,8 +337,7 @@ class App extends React.Component {
   }
 
   getCutSeg(i) {
-    const { cutSegments } = this.state;
-    const { currentSeg } = this.props.store.cutSegments;
+    const { currentSeg, cutSegments } = this.props.store.cutSegments;
     return cutSegments[i !== undefined ? i : currentSeg];
   }
 
@@ -363,12 +350,9 @@ class App extends React.Component {
   }
 
   setCutTime(type, time) {
-    const { cutSegments } = this.state;
     const { currentSeg } = this.props.store.cutSegments;
 
-    const cloned = clone(cutSegments);
-    cloned[currentSeg][type] = time;
-    this.setState({ cutSegments: cloned });
+    this.dispatch(cutSegmentsReducer.setCutTime(currentSeg, type, time));
   }
 
   setCurrentSeg(i) {
@@ -468,41 +452,31 @@ class App extends React.Component {
   }
 
   addCutSegment = () => {
-    const { cutSegments, currentTime } = this.state;
+    const { currentTime } = this.state;
     const { duration } = this.props.store.localState;
+    const { cutSegments } = this.props.store.cutSegments;
 
     const cutStartTime = this.getCutStartTime();
     const cutEndTime = this.getCutEndTime();
 
     if (cutStartTime === undefined && cutEndTime === undefined) return;
 
-    const suggestedStart = currentTime;
-    const suggestedEnd = suggestedStart + 10;
+    const suggestedEnd = currentTime + 10;
 
-    const cutSegmentsNew = [
-      ...cutSegments,
-      createSegment({
-        start: currentTime,
-        end: suggestedEnd <= duration ? suggestedEnd : undefined,
-      }),
-    ];
 
-    const currentSegNew = cutSegmentsNew.length - 1;
-    this.setState({ cutSegments: cutSegmentsNew });
-    this.dispatch(cutSegmentsReducer.setCurrentSeg(currentSegNew));
+
+    const end = suggestedEnd <= duration
+      ? suggestedEnd
+      : undefined;
+    this.dispatch(cutSegmentsReducer.addCutSegment(currentTime, end));
+    this.dispatch(cutSegmentsReducer.setCurrentSeg(cutSegments.length));
   }
 
   removeCutSegment = () => {
-    const { cutSegments } = this.state;
-    const { currentSeg } = this.props.store.cutSegments;
+    const { currentSeg, cutSegments } = this.props.store.cutSegments;
 
-    if (cutSegments.length < 2) return;
-
-    const cutSegmentsNew = [...cutSegments];
-    cutSegmentsNew.splice(currentSeg, 1);
-
-    const currentSegNew = Math.min(currentSeg, cutSegmentsNew.length - 1);
-    this.setState({ cutSegments: cutSegmentsNew });
+    const currentSegNew = Math.min(currentSeg, cutSegments.length - 2);
+    this.dispatch(cutSegmentsReducer.removeCutSegment(currentSeg));
     this.dispatch(cutSegmentsReducer.setCurrentSeg(currentSegNew));
   }
 
@@ -555,7 +529,7 @@ class App extends React.Component {
   cutClick = async () => {
     const {
       cutSegments,
-    } = this.state;
+    } = this.props.store.cutSegments;
     const {
       autoMerge,
       customOutDir,
@@ -690,8 +664,8 @@ class App extends React.Component {
       detectedFileFormat,
       playbackRate,
       helpVisible,
-      cutSegments,
     } = this.state;
+    const { cutSegments } = this.props.store.cutSegments;
     const {
       autoMerge,
       includeAllStreams,
@@ -858,8 +832,8 @@ class App extends React.Component {
           playbackRate={playbackRate}
           segBgColor={segBgColor}
           selectOnChange={withBlur((e) => this.setFileFormat(e.target.value))}
-          deleteSegmentHandler={withBlur(() => this.removeCutSegment())}
-          addCutSegmentHandler={withBlur(() => this.addCutSegment())}
+          deleteSegmentHandler={withBlur(this.removeCutSegment)}
+          addCutSegmentHandler={withBlur(this.addCutSegment)}
           autoMergeToggle={withBlur(this.toggleAutoMerge)}
         />
 
