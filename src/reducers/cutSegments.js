@@ -1,3 +1,5 @@
+// @flow
+import type { TypedFSA } from './types';
 import combineReducers from './combineReducers';
 import createSegment from '../createSegment';
 import withReset from './withReset';
@@ -9,13 +11,36 @@ const CUTSEGMENT_ADD = 'cutSegments/CUTSEGMENT_ADD';
 const CURRENT_SEG_SET = 'cutSegments/CURRENT_SEG_SET';
 const STATE_RESET = 'cutSegments/STATE_RESET';
 
+type SetCutTimeAction = {|
+  type: typeof CUT_TIME_SET,
+  payload: {|
+      i: number,
+      segmentType: string,
+      time: number
+    |}
+|};
+type RemoveCutsegmentAction = TypedFSA<typeof CUTSEGMENT_REMOVE, number>;
+type AddCutsegmentAction = TypedFSA<typeof CUTSEGMENT_ADD, {|
+      start: ?number,
+      end: ?number
+    |}>;
+type SetCurrentSegAction = TypedFSA<typeof CURRENT_SEG_SET, number>;
+
+type Action =
+    | SetCutTimeAction
+    | RemoveCutsegmentAction
+    | AddCutsegmentAction
+    ;
+
 /**
  * @param {number} i segment index
  * @param {string} segmentType start|end
  * @param {number} time
  * @return {object} flux standard action
  */
-export const setCutTime = (i, segmentType, time) => ({
+export const setCutTime = (
+    i: number, segmentType: string, time: number
+): SetCutTimeAction => ({
   type: CUT_TIME_SET,
   payload: {
     i,
@@ -24,12 +49,14 @@ export const setCutTime = (i, segmentType, time) => ({
   },
 });
 
-export const setCurrentSeg = (i) => ({
+export const setCurrentSeg = (i: number): SetCurrentSegAction => ({
   type: CURRENT_SEG_SET,
   payload: Math.max(0, i),
 });
 
-export const addCutSegment = (start, end) => ({
+export const addCutSegment = (
+    start?: number, end?: number
+): AddCutsegmentAction => ({
   type: CUTSEGMENT_ADD,
   payload: {
     start,
@@ -37,7 +64,7 @@ export const addCutSegment = (start, end) => ({
   },
 });
 
-export const removeCutSegment = (i) => ({
+export const removeCutSegment = (i: number): RemoveCutsegmentAction => ({
   type: CUTSEGMENT_REMOVE,
   payload: i,
 });
@@ -61,14 +88,14 @@ const removeElement = (arr, index) => {
 };
 
 const cutSegmentsState = () => [createSegment()];
-const cutSegments = (state = cutSegmentsState(), { type, payload } = {}) => {
-  switch (type) {
+const cutSegments = (state = cutSegmentsState(), action: Action) => {
+  switch (action.type) {
     case CUT_TIME_SET:
-      return setSegCutTime(state, payload);
+      return setSegCutTime(state, action.payload);
     case CUTSEGMENT_ADD:
-      return [...state, createSegment(payload)];
+      return [...state, createSegment(action.payload)];
     case CUTSEGMENT_REMOVE:
-      return removeElement(state, payload);
+      return removeElement(state, action.payload);
     default:
       return state;
   }
@@ -82,7 +109,10 @@ const initialState = 0;
  * @param {object} action flux standard action
  * @return {object} next state
  */
-const currentSeg = (state = initialState, { type, payload } = {}) => {
+const currentSeg = (
+    state = initialState,
+    { type, payload }: SetCurrentSegAction = {}
+) => {
   switch (type) {
     case CURRENT_SEG_SET:
       return payload;
