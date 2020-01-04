@@ -2,6 +2,7 @@
   "extends": [
     "airbnb",
     "partylich",
+    "plugin:flowtype/recommended"
   ],
   "parser": "babel-eslint",
   "env": {
@@ -19,6 +20,7 @@
     'require-jsdoc': 'off'
   },
   "plugins": [
-    "react"
+    "react",
+    "flowtype"
   ]
 }
