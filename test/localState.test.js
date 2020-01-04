@@ -27,9 +27,9 @@ const createState = () => Object.assign({}, {
 
 test('localState reducer', (t) => {
   {
-    const msg = 'with no args';
+    const msg = 'with no args, return default state';
     const expected = createState();
-    const actual = reducer();
+    const actual = reducer(undefined, {});
     t.deepEqual(actual, expected, msg);
   }
 
