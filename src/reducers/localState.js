@@ -85,10 +85,7 @@ const initialState = {
 const localState = (state = initialState, { type, payload } = {}) => {
   switch (type) {
     case PLAYING_TOGGLE:
-      return { ...state, playing: !state.playing };
-
     case WORKING_TOGGLE:
-      return { ...state, working: !state.working };
     case HELP_TOGGLE:
       return { ...state, [payload]: !state[payload] };
 
