@@ -329,10 +329,18 @@ function mapCodecToOutputFormat(codec, type) {
   };
 
   if (map[codec]) return map[codec];
-  if (type === 'video') return { ext: 'mkv', format: 'matroska' };
-  if (type === 'audio') return { ext: 'mka', format: 'matroska' };
-  if (type === 'subtitle') return { ext: 'mks', format: 'matroska' };
-  return undefined;
+
+  const format = { format: 'matroska' };
+  switch (type) {
+    case 'video':
+      return { ...format, ext: 'mkv' };
+    case 'audio':
+      return { ...format, ext: 'mka' };
+    case 'subtitle':
+      return { ...format, ext: 'mks' };
+    default:
+      return undefined;
+  }
 }
 
 // https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
