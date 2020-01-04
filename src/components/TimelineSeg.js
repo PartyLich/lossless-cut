@@ -46,7 +46,7 @@ const TimelineSeg = ({
   const onThisSegClick = () => onSegClick(segNum);
 
   return (
-    <React.Fragment>
+    <>
       {cutStartTime !== undefined && (
         <div
           style={startMarkerStyle}
@@ -75,7 +75,7 @@ const TimelineSeg = ({
           onClick={onThisSegClick}
         />
       )}
-    </React.Fragment>
+    </>
   );
 };
 
