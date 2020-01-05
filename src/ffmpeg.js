@@ -25,14 +25,14 @@ function getPath(type: string) {
   const platform = os.platform();
 
   const map = {
-    darwin: `darwin/x64/${type}`,
-    win32: `win32/x64/${type}.exe`,
-    linux: `linux/x64/${type}`,
+    darwin: `darwin/x64/${ type }`,
+    win32: `win32/x64/${ type }.exe`,
+    linux: `linux/x64/${ type }`,
   };
 
   const subPath = map[platform];
 
-  if (!subPath) throw new Error(`Unsupported platform ${platform}`);
+  if (!subPath) throw new Error(`Unsupported platform ${ platform }`);
 
   const localPath = `node_modules/${ type }-static/bin/${ subPath }`;
   return isDev
@@ -81,18 +81,25 @@ async function cut({
   const cutFromArgs = cutFrom === 0 ? [] : ['-ss', cutFrom];
   const cutToArgs = cutTo === undefined || cutTo === videoDuration ? [] : ['-t', cutDuration];
 
-  const inputCutArgs = keyframeCut ? [
-    ...cutFromArgs,
-    '-i', filePath,
-    ...cutToArgs,
-    '-avoid_negative_ts', 'make_zero',
-  ] : [
-    '-i', filePath,
-    ...cutFromArgs,
-    ...cutToArgs,
-  ];
+  const inputCutArgs = keyframeCut
+      ? [
+        ...cutFromArgs,
+        '-i',
+        filePath,
+        ...cutToArgs,
+        '-avoid_negative_ts',
+        'make_zero',
+      ]
+      : [
+        '-i',
+        filePath,
+        ...cutFromArgs,
+        ...cutToArgs,
+      ];
 
-  const rotationArgs = rotation !== undefined ? ['-metadata:s:v:0', `rotate=${rotation}`] : [];
+  const rotationArgs = rotation !== undefined
+      ? ['-metadata:s:v:0', `rotate=${ rotation }`]
+      : [];
 
   const ffmpegArgs = [
     ...inputCutArgs,
@@ -255,7 +262,7 @@ async function mergeFiles(paths: Array<string>, outPath: string) {
   console.log('ffmpeg', ffmpegArgs.join(' '));
 
   // https://superuser.com/questions/787064/filename-quoting-in-ffmpeg-concat
-  const concatTxt = paths.map(file => `file '${path.join(file).replace(/'/g, "'\\''")}'`).join('\n');
+  const concatTxt = paths.map((file) => `file '${ path.join(file).replace(/'/g, '\'\\\'\'') }'`).join('\n');
 
   console.log(concatTxt);
 
@@ -274,7 +281,7 @@ async function mergeAnyFiles({ customOutDir, paths }: {
 }) {
   const firstPath = paths[0];
   const ext = path.extname(firstPath);
-  const outPath = getOutPath(customOutDir, firstPath, `merged${ext}`);
+  const outPath = getOutPath(customOutDir, firstPath, `merged${ ext }`);
   return mergeFiles(paths, outPath);
 }
 
@@ -284,20 +291,19 @@ async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }: {
     segmentPaths: Array<string>
 }) {
   const ext = path.extname(sourceFile);
-  const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
+  const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${ new Date().getTime() }${ ext }`);
   await mergeFiles(segmentPaths, outPath);
   await bluebird.map(segmentPaths, trash, { concurrency: 5 });
 }
 
-/**
- * ffmpeg only supports encoding certain formats, and some of the detected input
- * formats are not the same as the names used for encoding.
- * Therefore we have to map between detected format and encode format
- * See also ffmpeg -formats
- */
+// ffmpeg only supports encoding certain formats, and some of the detected input
+// formats are not the same as the names used for encoding.
+// Therefore we have to map between detected format and encode format
+// See also ffmpeg -formats
 function mapFormat(requestedFormat) {
   switch (requestedFormat) {
-    // These two cmds produce identical output, so we assume that encoding "ipod" means encoding m4a
+    // These two cmds produce identical output, so we assume that encoding
+    // "ipod" means encoding m4a
     // ffmpeg -i example.aac -c copy OutputFile2.m4a
     // ffmpeg -i example.aac -c copy -f ipod OutputFile.m4a
     // See also https://github.com/mifi/lossless-cut/issues/28
@@ -322,10 +328,11 @@ async function getFormat(filePath: string) {
   console.log('formats', formatsStr);
   const formats = (formatsStr || '').split(',');
 
-  // ffprobe sometimes returns a list of formats, try to be a bit smarter about it.
+  // ffprobe sometimes returns a list of formats, try to be a bit smarter about
+  // it.
   const bytes = await readChunk(filePath, 0, 4100);
   const ft = fileType(bytes) || {};
-  console.log(`fileType detected format ${JSON.stringify(ft)}`);
+  console.log(`fileType detected format ${ JSON.stringify(ft) }`);
   const assumedFormat = determineOutputFormat(formats, ft);
   return mapFormat(assumedFormat);
 }
@@ -385,14 +392,14 @@ async function extractAllStreams({ customOutDir, filePath }: {
     type: s.codec_type,
     format: mapCodecToOutputFormat(s.codec_name, s.codec_type),
   }))
-    .filter(it => it && it.format);
+      .filter((it) => it && it.format);
 
   // console.log(outStreams);
 
   const streamArgs = flatMap(outStreams, ({
     i, codec, type, format: { format, ext },
   }) => [
-    '-map', `0:${i}`, '-c', 'copy', '-f', format, '-y', getOutPath(customOutDir, filePath, `${i}-${type}-${codec}.${ext}`),
+    '-map', `0:${ i }`, '-c', 'copy', '-f', format, '-y', getOutPath(customOutDir, filePath, `${ i }-${ type }-${ codec }.${ ext }`),
   ]);
 
   const ffmpegArgs = [
@@ -407,7 +414,11 @@ async function extractAllStreams({ customOutDir, filePath }: {
   console.log(stdout);
 }
 
-async function renderFrame(timestamp: number, filePath: string, rotation: number) {
+async function renderFrame(
+    timestamp: number,
+    filePath: string,
+    rotation: number
+) {
   /* eslint-disable no-useless-computed-key */
   const transpose = {
     [90]: 'transpose=2',
@@ -420,7 +431,7 @@ async function renderFrame(timestamp: number, filePath: string, rotation: number
     ...(rotation !== undefined ? ['-noautorotate'] : []),
     '-i', filePath,
     // ...(rotation !== undefined ? ['-metadata:s:v:0', 'rotate=0'] : []), // Reset the rotation metadata first
-    ...(rotation !== undefined && rotation > 0 ? ['-vf', `${transpose[rotation]}`] : []),
+    ...(rotation !== undefined && rotation > 0 ? ['-vf', `${ transpose[rotation] }`] : []),
     '-f', 'image2',
     '-vframes', '1',
     '-q:v', '10',
