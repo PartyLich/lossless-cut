@@ -155,36 +155,38 @@ async function cutMultiple({
 
   const outFiles = [];
 
+  const promises = [];
   let i = 0;
+  const segmentProgress = (progress) => onSingleProgress(i, progress);
   // eslint-disable-next-line no-restricted-syntax
   for (const { cutFrom, cutTo, cutToApparent } of segments) {
-    const ext = path.extname(filePath) || `.${format}`;
-    const cutSpecification = `${formatDuration(cutFrom, true)}-${formatDuration(cutToApparent, true)}`;
+    const ext = path.extname(filePath) || `.${ format }`;
+    const cutSpecification = `${ formatDuration(cutFrom, true) }-${ formatDuration(cutToApparent, true) }`;
 
-    const outPath = getOutPath(customOutDir, filePath, `${cutSpecification}${ext}`);
+    const outPath = getOutPath(customOutDir, filePath, `${ cutSpecification }${ ext }`);
 
-    // eslint-disable-next-line no-await-in-loop
-    await cut({
-      outPath,
-      customOutDir,
-      filePath,
-      format,
-      videoDuration,
-      rotation,
-      includeAllStreams,
-      stripAudio,
-      keyframeCut,
-      cutFrom,
-      cutTo,
-      cutToApparent,
-      // eslint-disable-next-line no-loop-func
-      onProgress: progress => onSingleProgress(i, progress),
-    });
+    promises.push(
+        cut({
+          outPath,
+          customOutDir,
+          filePath,
+          format,
+          videoDuration,
+          rotation,
+          includeAllStreams,
+          stripAudio,
+          keyframeCut,
+          cutFrom,
+          cutTo,
+          cutToApparent,
+          onProgress: segmentProgress,
+        })
+    );
 
     outFiles.push(outPath);
-
     i += 1;
   }
+  await Promise.all(promises);
 
   return outFiles;
 }
