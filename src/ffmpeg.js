@@ -1,3 +1,4 @@
+// @flow
 import os from 'os';
 import path from 'path';
 import execa from 'execa';
@@ -18,7 +19,9 @@ import {
   parseTimeSpan,
 } from './util';
 
-function getPath(type) {
+type Format = {| ext: string, format: string |}
+
+function getPath(type: string) {
   const platform = os.platform();
 
   const map = {
@@ -37,12 +40,12 @@ function getPath(type) {
     : path.join(window.process.resourcesPath, localPath);
 }
 
-async function runFfprobe(args) {
+async function runFfprobe(args: Array<string>) {
   const ffprobePath = await getPath('ffprobe');
   return execa(ffprobePath, args);
 }
 
-async function runFfmpeg(args) {
+async function runFfmpeg(args: Array<string>) {
   const ffmpegPath = await getPath('ffmpeg');
   return execa(ffmpegPath, args);
 }
@@ -124,8 +127,24 @@ async function cut({
 }
 
 async function cutMultiple({
-  customOutDir, filePath, format, segments: segmentsUnsorted, videoDuration, rotation,
+  customOutDir, filePath, format, segments: segmentsUnsorted,
+  videoDuration, rotation,
   includeAllStreams, onProgress, stripAudio, keyframeCut,
+}: {
+  customOutDir: string,
+  filePath: string,
+  format: string,
+  segments: Array<{
+    cutFrom: number,
+    cutTo: number,
+    cutToApparent: number,
+  }>,
+  videoDuration: number,
+  rotation: number,
+  includeAllStreams: boolean,
+  onProgress: (number) => any,
+  stripAudio: boolean,
+  keyframeCut: boolean,
 }) {
   const segments = sortBy(segmentsUnsorted, 'cutFrom');
   const singleProgresses = {};
@@ -170,7 +189,7 @@ async function cutMultiple({
   return outFiles;
 }
 
-async function html5ify(filePath, outPath, encodeVideo) {
+async function html5ify(filePath: string, outPath: string, encodeVideo: boolean) {
   console.log('Making HTML5 friendly version', { filePath, outPath, encodeVideo });
 
   const videoArgs = encodeVideo
@@ -190,24 +209,24 @@ async function html5ify(filePath, outPath, encodeVideo) {
   await transferTimestamps(filePath, outPath);
 }
 
-async function getDuration(filePpath) {
+async function getDuration(filePath: string) {
   // https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
-  const { stdout } = await runFfprobe(['-i', filePpath, '-show_entries', 'format=duration', '-print_format', 'json']);
+  const { stdout } = await runFfprobe(['-i', filePath, '-show_entries', 'format=duration', '-print_format', 'json']);
   return parseFloat(JSON.parse(stdout).format.duration);
 }
 
 // This is just used to load something into the player with correct length,
 // so user can seek and then we render frames using ffmpeg
-async function html5ifyDummy(filePath, outPath) {
+async function html5ifyDummy(filePath: string, outPath: string) {
   console.log('Making HTML5 friendly dummy', { filePath, outPath });
 
   const duration = await getDuration(filePath);
 
-  const ffmpegArgs = [
+  const ffmpegArgs: Array<string> = [
     // This is just a fast way of generating an empty dummy file
     // TODO use existing audio track file if it has one
     '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
-    '-t', duration,
+    '-t', duration.toString(),
     '-acodec', 'flac',
     '-y', outPath,
   ];
@@ -220,7 +239,7 @@ async function html5ifyDummy(filePath, outPath) {
   await transferTimestamps(filePath, outPath);
 }
 
-async function mergeFiles(paths, outPath) {
+async function mergeFiles(paths: Array<string>, outPath: string) {
   console.log('Merging files', { paths }, 'to', outPath);
 
   // https://blog.yo1.dog/fix-for-ffmpeg-protocol-not-on-whitelist-error-for-urls/
@@ -247,14 +266,21 @@ async function mergeFiles(paths, outPath) {
   console.log(result.stdout);
 }
 
-async function mergeAnyFiles({ customOutDir, paths }) {
+async function mergeAnyFiles({ customOutDir, paths }: {
+  customOutDir: string,
+  paths: Array<string>
+}) {
   const firstPath = paths[0];
   const ext = path.extname(firstPath);
   const outPath = getOutPath(customOutDir, firstPath, `merged${ext}`);
   return mergeFiles(paths, outPath);
 }
 
-async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }) {
+async function autoMergeSegments({ customOutDir, sourceFile, segmentPaths }: {
+    customOutDir: string,
+    sourceFile: string,
+    segmentPaths: Array<string>
+}) {
   const ext = path.extname(sourceFile);
   const outPath = getOutPath(customOutDir, sourceFile, `cut-merged-${new Date().getTime()}${ext}`);
   await mergeFiles(segmentPaths, outPath);
@@ -279,12 +305,12 @@ function mapFormat(requestedFormat) {
   }
 }
 
-function determineOutputFormat(ffprobeFormats, ft) {
+function determineOutputFormat(ffprobeFormats: Array<string>, ft: Format) {
   if (ffprobeFormats.includes(ft.ext)) return ft.ext;
   return ffprobeFormats[0] || undefined;
 }
 
-async function getFormat(filePath) {
+async function getFormat(filePath: string) {
   console.log('getFormat', filePath);
 
   const { stdout } = await runFfprobe([
@@ -302,7 +328,7 @@ async function getFormat(filePath) {
   return mapFormat(assumedFormat);
 }
 
-async function getAllStreams(filePath) {
+async function getAllStreams(filePath: string) {
   const { stdout } = await runFfprobe([
     '-of', 'json', '-show_entries', 'stream', '-i', filePath,
   ]);
@@ -310,7 +336,7 @@ async function getAllStreams(filePath) {
   return JSON.parse(stdout);
 }
 
-function mapCodecToOutputFormat(codec, type) {
+function mapCodecToOutputFormat(codec: string, type: string): ?Format {
   const map = {
     // See mapFormat
     m4a: { ext: 'm4a', format: 'ipod' },
@@ -344,7 +370,10 @@ function mapCodecToOutputFormat(codec, type) {
 }
 
 // https://stackoverflow.com/questions/32922226/extract-every-audio-and-subtitles-from-a-video-with-ffmpeg
-async function extractAllStreams({ customOutDir, filePath }) {
+async function extractAllStreams({ customOutDir, filePath }: {
+  customOutDir: string,
+  filePath: string,
+}) {
   const { streams } = await getAllStreams(filePath);
   console.log('streams', streams);
 
@@ -376,12 +405,14 @@ async function extractAllStreams({ customOutDir, filePath }) {
   console.log(stdout);
 }
 
-async function renderFrame(timestamp, filePath, rotation) {
+async function renderFrame(timestamp: number, filePath: string, rotation: number) {
+  /* eslint-disable no-useless-computed-key */
   const transpose = {
-    90: 'transpose=2',
-    180: 'transpose=1,transpose=1',
-    270: 'transpose=1',
+    [90]: 'transpose=2',
+    [180]: 'transpose=1,transpose=1',
+    [270]: 'transpose=1',
   };
+  /* eslint-enable no-useless-computed-key */
   const args = [
     '-ss', timestamp,
     ...(rotation !== undefined ? ['-noautorotate'] : []),
