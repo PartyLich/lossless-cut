@@ -130,6 +130,8 @@ const parseTimeSpan = (str) => {
   };
 };
 
+const NOOP = () => { };
+
 export {
   formatDuration,
   parseDuration,
@@ -143,4 +145,5 @@ export {
   promptTimeOffset,
   generateColor,
   parseTimeSpan,
+  NOOP,
 };
