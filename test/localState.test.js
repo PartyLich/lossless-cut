@@ -20,7 +20,7 @@ const createState = () => Object.assign({}, {
   rotation: 360,
   cutProgress: undefined,
   startTimeOffset: 0,
-  framePath: undefined,
+  framePath: '',
   rotationPreviewRequested: false,
   helpVisible: false,
 });
@@ -259,6 +259,22 @@ test('localState toggleHelp', (t) => {
         }),
         (state) => reducer(state, action())
     )();
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('localState setFramePath', (t) => {
+  const action = actions.setFramePath;
+
+  {
+    const msg = 'sets framePath';
+    const expected = {
+      ...createState(),
+      framePath: 'foo/bar/baz',
+    };
+    const actual = reducer(undefined, action('foo/bar/baz'));
     t.deepEqual(actual, expected, msg);
   }
 

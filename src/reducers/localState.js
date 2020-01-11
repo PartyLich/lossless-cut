@@ -8,6 +8,7 @@ const PLAYING_SET = 'localState/PLAYING_SET';
 const DURATION_SET = 'localState/DURATION_SET';
 const FILE_FORMAT_SET = 'localState/FILE_FORMAT_SET';
 const FILE_PATH_SET = 'localState/FILE_PATH_SET';
+const FRAME_PATH_SET = 'localState/FRAME_PATH_SET';
 const HELP_TOGGLE = 'localState/HELP_TOGGLE';
 const ROTATION_INC = 'localState/ROTATION_INC';
 const STATE_RESET = 'localState/STATE_RESET';
@@ -41,6 +42,11 @@ export const setFilePath = (filePath) => ({
   payload: { filePath },
 });
 
+export const setFramePath = (framePath) => ({
+  type: FRAME_PATH_SET,
+  payload: { framePath },
+});
+
 export const increaseRotation = () => ({
   type: ROTATION_INC,
 });
@@ -65,7 +71,7 @@ const initialState = {
   rotation: 360,
   cutProgress: undefined,
   startTimeOffset: 0,
-  framePath: undefined,
+  framePath: '',
   rotationPreviewRequested: false,
   helpVisible: false,
 };
@@ -85,6 +91,7 @@ const localState = (state = initialState, { type, payload } = {}) => {
     case DURATION_SET:
     case FILE_FORMAT_SET:
     case FILE_PATH_SET:
+    case FRAME_PATH_SET:
       return { ...state, ...payload };
 
     case ROTATION_INC:

@@ -109,7 +109,6 @@ const getInitialLocalState = () => ({
   streams: [],
   cutProgress: undefined,
   startTimeOffset: 0,
-  framePath: undefined,
   rotationPreviewRequested: false,
 });
 
@@ -414,9 +413,11 @@ class App extends React.Component {
         if (currentTime == null || !filePath) return;
 
         try {
-          if (this.state.framePath) URL.revokeObjectURL(this.state.framePath);
+          if (this.props.store.localState.framePath) {
+            URL.revokeObjectURL(this.props.store.localState.framePath);
+          }
           const framePath = await renderFrame(currentTime, filePath, rotation);
-          this.setState({ framePath });
+          this.dispatch(localStateReducer.setFramePath(framePath));
         } catch (err) {
           console.error(err);
         }
@@ -676,6 +677,7 @@ class App extends React.Component {
       duration: durationRaw,
       fileFormat,
       filePath,
+      framePath,
       helpVisible,
       playing,
       working,
@@ -712,8 +714,8 @@ class App extends React.Component {
           onPause={() => this.onPlayingChange(false)}
           onDurationChange={(e) => this.onDurationChange(e.target.duration)}
           onTimeUpdate={this.onTimeUpdate}
-          frameRender={this.state.framePath && this.frameRenderEnabled()}
-          framePath={this.state.framePath}
+          frameRender={framePath && this.frameRenderEnabled()}
+          framePath={framePath}
         />
         {/* eslint-enable jsx-a11y/media-has-caption */}
 
