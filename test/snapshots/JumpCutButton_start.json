@@ -1,0 +1,11 @@
+{
+  "type": "i",
+  "props": {
+    "className": "fa fa-step-backward JumpCutButton JumpCutButton--start",
+    "title": "Jump to cut start",
+    "role": "button",
+    "tabIndex": "0",
+    "onClick": "[Function]"
+  },
+  "children": null
+}

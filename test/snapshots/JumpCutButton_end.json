@@ -1,0 +1,11 @@
+{
+  "type": "i",
+  "props": {
+    "className": "fa fa-step-forward JumpCutButton JumpCutButton--end",
+    "title": "Jump to cut end",
+    "role": "button",
+    "tabIndex": "0",
+    "onClick": "[Function]"
+  },
+  "children": null
+}

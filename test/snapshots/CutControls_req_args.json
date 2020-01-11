@@ -1,0 +1,56 @@
+{
+  "type": "div",
+  "props": {},
+  "children": [
+    {
+      "type": "i",
+      "props": {
+        "style": {
+          "background": "fff"
+        },
+        "title": "Set cut start to current position",
+        "className": "button fa fa-angle-left",
+        "role": "button",
+        "tabIndex": "0",
+        "onClick": "[Function]"
+      },
+      "children": null
+    },
+    {
+      "type": "i",
+      "props": {
+        "title": "bar",
+        "className": "button fa fa-scissors",
+        "role": "button",
+        "tabIndex": "0",
+        "onClick": "[Function]"
+      },
+      "children": null
+    },
+    {
+      "type": "i",
+      "props": {
+        "title": "Delete source file",
+        "className": "button fa fa-trash",
+        "role": "button",
+        "tabIndex": "0",
+        "onClick": "[Function]"
+      },
+      "children": null
+    },
+    {
+      "type": "i",
+      "props": {
+        "style": {
+          "background": "fff"
+        },
+        "title": "Set cut end to current position",
+        "className": "button fa fa-angle-right",
+        "role": "button",
+        "tabIndex": "0",
+        "onClick": "[Function]"
+      },
+      "children": null
+    }
+  ]
+}

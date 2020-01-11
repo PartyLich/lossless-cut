@@ -1,0 +1,98 @@
+{
+  "type": "div",
+  "props": {
+    "className": "left-menu"
+  },
+  "children": [
+    {
+      "type": "select",
+      "props": {
+        "style": {
+          "width": 60
+        },
+        "title": "Format of current file",
+        "onChange": "[Function]"
+      },
+      "children": [
+        {
+          "type": "option",
+          "props": {
+            "value": "",
+            "disabled": true
+          },
+          "children": [
+            "Out fmt"
+          ]
+        },
+        {
+          "type": "option",
+          "props": {
+            "value": "foo"
+          },
+          "children": [
+            "foo"
+          ]
+        },
+        {
+          "type": "option",
+          "props": {
+            "value": "bar"
+          },
+          "children": [
+            "bar"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "span",
+      "props": {
+        "className": "left-menu__infospan",
+        "title": "Playback rate"
+      },
+      "children": [
+        1
+      ]
+    },
+    {
+      "type": "button",
+      "props": {
+        "className": "left-menu__infospan",
+        "style": {
+          "background": "foo",
+          "color": "white"
+        },
+        "disabled": true,
+        "type": "button",
+        "title": "Delete selected segment 1",
+        "onClick": "[Function]"
+      },
+      "children": [
+        "d",
+        1
+      ]
+    },
+    {
+      "type": "button",
+      "props": {
+        "type": "button",
+        "title": "Add cut segment",
+        "onClick": "[Function]"
+      },
+      "children": [
+        "c+"
+      ]
+    },
+    {
+      "type": "button",
+      "props": {
+        "type": "button",
+        "title": "Auto merge segments to one file after export (and trash segments)? No merging",
+        "onClick": "[Function]"
+      },
+      "children": [
+        "nm"
+      ]
+    }
+  ]
+}

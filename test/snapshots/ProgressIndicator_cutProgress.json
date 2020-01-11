@@ -1,0 +1,29 @@
+{
+  "type": "div",
+  "props": {
+    "className": "ProgressIndicator"
+  },
+  "children": [
+    {
+      "type": "i",
+      "props": {
+        "className": "fa fa-cog fa-spin fa-3x fa-fw",
+        "style": {
+          "verticalAlign": "middle",
+          "width": "1em",
+          "height": "1em"
+        }
+      },
+      "children": null
+    },
+    {
+      "type": "span",
+      "props": {
+        "className": "ProgressIndicator__cutProgress"
+      },
+      "children": [
+        "50 %"
+      ]
+    }
+  ]
+}

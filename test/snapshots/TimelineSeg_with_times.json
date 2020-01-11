@@ -1,0 +1,36 @@
+{
+  "type": "Fragment",
+  "props": {},
+  "children": [
+    {
+      "type": "div",
+      "props": {
+        "style": {
+          "background": "fff",
+          "left": "0%",
+          "borderLeft": "2px solid fff"
+        },
+        "className": "cut-time-marker cut-time-marker--start",
+        "role": "button",
+        "tabIndex": "0",
+        "onClick": "[Function]"
+      },
+      "children": null
+    },
+    {
+      "type": "div",
+      "props": {
+        "style": {
+          "background": "fff",
+          "left": "0%",
+          "borderRight": "2px solid fff"
+        },
+        "className": "cut-time-marker cut-time-marker--end",
+        "role": "button",
+        "tabIndex": "0",
+        "onClick": "[Function]"
+      },
+      "children": null
+    }
+  ]
+}

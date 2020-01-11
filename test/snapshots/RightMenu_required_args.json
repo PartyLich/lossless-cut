@@ -1,0 +1,86 @@
+{
+  "type": "div",
+  "props": {
+    "className": "RightMenu"
+  },
+  "children": [
+    {
+      "type": "button",
+      "props": {
+        "type": "button",
+        "title": "Cut mode normal cut",
+        "onClick": "[Function]"
+      },
+      "children": [
+        "nc"
+      ]
+    },
+    {
+      "type": "button",
+      "props": {
+        "type": "button",
+        "title": "Set output streams. Current: include (and cut) all streams",
+        "onClick": "[Function]"
+      },
+      "children": [
+        "all"
+      ]
+    },
+    {
+      "type": "button",
+      "props": {
+        "type": "button",
+        "title": "Delete audio? Current: keep audio tracks",
+        "onClick": "[Function]"
+      },
+      "children": [
+        "ka"
+      ]
+    },
+    {
+      "type": "button",
+      "props": {
+        "type": "button",
+        "title": "Set output rotation. Current: ",
+        "onClick": "[Function]"
+      },
+      "children": [
+        "-°"
+      ]
+    },
+    {
+      "type": "button",
+      "props": {
+        "type": "button",
+        "title": "Custom output dir (cancel to restore default). Current: Not set (use input dir)",
+        "onClick": "[Function]"
+      },
+      "children": [
+        "id"
+      ]
+    },
+    {
+      "type": "i",
+      "props": {
+        "title": "Capture frame",
+        "style": {
+          "margin": "-.4em -.2em"
+        },
+        "className": "button fa fa-camera",
+        "role": "button",
+        "tabIndex": "0",
+        "onClick": "[Function]"
+      },
+      "children": null
+    },
+    {
+      "type": "button",
+      "props": {
+        "type": "button",
+        "title": "Capture frame format",
+        "onClick": "[Function]"
+      },
+      "children": null
+    }
+  ]
+}
