@@ -1,0 +1,26 @@
+{
+  "type": "div",
+  "props": {
+    "className": "DragDropField"
+  },
+  "children": [
+    {
+      "type": "div",
+      "props": {
+        "style": {
+          "fontSize": "9vw"
+        }
+      },
+      "children": [
+        "DROP VIDEO"
+      ]
+    },
+    {
+      "type": "div",
+      "props": {},
+      "children": [
+        "PRESS H FOR HELP"
+      ]
+    }
+  ]
+}
