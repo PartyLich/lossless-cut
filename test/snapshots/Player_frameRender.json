@@ -1,0 +1,30 @@
+{
+  "type": "div",
+  "props": {
+    "className": "Player"
+  },
+  "children": [
+    {
+      "type": "video",
+      "props": {
+        "className": "Player__video",
+        "src": "",
+        "onRateChange": "[Function]",
+        "onPlay": "[Function]",
+        "onPause": "[Function]",
+        "onDurationChange": "[Function]",
+        "onTimeUpdate": "[Function]"
+      },
+      "children": null
+    },
+    {
+      "type": "img",
+      "props": {
+        "className": "Player__frameImg",
+        "src": "",
+        "alt": ""
+      },
+      "children": null
+    }
+  ]
+}
