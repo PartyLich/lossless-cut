@@ -714,7 +714,7 @@ class App extends React.Component {
           onPause={() => this.onPlayingChange(false)}
           onDurationChange={(e) => this.onDurationChange(e.target.duration)}
           onTimeUpdate={this.onTimeUpdate}
-          frameRender={framePath && this.frameRenderEnabled()}
+          frameRender={!!framePath && this.frameRenderEnabled()}
           framePath={framePath}
         />
         {/* eslint-enable jsx-a11y/media-has-caption */}
