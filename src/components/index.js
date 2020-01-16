@@ -1,3 +1,4 @@
+export { default as App } from './App';
 export { default as CutControls } from './CutControls';
 export { default as CutTimeInput } from './CutTimeInput';
 export { default as DragDropField } from './DragDropField';
