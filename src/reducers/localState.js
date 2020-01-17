@@ -5,6 +5,7 @@ const WORKING_TOGGLE = 'localState/WORKING_TOGGLE';
 const WORKING_SET = 'localState/WORKING_SET';
 const PLAYING_TOGGLE = 'localState/PLAYING_TOGGLE';
 const PLAYING_SET = 'localState/PLAYING_SET';
+const CUT_PROGRESS_SET = 'localState/CUT_PROGRESS_SET';
 const DURATION_SET = 'localState/DURATION_SET';
 const FILE_FORMAT_SET = 'localState/FILE_FORMAT_SET';
 const FILE_PATH_SET = 'localState/FILE_PATH_SET';
@@ -25,6 +26,11 @@ export const setWorking = (working) => ({
 export const setPlaying = (playing) => ({
   type: PLAYING_SET,
   payload: { playing },
+});
+
+export const setCutProgress = (cutProgress) => ({
+  type: CUT_PROGRESS_SET,
+  payload: { cutProgress },
 });
 
 export const setDuration = (duration) => ({
@@ -88,6 +94,7 @@ const localState = (state = initialState, { type, payload } = {}) => {
 
     case WORKING_SET:
     case PLAYING_SET:
+    case CUT_PROGRESS_SET:
     case DURATION_SET:
     case FILE_FORMAT_SET:
     case FILE_PATH_SET:

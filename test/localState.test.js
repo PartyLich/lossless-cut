@@ -280,3 +280,19 @@ test('localState setFramePath', (t) => {
 
   t.end();
 });
+
+test('localState setCutProgress', (t) => {
+  const action = actions.setCutProgress;
+
+  {
+    const msg = 'sets cutProgress';
+    const expected = {
+      ...createState(),
+      cutProgress: 0.50,
+    };
+    const actual = reducer(undefined, action(0.5));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
