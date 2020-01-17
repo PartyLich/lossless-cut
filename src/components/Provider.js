@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import configureStore from '../configureStore';
+import useStore from '../configureStore';
 
 
 export const StoreContext = React.createContext();
 export const DispatchContext = React.createContext();
 
 const Provider = ({ initialState, children }) => {
-  const store = configureStore(initialState);
+  const store = useStore(initialState);
 
   return (
     <StoreContext.Provider value={store.state}>
