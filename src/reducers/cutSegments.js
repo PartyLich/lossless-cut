@@ -1,11 +1,13 @@
 import combineReducers from './combineReducers';
 import createSegment from '../createSegment';
+import withReset from './withReset';
 
 
 const CUT_TIME_SET = 'cutSegments/CUT_TIME_SET';
 const CUTSEGMENT_REMOVE = 'cutSegments/CUTSEGMENT_REMOVE';
 const CUTSEGMENT_ADD = 'cutSegments/CUTSEGMENT_ADD';
 const CURRENT_SEG_SET = 'cutSegments/CURRENT_SEG_SET';
+const STATE_RESET = 'cutSegments/STATE_RESET';
 
 /**
  * @param {number} i segment index
@@ -38,6 +40,10 @@ export const addCutSegment = (start, end) => ({
 export const removeCutSegment = (i) => ({
   type: CUTSEGMENT_REMOVE,
   payload: i,
+});
+
+export const resetCutSegmentState = () => ({
+  type: STATE_RESET,
 });
 
 
@@ -87,7 +93,7 @@ const currentSeg = (state = initialState, { type, payload } = {}) => {
   }
 };
 
-export default combineReducers({
+export default withReset(STATE_RESET, combineReducers({
   currentSeg,
   cutSegments,
-});
+}));
