@@ -28,19 +28,23 @@ const delChar = (oldText, newText, i) => {
     oldText.slice(i + 1);
 };
 
+const changeChar = (diff) => (oldText, newText, i) => {
+  if (diff > 0) return addChar(oldText, newText, i);
+  if (diff < 0) return delChar(oldText, newText, i);
+  return newText;
+};
+
 const baseClassName = 'CutTimeInput';
 
 const CutTimeInput = ({
   type,
+  apparentCutTime,
+  cutText,
   startTimeOffset,
   setCutTime,
-  apparentCutTime,
+  setCutText,
 }) => {
   const formattedDuration = formatDuration(apparentCutTime + startTimeOffset);
-  const [timeState, setTimeState] = useState({
-    timeString: formattedDuration,
-    isManual: false,
-  });
   const [caret, setCaret] = useState(0);
   const className = `${ baseClassName } ${ baseClassName }--${ type }`;
   const inputEl = useRef(null);
@@ -54,49 +58,35 @@ const CutTimeInput = ({
 
   const handleCutTimeInput = useCallback((text) => {
     const dotPositions = [2, 5, 8];
-    let { timeString, isManual } = timeState;
+    const timeString = cutText || formattedDuration;
     let newTimeString = text;
     let i = inputEl.current.selectionStart;
-    if (!isManual) timeString = formattedDuration;
 
-    if (text.length > timeString.length) {
-      newTimeString = addChar(timeString, text, i);
-      if (dotPositions.includes(i)) i += 1;
-    }
-    if (text.length < timeString.length) {
-      newTimeString = delChar(timeString, text, i);
-    }
+    const diff = text.length - timeString.length;
+    newTimeString = changeChar(diff)(timeString, text, i);
+    if (diff > 0 && dotPositions.includes(i)) i += 1;
     setCaret(i);
 
     const time = parseDuration(newTimeString);
-    if (time !== undefined) {
-      timeString = formatDuration(time + startTimeOffset);
-      isManual = false;
-      setCutTime(type, time - startTimeOffset);
-    } else {
-      timeString = text;
-      isManual = true;
+    if (time === undefined) {
+      setCutText(type)(text);
+      return;
     }
 
-    return setTimeState({
-      timeString,
-      isManual,
-    });
+    setCutTime(type, time - startTimeOffset);
+    setCutText(type)('');
   });
 
   return (
     <input
       className={className}
       style={{
-        color: timeState.isManual ? '#dc1d1d' : undefined,
+        color: cutText ? '#dc1d1d' : undefined,
       }}
       type="text"
       ref={inputEl}
       onChange={(e) => handleCutTimeInput(e.target.value)}
-      value={timeState.isManual
-        ? timeState.timeString
-        : formattedDuration
-      }
+      value={cutText || formattedDuration}
     />
   );
 };
@@ -104,9 +94,15 @@ const CutTimeInput = ({
 
 CutTimeInput.propTypes = {
   type: PropTypes.string.isRequired,
+  apparentCutTime: PropTypes.number.isRequired,
+  cutText: PropTypes.string,
   startTimeOffset: PropTypes.number.isRequired,
   setCutTime: PropTypes.func.isRequired,
-  apparentCutTime: PropTypes.number.isRequired,
+  setCutText: PropTypes.func.isRequired,
+};
+
+CutTimeInput.defaultProps = {
+  cutText: '',
 };
 
 export default CutTimeInput;
