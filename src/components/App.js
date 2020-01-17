@@ -135,7 +135,6 @@ const getInitialLocalState = () => ({
   currentTime: undefined,
   detectedFileFormat: undefined,
   streams: [],
-  cutProgress: undefined,
   startTimeOffset: 0,
   rotationPreviewRequested: false,
 });
@@ -319,7 +318,7 @@ class App extends React.Component {
   }
 
   onCutProgress = (cutProgress) => {
-    this.setState({ cutProgress });
+    this.dispatch(localStateReducer.setCutProgress(cutProgress));
   }
 
   setCutStart = () => {
@@ -701,7 +700,6 @@ class App extends React.Component {
 
   render() {
     const {
-      cutProgress,
       currentTime,
       detectedFileFormat,
       playbackRate,
@@ -716,6 +714,7 @@ class App extends React.Component {
       captureFormat,
     } = this.props.store.globalState;
     const {
+      cutProgress,
       duration: durationRaw,
       fileFormat,
       filePath,
