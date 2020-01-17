@@ -60,8 +60,8 @@ const removeElement = (arr, index) => {
   return [...arr.slice(0, index), ...arr.slice(index + 1)];
 };
 
-const cutSegmentsState = [createSegment()];
-const cutSegments = (state = cutSegmentsState, { type, payload } = {}) => {
+const cutSegmentsState = () => [createSegment()];
+const cutSegments = (state = cutSegmentsState(), { type, payload } = {}) => {
   switch (type) {
     case CUT_TIME_SET:
       return setSegCutTime(state, payload);
