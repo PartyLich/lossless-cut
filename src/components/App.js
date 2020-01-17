@@ -54,6 +54,7 @@ import './TimelineWrapper.scss';
 import * as globalStateReducer from '../reducers/globalState';
 import * as localStateReducer from '../reducers/localState';
 import * as cutSegmentsReducer from '../reducers/cutSegments';
+import * as cutTimeActions from '../reducers/cutTimeInput';
 
 
 function getVideo() {
@@ -123,6 +124,7 @@ class App extends React.Component {
 
     this.setCurrentSeg = this.setCurrentSeg.bind(this);
     this.setCutTime = this.setCutTime.bind(this);
+    this.setCutText = this.setCutText.bind(this);
     this.toggleHelp = () => this.dispatch(localStateReducer.toggleHelp());
     this.onDurationChange = (duration) => {
       this.dispatch(localStateReducer.setDuration(duration));
@@ -348,6 +350,23 @@ class App extends React.Component {
     const { currentSeg } = this.props.store.cutSegments;
 
     this.dispatch(cutSegmentsReducer.setCutTime(currentSeg, type, time));
+  }
+
+  setCutText(type) {
+    return (text) => {
+      switch (type) {
+        case 'start':
+          this.dispatch(cutTimeActions.setStartText(text));
+          break;
+
+        case 'end':
+          this.dispatch(cutTimeActions.setEndText(text));
+          break;
+
+        default:
+          throw new Error('Invalid cut text type');
+      }
+    };
   }
 
   setCurrentSeg(i) {
@@ -636,6 +655,8 @@ class App extends React.Component {
     video.playbackRate = 1;
     this.setState(getInitialLocalState());
     this.dispatch(localStateReducer.resetLocalState());
+    this.dispatch(cutSegmentsReducer.resetCutSegmentState());
+    this.dispatch(cutTimeActions.resetState());
     setFileNameTitle();
   }
 
@@ -760,6 +781,8 @@ class App extends React.Component {
                 type="start"
                 startTimeOffset={this.state.startTimeOffset}
                 setCutTime={this.setCutTime}
+                setCutText={this.setCutText}
+                cutText={this.props.store.cutTime.startText}
                 apparentCutTime={this.getApparentCutStartTime()}
               />
               <JumpCutButton
@@ -793,7 +816,9 @@ class App extends React.Component {
               <CutTimeInput
                 type="end"
                 startTimeOffset={this.state.startTimeOffset}
+                cutText={this.props.store.cutTime.endText}
                 setCutTime={this.setCutTime}
+                setCutText={this.setCutText}
                 apparentCutTime={this.getApparentCutEndTime()}
               />
               <JumpCutButton
