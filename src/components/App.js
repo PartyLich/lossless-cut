@@ -97,6 +97,38 @@ function doesPlayerSupportFile(streams) {
   // return true;
 }
 
+const throttledRenderFrame = async (
+  dispatch,
+  queue,
+  frameRenderEnabled = false,
+  filePath = '',
+  framePath = '',
+  time = 0,
+  rotation = 0,
+) => {
+  if (!queue) return;
+
+  if (queue.size < 2) {
+    queue.add(async () => {
+      if (!frameRenderEnabled) return;
+      if (time == null || !filePath) return;
+
+      try {
+        if (framePath) {
+          URL.revokeObjectURL(framePath);
+        }
+        const newFramePath = await renderFrame(time, filePath, rotation);
+        dispatch(localStateReducer.setFramePath(newFramePath));
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  }
+
+  await queue.onIdle();
+};
+
+
 const getInitialLocalState = () => ({
   html5FriendlyPath: undefined,
   userHtml5ified: false,
@@ -125,6 +157,7 @@ class App extends React.Component {
     this.setCurrentSeg = this.setCurrentSeg.bind(this);
     this.setCutTime = this.setCutTime.bind(this);
     this.setCutText = this.setCutText.bind(this);
+    this.throttledRenderFrame = this.throttledRenderFrame.bind(this);
     this.toggleHelp = () => this.dispatch(localStateReducer.toggleHelp());
     this.onDurationChange = (duration) => {
       this.dispatch(localStateReducer.setDuration(duration));
@@ -167,7 +200,7 @@ class App extends React.Component {
           const html5ifiedDummyPath = getOutPath(customOutDir, filePath, 'html5ified-dummy.mkv');
           await html5ifyDummy(filePath, html5ifiedDummyPath);
           this.setState({ html5FriendlyPath: html5ifiedDummyPath });
-          this.throttledRenderFrame(0);
+          this.throttledRenderFrame();
         }
       } catch (err) {
         if (err.code === 1 || err.code === 'ENOENT') {
@@ -281,7 +314,7 @@ class App extends React.Component {
 
     this.setState({ rotationPreviewRequested: false }); // Reset this
     this.setState({ currentTime }, () => {
-      this.throttledRenderFrame();
+      this.throttledRenderFrame({ time: currentTime });
     });
   }
 
@@ -417,29 +450,21 @@ class App extends React.Component {
   }
 
   /* eslint-disable react/sort-comp */
-  throttledRenderFrame = async () => {
-    if (this.queue.size < 2) {
-      this.queue.add(async () => {
-        if (!this.frameRenderEnabled()) return;
+  throttledRenderFrame = async ({
+    time = this.state.currentTime,
+    rotation = this.getEffectiveRotation(),
+  } = {}) => {
+    const { filePath, framePath } = this.props.store.localState;
 
-        const { currentTime } = this.state;
-        const { filePath } = this.props.store.localState;
-        const rotation = this.getEffectiveRotation();
-        if (currentTime == null || !filePath) return;
-
-        try {
-          if (this.props.store.localState.framePath) {
-            URL.revokeObjectURL(this.props.store.localState.framePath);
-          }
-          const framePath = await renderFrame(currentTime, filePath, rotation);
-          this.dispatch(localStateReducer.setFramePath(framePath));
-        } catch (err) {
-          console.error(err);
-        }
-      });
-    }
-
-    await this.queue.onIdle();
+    await throttledRenderFrame(
+        this.dispatch,
+        this.queue,
+        this.frameRenderEnabled(),
+        filePath,
+        framePath,
+        time,
+        rotation,
+    );
   };
 
   increaseRotation = () => {
