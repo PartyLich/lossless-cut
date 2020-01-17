@@ -78,6 +78,8 @@ test('cutSegments addCutSegment', (t) => {
         () => reducer(undefined, action()),
         (state) => {
           const { cutSegments } = state;
+          cutSegments[0].color = !!cutSegments[0].color;
+          cutSegments[0].uuid = !!cutSegments[0].uuid;
           cutSegments[1].color = !!cutSegments[1].color;
           cutSegments[1].uuid = !!cutSegments[1].uuid;
           return state;
@@ -104,6 +106,8 @@ test('cutSegments addCutSegment', (t) => {
         () => reducer(undefined, action(4, 60)),
         (state) => {
           const { cutSegments } = state;
+          cutSegments[0].color = !!cutSegments[0].color;
+          cutSegments[0].uuid = !!cutSegments[0].uuid;
           cutSegments[1].color = !!cutSegments[1].color;
           cutSegments[1].uuid = !!cutSegments[1].uuid;
           return state;
@@ -213,6 +217,40 @@ test('cutSegments setCutTime', (t) => {
         addSegment,
         (state) => reducer(state, action(2, 'end', 49)),
     )();
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('cutSegments reducer', (t) => {
+  const action = actions.resetCutSegmentState;
+
+  {
+    const msg = 'resets to default state';
+    const expected = pipe(
+        () => reducer(undefined, {}),
+        (state) => {
+          const segment = state.cutSegments[0];
+          segment.color = !!segment.color;
+          segment.uuid = !!segment.uuid;
+          return state;
+        },
+    )();
+    const actual = pipe(
+        () => reducer(undefined, {}),
+        addSegment,
+        (state) => reducer(state, action()),
+        (state) => {
+          const segment = state.cutSegments[0];
+          segment.color = !!segment.color;
+          segment.uuid = !!segment.uuid;
+          return state;
+        },
+    )();
+    // reference
+    t.notEqual(expected.cutSegments, actual.cutSegments, 'resets to new object');
+    // structure
     t.deepEqual(actual, expected, msg);
   }
 
