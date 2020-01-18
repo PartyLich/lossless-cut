@@ -3,9 +3,7 @@ import type { TypedFSA } from './types';
 import withReset from './withReset';
 
 
-const WORKING_TOGGLE: 'localState/WORKING_TOGGLE' = 'localState/WORKING_TOGGLE';
 const WORKING_SET: 'localState/WORKING_SET' = 'localState/WORKING_SET';
-const PLAYING_TOGGLE: 'localState/PLAYING_TOGGLE' = 'localState/PLAYING_TOGGLE';
 const PLAYING_SET: 'localState/PLAYING_SET' = 'localState/PLAYING_SET';
 const CUT_PROGRESS_SET: 'localState/CUT_PROGRESS_SET' = 'localState/CUT_PROGRESS_SET';
 const DURATION_SET: 'localState/DURATION_SET' = 'localState/DURATION_SET';
