@@ -15,7 +15,9 @@ jobs:
   include:
     - stage: test
       script:
-        - npm test
+        - >
+          npm test
+          && npm run flow
     - stage: deploy
       script:
         - |
