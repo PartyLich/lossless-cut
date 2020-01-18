@@ -12,7 +12,8 @@
         "corejs": 2
       }
     ],
-    ["@babel/react"]
+    ["@babel/react"],
+    ["@babel/preset-flow"]
   ],
   "plugins": [
     "@babel/plugin-proposal-class-properties"
