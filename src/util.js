@@ -1,5 +1,5 @@
 import path from 'path';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import padStart from 'lodash/padStart';
 import swal from 'sweetalert2';
 import randomColor from './random-color';
@@ -44,8 +44,8 @@ function getOutPath(customOutDir, filePath, nameSuffix) {
 
 async function transferTimestamps(inPath, outPath) {
   try {
-    const stat = await fs.statAsync(inPath);
-    await fs.utimesAsync(outPath, stat.atime.getTime() / 1000, stat.mtime.getTime() / 1000);
+    const stat = await fs.stat(inPath);
+    await fs.utimes(outPath, stat.atime.getTime() / 1000, stat.mtime.getTime() / 1000);
   } catch (err) {
     console.error('Failed to set output file modified time', err);
   }
@@ -53,9 +53,9 @@ async function transferTimestamps(inPath, outPath) {
 
 async function transferTimestampsWithOffset(inPath, outPath, offset) {
   try {
-    const stat = await fs.statAsync(inPath);
+    const stat = await fs.stat(inPath);
     const time = (stat.mtime.getTime() / 1000) + offset;
-    await fs.utimesAsync(outPath, time, time);
+    await fs.utimes(outPath, time, time);
   } catch (err) {
     console.error('Failed to set output file modified time', err);
   }

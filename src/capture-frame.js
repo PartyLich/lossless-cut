@@ -1,5 +1,4 @@
-import bluebird from 'bluebird';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import mime from 'mime-types';
 import strongDataUri from 'strong-data-uri';
 import {
@@ -8,7 +7,6 @@ import {
   transferTimestampsWithOffset,
 } from './util';
 
-bluebird.promisifyAll(fs);
 
 function getFrameFromVideo(video, format) {
   const canvas = document.createElement('canvas');
@@ -29,7 +27,7 @@ async function captureFrame(customOutDir, filePath, video, currentTime, captureF
   const time = formatDuration(currentTime, true);
 
   const outPath = getOutPath(customOutDir, filePath, `${time}.${ext}`);
-  await fs.writeFileAsync(outPath, buf);
+  await fs.writeFile(outPath, buf);
   const offset = -video.duration + currentTime;
   return transferTimestampsWithOffset(filePath, outPath, offset);
 }
