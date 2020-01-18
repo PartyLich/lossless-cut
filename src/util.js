@@ -1,10 +1,14 @@
+// @flow
 import path from 'path';
 import { promises as fs } from 'fs';
 import padStart from 'lodash/padStart';
 import swal from 'sweetalert2';
 import randomColor from './random-color';
 
-function formatDuration(seconds = 0, fileNameFriendly) {
+function formatDuration(
+    seconds: number = 0,
+    fileNameFriendly: boolean,
+): string {
   const minutes = seconds / 60;
   const hours = minutes / 60;
 
@@ -18,7 +22,7 @@ function formatDuration(seconds = 0, fileNameFriendly) {
   return `${ hoursPadded }${ delim }${ minutesPadded }${ delim }${ secondsPadded }.${ msPadded }`;
 }
 
-function parseDuration(str) {
+function parseDuration(str: string): ?number {
   if (!str) return undefined;
 
   const match = str.trim().match(/^(\d{2}):(\d{2}):(\d{2})\.(\d{3})$/);
@@ -33,7 +37,7 @@ function parseDuration(str) {
   return ((((hours * 60) + minutes) * 60) + seconds) + (ms / 1000);
 }
 
-function getOutPath(customOutDir, filePath, nameSuffix) {
+function getOutPath(customOutDir: string, filePath: string, nameSuffix: string) {
   const basename = path.basename(filePath);
 
   return customOutDir
@@ -41,7 +45,7 @@ function getOutPath(customOutDir, filePath, nameSuffix) {
     : `${ filePath }-${ nameSuffix }`;
 }
 
-async function transferTimestamps(inPath, outPath) {
+async function transferTimestamps(inPath: string, outPath: string) {
   try {
     const stat = await fs.stat(inPath);
     await fs.utimes(outPath, stat.atime.getTime() / 1000, stat.mtime.getTime() / 1000);
@@ -50,7 +54,7 @@ async function transferTimestamps(inPath, outPath) {
   }
 }
 
-async function transferTimestampsWithOffset(inPath, outPath, offset) {
+async function transferTimestampsWithOffset(inPath: string, outPath: string, offset: number) {
   try {
     const stat = await fs.stat(inPath);
     const time = (stat.mtime.getTime() / 1000) + offset;
@@ -67,22 +71,22 @@ const toast = swal.mixin({
   timer: 5000,
 });
 
-const errorToast = (title) => toast.fire({
+const errorToast = (title: string) => toast.fire({
   type: 'error',
   title,
 });
 
-async function showFfmpegFail(err) {
+async function showFfmpegFail(err: Error) {
   console.error(err);
   return errorToast(`Failed to run ffmpeg: ${ err.stack }`);
 }
 
-function setFileNameTitle(filePath) {
+function setFileNameTitle(filePath: string) {
   const appName = 'LosslessCut';
   document.title = filePath ? `${ appName } - ${ path.basename(filePath) }` : 'appName';
 }
 
-async function promptTimeOffset(inputValue = '') {
+async function promptTimeOffset(inputValue: string = '') {
   const { value } = await swal.fire({
     title: 'Set custom start time offset',
     text: 'Instead of video apparently starting at 0, you can offset by a specified value (useful for viewing/cutting videos according to timecodes)',
@@ -126,7 +130,7 @@ const parseTimeSpan = (str: string) => {
      * convert to seconds
      * @return {number}
      */
-    toSeconds() {
+    toSeconds(): number {
       return (hr * 3600) + (min * 60) + sec;
     },
   };
