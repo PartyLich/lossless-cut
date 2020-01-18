@@ -22,7 +22,7 @@ function getFrameFromVideo(video, format): DecodedDataUri {
 
   canvas.getContext('2d').drawImage(video, 0, 0);
 
-  const dataUri = canvas.toDataURL(`image/${format}`);
+  const dataUri = canvas.toDataURL(`image/${ format }`);
 
   return strongDataUri.decode(dataUri);
 }
@@ -39,7 +39,7 @@ async function captureFrame(
   const ext = mime.extension(buf.mimetype);
   const time = formatDuration(currentTime, true);
 
-  const outPath = getOutPath(customOutDir, filePath, `${time}.${ext}`);
+  const outPath = getOutPath(customOutDir, filePath, `${ time }.${ ext }`);
   await fs.writeFile(outPath, buf);
   const offset = -video.duration + currentTime;
   return transferTimestampsWithOffset(filePath, outPath, offset);
