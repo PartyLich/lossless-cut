@@ -1,10 +1,11 @@
+// @flow
 import { app } from 'electron';
 import GitHub from 'github-api';
 
 const gh = new GitHub();
 const repo = gh.getRepo('PartyLich', 'lossless-cut');
 
-async function checkNewVersion() {
+async function checkNewVersion(): Promise<?string> {
   try {
     // From API: https://developer.github.com/v3/repos/releases/#get-the-latest-release
     // View the latest published full release for the repository.
@@ -16,11 +17,10 @@ async function checkNewVersion() {
     console.log('Newest version', tagName);
 
     if (tagName !== `v${ currentVersion }`) return tagName;
-    return undefined;
   } catch (e) {
     console.error('Failed to check github version');
-    return undefined;
   }
+  return undefined;
 }
 
 export { checkNewVersion };
