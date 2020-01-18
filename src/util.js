@@ -12,10 +12,10 @@ function formatDuration(
   const minutes = seconds / 60;
   const hours = minutes / 60;
 
-  const hoursPadded = padStart(Math.floor(hours), 2, '0');
-  const minutesPadded = padStart(Math.floor(minutes % 60), 2, '0');
-  const secondsPadded = padStart(Math.floor(seconds) % 60, 2, '0');
-  const msPadded = padStart(Math.floor((seconds - Math.floor(seconds)) * 1000), 3, '0');
+  const hoursPadded = padStart(Math.floor(hours).toString(), 2, '0');
+  const minutesPadded = padStart(Math.floor(minutes % 60).toString(), 2, '0');
+  const secondsPadded = padStart((Math.floor(seconds) % 60).toString(), 2, '0');
+  const msPadded = padStart(Math.floor((seconds - Math.floor(seconds)) * 1000).toString(), 3, '0');
 
   // Be nice to filenames and use .
   const delim = fileNameFriendly ? '.' : ':';
