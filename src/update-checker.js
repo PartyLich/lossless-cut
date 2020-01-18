@@ -24,3 +24,4 @@ async function checkNewVersion() {
 }
 
 export { checkNewVersion };
+export default checkNewVersion;
