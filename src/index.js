@@ -6,7 +6,7 @@ import windowStateKeeper from 'electron-window-state';
 import menu from './menu';
 import { checkNewVersion } from './update-checker';
 
-app.setName('LosslessCut');
+app.name = 'LosslessCut';
 
 // Not sure what the original author was trying to do here
 // if (!isDev) process.env.NODE_ENV = 'production';
