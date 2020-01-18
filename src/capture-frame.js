@@ -1,3 +1,4 @@
+// @flow
 import { promises as fs } from 'fs';
 import mime from 'mime-types';
 import strongDataUri from 'strong-data-uri';
@@ -8,7 +9,13 @@ import {
 } from './util';
 
 
-function getFrameFromVideo(video, format) {
+type DecodedDataUri = Buffer & {
+  mimetype: string,
+  mediatype: string,
+  charset: string,
+};
+
+function getFrameFromVideo(video, format): DecodedDataUri {
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -20,8 +27,14 @@ function getFrameFromVideo(video, format) {
   return strongDataUri.decode(dataUri);
 }
 
-async function captureFrame(customOutDir, filePath, video, currentTime, captureFormat) {
-  const buf = getFrameFromVideo(video, captureFormat);
+async function captureFrame(
+    customOutDir: string,
+    filePath: string,
+    video: HTMLVideoElement,
+    currentTime: number,
+    captureFormat: string,
+) {
+  const buf: DecodedDataUri = getFrameFromVideo(video, captureFormat);
 
   const ext = mime.extension(buf.mimetype);
   const time = formatDuration(currentTime, true);
