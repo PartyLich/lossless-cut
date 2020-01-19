@@ -3,6 +3,7 @@ import type { TypedFSA } from './types';
 import withReset from './withReset';
 
 
+const CURRENT_TIME_SET: 'localState/CURRENT_TIME_SET' = 'localState/CURRENT_TIME_SET';
 const WORKING_SET: 'localState/WORKING_SET' = 'localState/WORKING_SET';
 const PLAYING_SET: 'localState/PLAYING_SET' = 'localState/PLAYING_SET';
 const CUT_PROGRESS_SET: 'localState/CUT_PROGRESS_SET' = 'localState/CUT_PROGRESS_SET';
@@ -15,6 +16,7 @@ const ROTATION_INC: 'localState/ROTATION_INC' = 'localState/ROTATION_INC';
 const STATE_RESET: 'localState/STATE_RESET' = 'localState/STATE_RESET';
 
 type ResetLocalStateAction = TypedFSA<typeof STATE_RESET, void>;
+type SetCurrentTimeAction = TypedFSA<typeof CURRENT_TIME_SET, {| currentTime: number |}>;
 type SetWorkingAction = TypedFSA<typeof WORKING_SET, {| working: boolean |}>;
 type SetPlayingAction = TypedFSA<typeof PLAYING_SET, {| playing: boolean |}>;
 type SetCutProgressAction =
@@ -32,6 +34,7 @@ type Action =
     | ResetLocalStateAction
     | SetWorkingAction
     | SetPlayingAction
+    | SetCurrentTimeAction
     | SetCutProgressAction
     | SetDurationAction
     | SetFileFormatAction
@@ -58,6 +61,11 @@ export const setPlaying = (playing: boolean): SetPlayingAction => ({
 export const setCutProgress = (cutProgress: number): SetCutProgressAction => ({
   type: CUT_PROGRESS_SET,
   payload: { cutProgress },
+});
+
+export const setCurrentTime = (currentTime: number): SetCurrentTimeAction => ({
+  type: CURRENT_TIME_SET,
+  payload: { currentTime },
 });
 
 export const setDuration = (duration: number): SetDurationAction => ({
@@ -96,7 +104,7 @@ const initialState = {
   html5FriendlyPath: undefined,
   userHtml5ified: false,
   playing: false,
-  currentTime: undefined,
+  currentTime: 0,
   duration: 0,
   fileFormat: '',
   detectedFileFormat: undefined,
@@ -118,6 +126,7 @@ const localState = (state = initialState, action: Action) => {
 
     case WORKING_SET:
     case PLAYING_SET:
+    case CURRENT_TIME_SET:
     case CUT_PROGRESS_SET:
     case DURATION_SET:
     case FILE_FORMAT_SET:

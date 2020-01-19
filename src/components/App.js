@@ -132,7 +132,6 @@ const throttledRenderFrame = async (
 const getInitialLocalState = () => ({
   html5FriendlyPath: undefined,
   userHtml5ified: false,
-  currentTime: undefined,
   detectedFileFormat: undefined,
   streams: [],
   startTimeOffset: 0,
@@ -309,12 +308,11 @@ class App extends React.Component {
 
   onTimeUpdate = (e) => {
     const { currentTime } = e.target;
-    if (this.state.currentTime === currentTime) return;
+    if (this.props.store.localState.currentTime === currentTime) return;
 
     this.setState({ rotationPreviewRequested: false }); // Reset this
-    this.setState({ currentTime }, () => {
-      this.throttledRenderFrame({ time: currentTime });
-    });
+    this.dispatch(localStateReducer.setCurrentTime(currentTime));
+    this.throttledRenderFrame({ time: currentTime });
   }
 
   onCutProgress = (cutProgress) => {
@@ -322,12 +320,12 @@ class App extends React.Component {
   }
 
   setCutStart = () => {
-    const { currentTime } = this.state;
+    const { currentTime } = this.props.store.localState;
     this.setCutTime('start', currentTime);
   }
 
   setCutEnd = () => {
-    const { currentTime } = this.state;
+    const { currentTime } = this.props.store.localState;
     this.setCutTime('end', currentTime);
   }
 
@@ -423,7 +421,9 @@ class App extends React.Component {
   }
 
   getOffsetCurrentTime() {
-    return (this.state.currentTime || 0) + this.state.startTimeOffset;
+    const { currentTime } = this.props.store.localState;
+    const { startTimeOffset } = this.state;
+    return currentTime + startTimeOffset;
   }
 
   mergeFiles = async (paths) => {
@@ -450,7 +450,7 @@ class App extends React.Component {
 
   /* eslint-disable react/sort-comp */
   throttledRenderFrame = async ({
-    time = this.state.currentTime,
+    time = this.props.store.localState.currentTime,
     rotation = this.getEffectiveRotation(),
   } = {}) => {
     const { filePath, framePath } = this.props.store.localState;
@@ -493,8 +493,7 @@ class App extends React.Component {
   }
 
   addCutSegment = () => {
-    const { currentTime } = this.state;
-    const { duration } = this.props.store.localState;
+    const { duration, currentTime } = this.props.store.localState;
     const { cutSegments } = this.props.store.cutSegments;
 
     const cutStartTime = this.getCutStartTime();
@@ -647,12 +646,11 @@ class App extends React.Component {
   capture = async () => {
     const {
       customOutDir: outputDir,
-      currentTime,
     } = this.state;
     const {
       captureFormat,
     } = this.props.store.globalState;
-    const { filePath } = this.props.store.localState;
+    const { filePath, currentTime } = this.props.store.localState;
     if (!filePath) return;
     try {
       await captureFrame(outputDir, filePath, getVideo(), currentTime, captureFormat);
@@ -700,7 +698,6 @@ class App extends React.Component {
 
   render() {
     const {
-      currentTime,
       detectedFileFormat,
       playbackRate,
     } = this.state;
@@ -714,6 +711,7 @@ class App extends React.Component {
       captureFormat,
     } = this.props.store.globalState;
     const {
+      currentTime,
       cutProgress,
       duration: durationRaw,
       fileFormat,
@@ -727,7 +725,7 @@ class App extends React.Component {
     const selectableFormats = ['mov', 'mp4', 'matroska'].filter((f) => f !== detectedFileFormat);
 
     const duration = durationRaw || 1;
-    const currentTimePos = currentTime !== undefined && `${ (currentTime / duration) * 100 }%`;
+    const currentTimePos = `${ (currentTime / duration) * 100 }%`;
 
     const segColor = this.getCutSeg().color;
     const segBgColor = segColor.alpha(0.5).string();
@@ -767,9 +765,7 @@ class App extends React.Component {
             options={{ recognizers: {} }}
           >
             <div className="timeline-wrapper">
-              {currentTimePos !== undefined && (
-                <div className="current-time" style={{ left: currentTimePos }} />
-              )}
+              <div className="current-time" style={{ left: currentTimePos }} />
 
               {cutSegments.map((seg, i) => (
                 <TimelineSeg

@@ -12,7 +12,7 @@ const createState = () => Object.assign({}, {
   html5FriendlyPath: undefined,
   userHtml5ified: false,
   playing: false,
-  currentTime: undefined,
+  currentTime: 0,
   duration: 0,
   fileFormat: '',
   detectedFileFormat: undefined,
@@ -291,6 +291,22 @@ test('localState setCutProgress', (t) => {
       cutProgress: 0.50,
     };
     const actual = reducer(undefined, action(0.5));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('localState setCurrentTime', (t) => {
+  const action = actions.setCurrentTime;
+
+  {
+    const msg = 'sets currentTime';
+    const expected = {
+      ...createState(),
+      currentTime: 1636,
+    };
+    const actual = reducer(undefined, action(1636));
     t.deepEqual(actual, expected, msg);
   }
 
