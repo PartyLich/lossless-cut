@@ -5,7 +5,6 @@ import clamp from 'lodash/clamp';
 import throttle from 'lodash/throttle';
 import Hammer from 'react-hammerjs';
 import trash from 'trash';
-import classnames from 'classnames';
 import PQueue from 'p-queue';
 
 import React from 'react';
@@ -42,6 +41,7 @@ import {
   JumpEndButton,
   LeftMenu,
   Player,
+  PlayButton,
   ProgressIndicator,
   RightMenu,
   ShortStepButton,
@@ -814,13 +814,9 @@ class App extends React.Component {
               direction="left"
               clickHandler={() => shortStep(-1)}
             />
-            <i
-              className={classnames({
-                'button': true, 'fa': true, 'fa-pause': playing, 'fa-play': !playing,
-              })}
-              role="button"
-              tabIndex="0"
-              onClick={this.playCommand}
+            <PlayButton
+              playing={playing}
+              clickHandler={this.playCommand}
             />
             <ShortStepButton
               direction="right"
