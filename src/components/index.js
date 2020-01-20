@@ -10,5 +10,6 @@ export { default as Player } from './Player';
 export { default as ProgressIndicator } from './ProgressIndicator';
 export { default as Provider } from './Provider';
 export { default as RightMenu } from './RightMenu';
+export { default as ShortStepButton } from './ShortStepButton';
 export { default as TimelineSeg } from './TimelineSeg';
 export { default as withStore } from './withStore';

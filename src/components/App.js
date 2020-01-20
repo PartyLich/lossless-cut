@@ -44,6 +44,7 @@ import {
   Player,
   ProgressIndicator,
   RightMenu,
+  ShortStepButton,
   TimelineSeg,
 } from '.';
 
@@ -809,11 +810,9 @@ class App extends React.Component {
               />
             </div>
 
-            <i
-              className="button fa fa-caret-left"
-              role="button"
-              tabIndex="0"
-              onClick={() => shortStep(-1)}
+            <ShortStepButton
+              direction="left"
+              clickHandler={() => shortStep(-1)}
             />
             <i
               className={classnames({
@@ -823,11 +822,9 @@ class App extends React.Component {
               tabIndex="0"
               onClick={this.playCommand}
             />
-            <i
-              className="button fa fa-caret-right"
-              role="button"
-              tabIndex="0"
-              onClick={() => shortStep(1)}
+            <ShortStepButton
+              direction="right"
+              clickHandler={() => shortStep(1)}
             />
 
             <div style={{ position: 'relative' }}>
