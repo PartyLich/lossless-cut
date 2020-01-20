@@ -39,6 +39,7 @@ import {
   CutTimeInput,
   DragDropField,
   JumpCutButton,
+  JumpEndButton,
   LeftMenu,
   Player,
   ProgressIndicator,
@@ -788,12 +789,9 @@ class App extends React.Component {
           </Hammer>
 
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <i
-              className="button fa fa-step-backward"
-              role="button"
-              tabIndex="0"
-              title="Jump to start of video"
-              onClick={() => seekAbs(0)}
+            <JumpEndButton
+              end="start"
+              clickHandler={() => seekAbs(0)}
             />
 
             <div style={{ position: 'relative' }}>
@@ -847,12 +845,9 @@ class App extends React.Component {
               />
             </div>
 
-            <i
-              className="button fa fa-step-forward"
-              role="button"
-              tabIndex="0"
-              title="Jump to end of video"
-              onClick={() => seekAbs(duration)}
+            <JumpEndButton
+              end="end"
+              clickHandler={() => seekAbs(duration)}
             />
           </div>
 
