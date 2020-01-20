@@ -1,0 +1,10 @@
+{
+  "type": "i",
+  "props": {
+    "className": "button fa foo",
+    "role": "button",
+    "tabIndex": "0",
+    "onClick": "[Function]"
+  },
+  "children": null
+}
