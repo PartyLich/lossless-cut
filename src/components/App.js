@@ -46,12 +46,12 @@ import {
   RightMenu,
   ShortStepButton,
   TimelineSeg,
+  TimelineWrapper,
 } from '.';
 
 // Stylesheets
 import '../font-awesome-4.6.3/scss/font-awesome.scss';
 import './App.scss';
-import './TimelineWrapper.scss';
 
 import * as globalStateReducer from '../reducers/globalState';
 import * as localStateReducer from '../reducers/localState';
@@ -531,7 +531,7 @@ class App extends React.Component {
   /* eslint-disable react/sort-comp */
   handleTap = throttle((e) => {
     const { duration } = this.props.store.localState;
-    const target = document.querySelector('.timeline-wrapper');
+    const target = document.querySelector('.TimelineWrapper');
     const parentOffset = target.getBoundingClientRect().left +
       document.body.scrollLeft;
     const relX = e.srcEvent.pageX - parentOffset;
@@ -766,9 +766,10 @@ class App extends React.Component {
             onPan={this.handleTap}
             options={{ recognizers: {} }}
           >
-            <div className="timeline-wrapper">
-              <div className="current-time" style={{ left: currentTimePos }} />
-
+            <TimelineWrapper
+              currentTimePos={currentTimePos}
+              currentTimeDisplay={formatDuration(this.getOffsetCurrentTime())}
+            >
               {cutSegments.map((seg, i) => (
                 <TimelineSeg
                   key={seg.uuid}
@@ -784,9 +785,7 @@ class App extends React.Component {
                   apparentCutEnd={this.getApparentCutEndTime(i)}
                 />
               ))}
-
-              <div className="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
-            </div>
+            </TimelineWrapper>
           </Hammer>
 
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
