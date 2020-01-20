@@ -289,8 +289,6 @@ class App extends React.Component {
     Mousetrap.bind('h', () => this.toggleHelp());
     Mousetrap.bind('+', () => this.addCutSegment());
     Mousetrap.bind('backspace', () => this.removeCutSegment());
-
-    // ipcRenderer.send('renderer-ready');
   }
 
   onPlayingChange(playing) {
