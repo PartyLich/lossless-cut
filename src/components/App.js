@@ -26,6 +26,7 @@ import {
 import HelpSheet from '../HelpSheet';
 import { showMergeDialog, showOpenAndMergeDialog } from '../merge/merge';
 import captureFrame from '../captureFrame';
+import withBlur from '../withBlur';
 import {
   getOutPath, formatDuration,
   toast, errorToast, showFfmpegFail,
@@ -84,13 +85,6 @@ function seekRel(val) {
 
 function shortStep(dir) {
   seekRel(dir / 60);
-}
-
-function withBlur(cb) {
-  return (e) => {
-    e.target.blur();
-    cb(e);
-  };
 }
 
 function doesPlayerSupportFile(streams) {
