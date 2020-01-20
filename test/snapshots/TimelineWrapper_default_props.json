@@ -1,0 +1,27 @@
+{
+  "type": "div",
+  "props": {
+    "className": "TimelineWrapper"
+  },
+  "children": [
+    {
+      "type": "div",
+      "props": {
+        "className": "current-time",
+        "style": {
+          "left": "50%"
+        }
+      },
+      "children": null
+    },
+    {
+      "type": "div",
+      "props": {
+        "className": "current-time-display"
+      },
+      "children": [
+        "00:10:10.000"
+      ]
+    }
+  ]
+}
