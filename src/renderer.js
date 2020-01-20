@@ -11,7 +11,7 @@ import {
 
 ReactDOM.render(
   <Provider>
-    {withStore(App)}
+    {withStore(App)()}
   </Provider>,
   document.getElementById('app')
 );
