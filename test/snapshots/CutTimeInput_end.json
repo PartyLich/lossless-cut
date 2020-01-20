@@ -1,0 +1,11 @@
+{
+  "type": "input",
+  "props": {
+    "className": "CutTimeInput CutTimeInput--end",
+    "style": {},
+    "type": "text",
+    "onChange": "[Function]",
+    "value": "00:00:10.000"
+  },
+  "children": null
+}

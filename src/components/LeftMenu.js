@@ -22,7 +22,6 @@ const LeftMenu = ({
   <div className="left-menu">
     <select
       style={{ width: 60 }}
-      defaultValue=""
       value={fileFormat}
       title="Format of current file"
       onChange={selectOnChange}
@@ -49,6 +48,7 @@ const LeftMenu = ({
         background: segBgColor,
         color: 'white',
       }}
+      // TODO: pass as bool
       disabled={cutSegments.length < 2}
       type="button"
       title={`Delete selected segment ${ currentSeg + 1 }`}

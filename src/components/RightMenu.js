@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import withBlur from '../withBlur';
+
 import './RightMenu.scss';
 
 
@@ -25,7 +27,7 @@ const RightMenu = ({
     <button
       type="button"
       title={`Cut mode ${ keyframeCut ? 'nearest keyframe cut' : 'normal cut' }`}
-      onClick={toggleKeyframeCut}
+      onClick={withBlur(toggleKeyframeCut)}
     >
       {keyframeCut ? 'kc' : 'nc'}
     </button>
@@ -33,7 +35,7 @@ const RightMenu = ({
     <button
       type="button"
       title={`Set output streams. Current: ${ includeAllStreams ? 'include (and cut) all streams' : 'include only primary streams' }`}
-      onClick={toggleIncludeAllStreams}
+      onClick={withBlur(toggleIncludeAllStreams)}
     >
       {includeAllStreams ? 'all' : 'ps'}
     </button>
@@ -41,7 +43,7 @@ const RightMenu = ({
     <button
       type="button"
       title={`Delete audio? Current: ${ stripAudio ? 'delete audio tracks' : 'keep audio tracks' }`}
-      onClick={toggleStripAudio}
+      onClick={withBlur(toggleStripAudio)}
     >
       {stripAudio ? 'da' : 'ka'}
     </button>
@@ -49,7 +51,7 @@ const RightMenu = ({
     <button
       type="button"
       title={`Set output rotation. Current: ${ rotationStr }`}
-      onClick={increaseRotation}
+      onClick={withBlur(increaseRotation)}
     >
       {isRotationSet ? rotationStr : '-°'}
     </button>
@@ -57,7 +59,7 @@ const RightMenu = ({
     <button
       type="button"
       title={`Custom output dir (cancel to restore default). Current: ${ outputDir || 'Not set (use input dir)' }`}
-      onClick={setOutputDir}
+      onClick={withBlur(setOutputDir)}
     >
       {outputDir ? 'cd' : 'id'}
     </button>
@@ -74,7 +76,7 @@ const RightMenu = ({
     <button
       type="button"
       title="Capture frame format"
-      onClick={toggleCaptureFormat}
+      onClick={withBlur(toggleCaptureFormat)}
     >
       {captureFormat}
     </button>
