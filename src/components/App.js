@@ -53,9 +53,9 @@ import {
 import '../font-awesome-4.6.3/scss/font-awesome.scss';
 import './App.scss';
 
-import * as globalStateReducer from '../reducers/globalState';
-import * as localStateReducer from '../reducers/localState';
-import * as cutSegmentsReducer from '../reducers/cutSegments';
+import * as globalStateActions from '../reducers/globalState';
+import * as localStateActions from '../reducers/localState';
+import * as cutSegmentsActions from '../reducers/cutSegments';
 import * as cutTimeActions from '../reducers/cutTimeInput';
 
 
@@ -120,7 +120,7 @@ const throttledRenderFrame = async (
           URL.revokeObjectURL(framePath);
         }
         const newFramePath = await renderFrame(time, filePath, rotation);
-        dispatch(localStateReducer.setFramePath(newFramePath));
+        dispatch(localStateActions.setFramePath(newFramePath));
       } catch (err) {
         console.error(err);
       }
@@ -158,9 +158,9 @@ class App extends React.Component {
     this.setCutTime = this.setCutTime.bind(this);
     this.setCutText = this.setCutText.bind(this);
     this.throttledRenderFrame = this.throttledRenderFrame.bind(this);
-    this.toggleHelp = () => this.dispatch(localStateReducer.toggleHelp());
+    this.toggleHelp = () => this.dispatch(localStateActions.toggleHelp());
     this.onDurationChange = (duration) => {
-      this.dispatch(localStateReducer.setDuration(duration));
+      this.dispatch(localStateActions.setDuration(duration));
     };
 
     const load = async (filePath, html5FriendlyPath) => {
@@ -173,7 +173,7 @@ class App extends React.Component {
       }
 
       this.resetState();
-      this.dispatch(localStateReducer.setWorking(true));
+      this.dispatch(localStateActions.setWorking(true));
 
       try {
         const fileFormat = await getFormat(filePath);
@@ -190,8 +190,8 @@ class App extends React.Component {
           html5FriendlyPath,
           detectedFileFormat: fileFormat,
         });
-        this.dispatch(localStateReducer.setFileFormat(fileFormat));
-        this.dispatch(localStateReducer.setFilePath(filePath));
+        this.dispatch(localStateActions.setFileFormat(fileFormat));
+        this.dispatch(localStateActions.setFilePath(filePath));
 
         if (html5FriendlyPath) {
           this.setState({ userHtml5ified: true });
@@ -209,7 +209,7 @@ class App extends React.Component {
         }
         showFfmpegFail(err);
       } finally {
-        this.dispatch(localStateReducer.setWorking(false));
+        this.dispatch(localStateActions.setWorking(false));
       }
     };
 
@@ -224,15 +224,15 @@ class App extends React.Component {
       if (!filePath) return;
 
       try {
-        this.dispatch(localStateReducer.setWorking(true));
+        this.dispatch(localStateActions.setWorking(true));
         const html5ifiedPath = getOutPath(customOutDir, filePath, 'html5ified.mp4');
         await html5ify(filePath, html5ifiedPath, encodeVideo);
-        this.dispatch(localStateReducer.setWorking(false));
+        this.dispatch(localStateActions.setWorking(false));
         load(filePath, html5ifiedPath);
       } catch (err) {
         errorToast('Failed to html5ify file');
         console.error('Failed to html5ify file', err);
-        this.dispatch(localStateReducer.setWorking(false));
+        this.dispatch(localStateActions.setWorking(false));
       }
     });
 
@@ -259,13 +259,13 @@ class App extends React.Component {
       if (!filePath) return;
 
       try {
-        this.dispatch(localStateReducer.setWorking(true));
+        this.dispatch(localStateActions.setWorking(true));
         await extractAllStreams({ customOutDir, filePath });
-        this.dispatch(localStateReducer.setWorking(false));
+        this.dispatch(localStateActions.setWorking(false));
       } catch (err) {
         errorToast('Failed to extract all streams');
         console.error('Failed to extract all streams', err);
-        this.dispatch(localStateReducer.setWorking(false));
+        this.dispatch(localStateActions.setWorking(false));
       }
     });
 
@@ -300,7 +300,7 @@ class App extends React.Component {
   }
 
   onPlayingChange(playing) {
-    this.dispatch(localStateReducer.setPlaying(playing));
+    this.dispatch(localStateActions.setPlaying(playing));
 
     if (!playing) {
       getVideo().playbackRate = 1;
@@ -313,12 +313,12 @@ class App extends React.Component {
     if (this.props.store.localState.currentTime === currentTime) return;
 
     this.setState({ rotationPreviewRequested: false }); // Reset this
-    this.dispatch(localStateReducer.setCurrentTime(currentTime));
+    this.dispatch(localStateActions.setCurrentTime(currentTime));
     this.throttledRenderFrame({ time: currentTime });
   }
 
   onCutProgress = (cutProgress) => {
-    this.dispatch(localStateReducer.setCutProgress(cutProgress));
+    this.dispatch(localStateActions.setCutProgress(cutProgress));
   }
 
   setCutStart = () => {
@@ -336,7 +336,7 @@ class App extends React.Component {
     const customOutDir = (filePaths && filePaths.length === 1)
       ? filePaths[0]
       : undefined;
-    this.dispatch(globalStateReducer.setCustomDir(customOutDir));
+    this.dispatch(globalStateActions.setCustomDir(customOutDir));
   }
 
   getFileUri() {
@@ -381,7 +381,7 @@ class App extends React.Component {
   setCutTime(type, time) {
     const { currentSeg } = this.props.store.cutSegments;
 
-    this.dispatch(cutSegmentsReducer.setCutTime(currentSeg, type, time));
+    this.dispatch(cutSegmentsActions.setCutTime(currentSeg, type, time));
   }
 
   setCutText(type) {
@@ -402,11 +402,11 @@ class App extends React.Component {
   }
 
   setCurrentSeg(i) {
-    this.dispatch(cutSegmentsReducer.setCurrentSeg(i));
+    this.dispatch(cutSegmentsActions.setCurrentSeg(i));
   }
 
   setFileFormat(fileFormat) {
-    this.dispatch(localStateReducer.setFileFormat(fileFormat));
+    this.dispatch(localStateActions.setFileFormat(fileFormat));
   }
 
   getApparentCutStartTime(i) {
@@ -430,7 +430,7 @@ class App extends React.Component {
 
   mergeFiles = async (paths) => {
     try {
-      this.dispatch(localStateReducer.setWorking(true));
+      this.dispatch(localStateActions.setWorking(true));
 
       const { customOutDir } = this.props.store.globalState;
 
@@ -440,7 +440,7 @@ class App extends React.Component {
       errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
       console.error('Failed to merge files', err);
     } finally {
-      this.dispatch(localStateReducer.setWorking(false));
+      this.dispatch(localStateActions.setWorking(false));
     }
   }
 
@@ -469,29 +469,29 @@ class App extends React.Component {
   };
 
   increaseRotation = () => {
-    this.dispatch(localStateReducer.increaseRotation());
+    this.dispatch(localStateActions.increaseRotation());
 
     this.setState({ rotationPreviewRequested: true }, () => this.throttledRenderFrame());
   }
 
   toggleCaptureFormat = () => {
-    this.dispatch(globalStateReducer.toggleCaptureFormat());
+    this.dispatch(globalStateActions.toggleCaptureFormat());
   }
 
   toggleIncludeAllStreams = () => {
-    this.dispatch(globalStateReducer.toggleAllStreams());
+    this.dispatch(globalStateActions.toggleAllStreams());
   }
 
   toggleStripAudio = () => {
-    this.dispatch(globalStateReducer.toggleStripAudio());
+    this.dispatch(globalStateActions.toggleStripAudio());
   };
 
   toggleKeyframeCut = () => {
-    this.dispatch(globalStateReducer.toggleKeyframeCut());
+    this.dispatch(globalStateActions.toggleKeyframeCut());
   }
 
   toggleAutoMerge = () => {
-    this.dispatch(globalStateReducer.toggleAutoMerge());
+    this.dispatch(globalStateActions.toggleAutoMerge());
   }
 
   addCutSegment = () => {
@@ -508,16 +508,16 @@ class App extends React.Component {
     const end = suggestedEnd <= duration
       ? suggestedEnd
       : undefined;
-    this.dispatch(cutSegmentsReducer.addCutSegment(currentTime, end));
-    this.dispatch(cutSegmentsReducer.setCurrentSeg(cutSegments.length));
+    this.dispatch(cutSegmentsActions.addCutSegment(currentTime, end));
+    this.dispatch(cutSegmentsActions.setCurrentSeg(cutSegments.length));
   }
 
   removeCutSegment = () => {
     const { currentSeg, cutSegments } = this.props.store.cutSegments;
 
     const currentSegNew = Math.min(currentSeg, cutSegments.length - 2);
-    this.dispatch(cutSegmentsReducer.removeCutSegment(currentSeg));
-    this.dispatch(cutSegmentsReducer.setCurrentSeg(currentSegNew));
+    this.dispatch(cutSegmentsActions.removeCutSegment(currentSeg));
+    this.dispatch(cutSegmentsActions.setCurrentSeg(currentSegNew));
   }
 
   jumpCutStart = () => {
@@ -561,7 +561,7 @@ class App extends React.Component {
     if (working || !window.confirm('Are you sure you want to move the source file to trash?')) return;
     const { filePath } = this.props.store.localState;
 
-    this.dispatch(localStateReducer.setWorking(true));
+    this.dispatch(localStateActions.setWorking(true));
     await trash(filePath);
     this.resetState();
   }
@@ -600,7 +600,7 @@ class App extends React.Component {
     }
 
     try {
-      this.dispatch(localStateReducer.setWorking(true));
+      this.dispatch(localStateActions.setWorking(true));
 
       const segments = cutSegments.map((seg, i) => ({
         cutFrom: this.getApparentCutStartTime(i),
@@ -641,7 +641,7 @@ class App extends React.Component {
 
       showFfmpegFail(err);
     } finally {
-      this.dispatch(localStateReducer.setWorking(false));
+      this.dispatch(localStateActions.setWorking(false));
     }
   }
 
@@ -678,8 +678,8 @@ class App extends React.Component {
     video.currentTime = 0;
     video.playbackRate = 1;
     this.setState(getInitialLocalState());
-    this.dispatch(localStateReducer.resetLocalState());
-    this.dispatch(cutSegmentsReducer.resetCutSegmentState());
+    this.dispatch(localStateActions.resetLocalState());
+    this.dispatch(cutSegmentsActions.resetCutSegmentState());
     this.dispatch(cutTimeActions.resetState());
     setFileNameTitle();
   }
@@ -692,10 +692,6 @@ class App extends React.Component {
   isCutRangeValid(i) {
     return this.getApparentCutStartTime(i) < this.getApparentCutEndTime(i);
   }
-
-  // toggleHelp() {
-  //   this.dispatch(localStateReducer.toggleHelp());
-  // }
 
 
   render() {
