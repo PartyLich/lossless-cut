@@ -25,7 +25,7 @@ import {
 // local
 import HelpSheet from '../HelpSheet';
 import { showMergeDialog, showOpenAndMergeDialog } from '../merge/merge';
-import captureFrame from '../capture-frame';
+import captureFrame from '../captureFrame';
 import {
   getOutPath, formatDuration,
   toast, errorToast, showFfmpegFail,

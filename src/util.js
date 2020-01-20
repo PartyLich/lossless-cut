@@ -3,7 +3,7 @@ import path from 'path';
 import { promises as fs } from 'fs';
 import padStart from 'lodash/padStart';
 import swal from 'sweetalert2';
-import randomColor from './random-color';
+import randomColor from './randomColor';
 
 function formatDuration(
     seconds: number = 0,

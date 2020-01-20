@@ -4,7 +4,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 
 import menu from './menu';
-import { checkNewVersion } from './update-checker';
+import { checkNewVersion } from './updateChecker';
 
 app.name = 'LosslessCut';
 
