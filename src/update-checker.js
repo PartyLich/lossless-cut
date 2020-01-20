@@ -5,7 +5,7 @@ import GitHub from 'github-api';
 const gh = new GitHub();
 const repo = gh.getRepo('PartyLich', 'lossless-cut');
 
-async function checkNewVersion(): Promise<?string> {
+export default async function checkNewVersion(): Promise<?string> {
   try {
     // From API: https://developer.github.com/v3/repos/releases/#get-the-latest-release
     // View the latest published full release for the repository.
@@ -24,4 +24,3 @@ async function checkNewVersion(): Promise<?string> {
 }
 
 export { checkNewVersion };
-export default checkNewVersion;
