@@ -117,21 +117,18 @@ const parseTimeSpan = (str: string) => {
   if (!match) throw new Error(`parseTimeSpan:: failed to parse ${ str }`);
 
   const [, hrStr, minStr, secStr] = match;
-  const hr = parseInt(hrStr, 10);
-  const min = parseInt(minStr, 10);
-  const sec = parseFloat(secStr);
 
   return {
-    hr,
-    min,
-    sec,
+    hr: parseInt(hrStr, 10),
+    min: parseInt(minStr, 10),
+    sec: parseFloat(secStr),
 
     /**
      * convert to seconds
      * @return {number}
      */
     toSeconds(): number {
-      return (hr * 3600) + (min * 60) + sec;
+      return (this.hr * 3600) + (this.min * 60) + this.sec;
     },
   };
 };
