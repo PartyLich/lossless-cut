@@ -96,7 +96,7 @@ async function showFfmpegFail(err: Error) {
 
 function setFileNameTitle(filePath: string) {
   const appName = 'LosslessCut';
-  document.title = filePath ? `${ appName } - ${ path.basename(filePath) }` : 'appName';
+  document.title = filePath ? `${ appName } - ${ path.basename(filePath) }` : appName;
 }
 
 async function promptTimeOffset(inputValue: string = '') {
