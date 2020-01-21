@@ -71,9 +71,22 @@ const toast = swal.mixin({
   timer: 5000,
 });
 
-const errorToast = (title: string) => toast.fire({
+type ErrorToastOptions = {|
+  timer?: number,
+  position?: | 'top'
+    | 'top-start'
+    | 'top-end'
+    | 'center'
+    | 'center-start'
+    | 'center-end'
+    | 'bottom'
+    | 'bottom-start'
+    | 'bottom-end',
+|};
+const errorToast = (title: string, opts?: ErrorToastOptions) => toast.fire({
   type: 'error',
   title,
+  ...opts,
 });
 
 async function showFfmpegFail(err: Error) {
