@@ -92,11 +92,6 @@ const errorToast = (title: string, opts?: ErrorToastOptions) => toast.fire({
   ...opts,
 });
 
-async function showFfmpegFail(err: Error) {
-  console.error(err);
-  return errorToast(`Failed to run ffmpeg: ${ err.stack }`);
-}
-
 function setFileNameTitle(filePath: string) {
   const appName = 'LosslessCut';
   document.title = filePath ? `${ appName } - ${ path.basename(filePath) }` : appName;
@@ -157,9 +152,7 @@ export {
   getOutPath,
   transferTimestamps,
   transferTimestampsWithOffset,
-  toast,
   errorToast,
-  showFfmpegFail,
   setFileNameTitle,
   promptTimeOffset,
   generateColor,
