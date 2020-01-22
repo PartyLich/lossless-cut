@@ -15,6 +15,7 @@ const makeProps = () => ({
   type: 'start',
   startTimeOffset: 0,
   setCutTime: NOOP,
+  setCutText: NOOP,
   apparentCutTime: 10,
 });
 
