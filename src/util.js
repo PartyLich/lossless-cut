@@ -45,24 +45,27 @@ function getOutPath(customOutDir: string, filePath: string, nameSuffix: string) 
     : `${ filePath }-${ nameSuffix }`;
 }
 
-async function transferTimestamps(inPath: string, outPath: string) {
-  try {
-    const stat = await fs.stat(inPath);
-    await fs.utimes(outPath, stat.atime.getTime() / 1000, stat.mtime.getTime() / 1000);
-  } catch (err) {
-    console.error('Failed to set output file modified time', err);
-  }
+function transferTimestampsOffset(offset: number) {
+  return async (inPath: string, outPath: string) => {
+    try {
+      const stat = await fs.stat(inPath);
+      // JavaScript uses milliseconds, Unix Time is in seconds
+      const mtime = (stat.mtimeMs / 1000) + offset;
+      await fs.utimes(outPath, stat.atimeMs / 1000, mtime);
+    } catch (err) {
+      console.error('Failed to set output file modified time', err);
+    }
+  };
 }
 
-async function transferTimestampsWithOffset(inPath: string, outPath: string, offset: number) {
-  try {
-    const stat = await fs.stat(inPath);
-    const time = (stat.mtime.getTime() / 1000) + offset;
-    await fs.utimes(outPath, time, time);
-  } catch (err) {
-    console.error('Failed to set output file modified time', err);
-  }
-}
+// shuffling to keep function signature unchanged
+const transferTimestampsWithOffset = (
+    inPath: string,
+    outPath: string,
+    offset: number,
+) => transferTimestampsOffset(offset)(inPath, outPath);
+
+const transferTimestamps = transferTimestampsOffset(0);
 
 const toast = swal.mixin({
   toast: true,
