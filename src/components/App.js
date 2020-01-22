@@ -26,10 +26,11 @@ import {
 import HelpSheet from '../HelpSheet';
 import { showMergeDialog, showOpenAndMergeDialog } from '../merge/merge';
 import captureFrame from '../captureFrame';
+import Errors from '../errors';
 import withBlur from '../withBlur';
 import {
   getOutPath, formatDuration,
-  toast, errorToast, showFfmpegFail,
+  errorToast,
   setFileNameTitle,
   promptTimeOffset,
 } from '../util';
@@ -124,6 +125,8 @@ const throttledRenderFrame = async (
   await queue.onIdle();
 };
 
+const showError = (error) => errorToast(error.message);
+
 
 const getInitialLocalState = () => ({
   html5FriendlyPath: undefined,
@@ -162,7 +165,7 @@ class App extends React.Component {
 
       console.log('Load', { filePath, html5FriendlyPath });
       if (working) {
-        errorToast('I\'m busy');
+        showError(Errors.Busy());
         return;
       }
 
@@ -172,7 +175,7 @@ class App extends React.Component {
       try {
         const fileFormat = await getFormat(filePath);
         if (!fileFormat) {
-          errorToast('Unsupported file');
+          showError(Errors.UnsupportedFile());
           return;
         }
 
@@ -197,10 +200,10 @@ class App extends React.Component {
         }
       } catch (err) {
         if (err.code === 1 || err.code === 'ENOENT') {
-          errorToast('Unsupported file');
+          showError(Errors.UnsupportedFile());
           return;
         }
-        showFfmpegFail(err);
+        showError(Errors.Ffmpeg(err));
       } finally {
         this.dispatch(localStateActions.setWorking(false));
       }
@@ -223,7 +226,7 @@ class App extends React.Component {
         this.dispatch(localStateActions.setWorking(false));
         load(filePath, html5ifiedPath);
       } catch (err) {
-        errorToast('Failed to html5ify file');
+        showError(Errors.html5ify());
         console.error('Failed to html5ify file', err);
         this.dispatch(localStateActions.setWorking(false));
       }
@@ -256,7 +259,7 @@ class App extends React.Component {
         await extractAllStreams({ customOutDir, filePath });
         this.dispatch(localStateActions.setWorking(false));
       } catch (err) {
-        errorToast('Failed to extract all streams');
+        showError(Errors.StreamExtract());
         console.error('Failed to extract all streams', err);
         this.dispatch(localStateActions.setWorking(false));
       }
@@ -428,7 +431,7 @@ class App extends React.Component {
       // console.log('merge', paths);
       await mergeAnyFiles({ customOutDir, paths });
     } catch (err) {
-      errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
+      showError(Errors.FailedMerge());
       console.error('Failed to merge files', err);
     } finally {
       this.dispatch(localStateActions.setWorking(false));
@@ -541,7 +544,10 @@ class App extends React.Component {
     return video.play().catch((err) => {
       console.log(err);
       if (err.name === 'NotSupportedError') {
-        toast.fire({ type: 'error', title: 'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu. Note that this will only create a temporary, low quality encoded file used for previewing your cuts, and will not affect the final cut. The final cut will still be lossless. Audio is also removed to make it faster, but only in the preview.', timer: 10000 });
+        errorToast(
+            'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu. Note that this will only create a temporary, low quality encoded file used for previewing your cuts, and will not affect the final cut. The final cut will still be lossless. Audio is also removed to make it faster, but only in the preview.',
+            { timer: 10000 },
+        );
       }
     });
   }
@@ -576,7 +582,7 @@ class App extends React.Component {
     } = this.props.store.localState;
 
     if (working) {
-      errorToast('I\'m busy');
+      showError(Errors.Busy());
       return;
     }
 
@@ -586,7 +592,7 @@ class App extends React.Component {
     const cutEndTime = this.getCutEndTime();
 
     if (!(this.isCutRangeValid() || cutEndTime === undefined || cutStartTime === undefined)) {
-      errorToast('Start time must be before end time');
+      showError(Errors.TimeValidation());
       return;
     }
 
@@ -626,11 +632,11 @@ class App extends React.Component {
       console.error('stderr:', err.stderr);
 
       if (err.code === 1 || err.code === 'ENOENT') {
-        errorToast(`Whoops! ffmpeg was unable to cut this video. Try each the following things before attempting to cut again:\n1. Select a different output format from the ${ fileFormat } button (matroska takes almost everything).\n2. toggle the button "all" to "ps"`);
+        showError(Errors.FailedCut(fileFormat));
         return;
       }
 
-      showFfmpegFail(err);
+      showError(Errors.Ffmpeg(err));
     } finally {
       this.dispatch(localStateActions.setWorking(false));
     }
@@ -649,7 +655,7 @@ class App extends React.Component {
       await captureFrame(outputDir, filePath, getVideo(), currentTime, captureFormat);
     } catch (err) {
       console.error(err);
-      errorToast('Failed to capture frame');
+      showError(Errors.FailedCapture());
     }
   }
 
