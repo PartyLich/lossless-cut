@@ -1,23 +1,43 @@
+// @flow
 import React from 'react';
 import PropTypes from 'prop-types';
 
 import { IconButton } from '.';
 
 
-const JumpEndButton = ({
+const START: 'start' = 'start';
+const END: 'end' = 'end';
+const iconMap = {
+  [START]: 'backward',
+  [END]: 'forward',
+};
+type Direction = typeof START | typeof END;
+    
+const JumpEndButton = (end: Direction) => ({
   clickHandler,
-  end,
-}) => (
-  <IconButton
-    icon={`fa-step-${ end === 'start' ? 'backward' : 'forward' }`}
-    clickHandler={clickHandler}
-    title={`Jump to ${ end } of video`}
-  />
-);
+}: { clickHandler: () => mixed }) => {
+  const symbol = iconMap[end];
+  if (!symbol) throw new Error(`Invalid type "${ end }"`);
 
-JumpEndButton.propTypes = {
-  clickHandler: PropTypes.func.isRequired,
-  end: PropTypes.oneOf(['start', 'end']).isRequired,
+  return (
+    <IconButton
+      icon={`fa-step-${ symbol  }`}
+      clickHandler={clickHandler}
+      title={`Jump to ${ end } of video`}
+    />
+  );
 };
 
-export default JumpEndButton;
+const Button = ({end, clickHandler}: {
+  end: Direction, 
+  clickHandler: () => mixed,
+}) => JumpEndButton(end)({clickHandler});
+Button.Start = JumpEndButton(START);
+Button.End = JumpEndButton(END);
+
+Button.propTypes = {
+  clickHandler: PropTypes.func.isRequired,
+  end: PropTypes.oneOf([START, END]).isRequired,
+};
+
+export default Button;

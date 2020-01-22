@@ -1,14 +1,22 @@
+// @flow
 import React from 'react';
 import PropTypes from 'prop-types';
 
 import withBlur from '../withBlur';
 
 
-const JumpCutButton = ({
-  type,
+const START: 'start' = 'start';
+const END: 'end' = 'end';
+type Direction = typeof START | typeof END;
+
+type Props = {
+  clickHandler: () => mixed,
+};
+
+const JumpCutButton = (type: Direction) => ({
   clickHandler,
-}) => {
-  const symbol = (type === 'start')
+}: Props) => {
+  const symbol = (type === START)
     ? 'backward'
     : 'forward';
 
@@ -23,9 +31,16 @@ const JumpCutButton = ({
   );
 };
 
-JumpCutButton.propTypes = {
-  type: PropTypes.oneOf(['start', 'end']).isRequired,
+const Button = ({ type, clickHandler }: {
+  type: Direction,
+  clickHandler: () => mixed,
+}) => JumpCutButton(type)({ clickHandler });
+Button.Start = JumpCutButton(START);
+Button.End = JumpCutButton(END);
+
+Button.propTypes = {
+  type: PropTypes.oneOf([START, END]).isRequired,
   clickHandler: PropTypes.func.isRequired,
 };
 
-export default JumpCutButton;
+export default Button;
