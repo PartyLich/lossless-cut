@@ -184,8 +184,7 @@ class App extends React.Component {
           html5FriendlyPath,
           detectedFileFormat: fileFormat,
         });
-        this.dispatch(localStateActions.setFileFormat(fileFormat));
-        this.dispatch(localStateActions.setFilePath(filePath));
+        this.dispatch(localStateActions.fileLoaded({ fileFormat, filePath }));
 
         if (html5FriendlyPath) {
           this.setState({ userHtml5ified: true });

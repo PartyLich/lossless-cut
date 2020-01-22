@@ -157,6 +157,27 @@ test('localState setDuration', (t) => {
   t.end();
 });
 
+test('localState fileLoaded', (t) => {
+  const action = actions.fileLoaded;
+
+  {
+    const msg = 'sets fileFormat and filePath';
+    const expected = {
+      ...createState(),
+      fileFormat: 'foobar',
+      filePath: 'foor/bar/baz',
+    };
+    const actual = reducer(undefined, action({
+      fileFormat: 'foobar',
+      filePath: 'foor/bar/baz',
+    }));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+
 test('localState increaseRotation', (t) => {
   const action = actions.increaseRotation;
 

@@ -12,6 +12,8 @@ const FILE_FORMAT_SET: 'localState/FILE_FORMAT_SET' = 'localState/FILE_FORMAT_SE
 const FILE_PATH_SET: 'localState/FILE_PATH_SET' = 'localState/FILE_PATH_SET';
 const FRAME_PATH_SET: 'localState/FRAME_PATH_SET' = 'localState/FRAME_PATH_SET';
 const HELP_TOGGLE: 'localState/HELP_TOGGLE' = 'localState/HELP_TOGGLE';
+
+const FILE_LOADED: 'localState/FILE_LOADED' = 'localState/FILE_LOADED';
 const ROTATION_INC: 'localState/ROTATION_INC' = 'localState/ROTATION_INC';
 const STATE_RESET: 'localState/STATE_RESET' = 'localState/STATE_RESET';
 
@@ -27,6 +29,11 @@ type SetFileFormatAction =
 type SetFilePathAction = TypedFSA<typeof FILE_PATH_SET, {| filePath: string |}>;
 type SetFramePathAction =
         TypedFSA<typeof FRAME_PATH_SET, {| framePath: string |}>;
+type FileLoadPayload = {|
+  fileFormat: string,
+  filePath: string,
+|};
+type FileLoadedEvent = TypedFSA<typeof FILE_LOADED, FileLoadPayload>;
 type IncreaseRotationAction = TypedFSA<typeof ROTATION_INC, void>;
 type ToggleHelpAction = TypedFSA<typeof HELP_TOGGLE, string>;
 
@@ -40,6 +47,7 @@ type Action =
     | SetFileFormatAction
     | SetFilePathAction
     | SetFramePathAction
+    | FileLoadedEvent
     | IncreaseRotationAction
     | ToggleHelpAction
     ;
@@ -86,6 +94,17 @@ export const setFilePath = (filePath: string): SetFilePathAction => ({
 export const setFramePath = (framePath: string): SetFramePathAction => ({
   type: FRAME_PATH_SET,
   payload: { framePath },
+});
+
+export const fileLoaded = ({
+  fileFormat,
+  filePath,
+}: FileLoadPayload = {}): FileLoadedEvent => ({
+  type: FILE_LOADED,
+  payload: {
+    fileFormat,
+    filePath,
+  },
 });
 
 export const increaseRotation = (): IncreaseRotationAction => ({
@@ -136,6 +155,15 @@ const localState = (state = initialState, action: Action) => {
 
     case ROTATION_INC:
       return { ...state, rotation: (state.rotation + 90) % 450 };
+
+    case FILE_LOADED:
+      return action.payload
+      ? {
+        ...state,
+        filePath: action.payload.filePath,
+        fileFormat: action.payload.fileFormat,
+      }
+      : state;
 
     default:
       return state;
