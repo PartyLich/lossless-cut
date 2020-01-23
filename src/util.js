@@ -7,7 +7,7 @@ import randomColor from './randomColor';
 
 function formatDuration(
     seconds: number = 0,
-    fileNameFriendly: boolean,
+    fileNameFriendly?: boolean = false,
 ): string {
   const minutes = seconds / 60;
   const hours = minutes / 60;
@@ -22,7 +22,7 @@ function formatDuration(
   return `${ hoursPadded }${ delim }${ minutesPadded }${ delim }${ secondsPadded }.${ msPadded }`;
 }
 
-function parseDuration(str: string): ?number {
+function parseDuration(str: string): number | void {
   if (!str) return undefined;
 
   const match = str.trim().match(/^(\d{2}):(\d{2}):(\d{2})\.(\d{3})$/);
