@@ -2,20 +2,18 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 
-const IconButton = (props) => {
-  const {
+const IconButton = ({
     clickHandler,
     icon,
-    ...rest
-  } = props;
-
+    ...props,
+}) => {
   return (
     <i
       className={`button fa ${ icon }`}
       role="button"
       tabIndex="0"
       onClick={clickHandler}
-      {...rest}
+      {...props}
     />
   );
 };
