@@ -1,3 +1,4 @@
+// @flow
 import React, {
   useState,
   useEffect,
@@ -9,6 +10,15 @@ import PropTypes from 'prop-types';
 import { parseDuration, formatDuration } from '../util';
 import './CutTimeInput.scss';
 
+
+type Props = {
+  type: string,
+  apparentCutTime: number,
+  cutText: string,
+  startTimeOffset: number,
+  setCutTime: (string, number) => void,
+  setCutText: (string) => (string) => void,
+};
 
 const addChar = (oldText, newText, i) => {
   const diff = newText.length - oldText.length;
@@ -39,24 +49,25 @@ const baseClassName = 'CutTimeInput';
 const CutTimeInput = ({
   type,
   apparentCutTime,
-  cutText,
+  cutText = '',
   startTimeOffset,
   setCutTime,
   setCutText,
-}) => {
+}: Props) => {
   const formattedDuration = formatDuration(apparentCutTime + startTimeOffset);
   const [caret, setCaret] = useState(0);
   const className = `${ baseClassName } ${ baseClassName }--${ type }`;
-  const inputEl = useRef(null);
+  const inputEl = useRef<HTMLInputElement | null>(null);
 
   useEffect(
       () => {
-        inputEl.current.setSelectionRange(caret, caret);
+        if (inputEl.current) inputEl.current.setSelectionRange(caret, caret);
       },
       [caret],
   );
 
   const handleCutTimeInput = useCallback((text) => {
+    if (!inputEl.current) return;
     const dotPositions = [2, 5, 8];
     const timeString = cutText || formattedDuration;
     let newTimeString = text;
