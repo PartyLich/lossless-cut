@@ -349,3 +349,19 @@ test('localState setRotationPreview', (t) => {
 
   t.end();
 });
+
+test('localState userHtml5ified', (t) => {
+  const action = actions.setUserHtml5ified;
+
+  {
+    const msg = 'sets userHtml5ified';
+    const expected = {
+      ...createState(),
+      userHtml5ified: true,
+    };
+    const actual = reducer(undefined, action(true));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});

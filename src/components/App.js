@@ -130,7 +130,6 @@ const showError = (error) => errorToast(error.message);
 
 const getInitialLocalState = () => ({
   html5FriendlyPath: undefined,
-  userHtml5ified: false,
   detectedFileFormat: undefined,
   streams: [],
   startTimeOffset: 0,
@@ -189,7 +188,7 @@ class App extends React.Component {
         this.dispatch(localStateActions.fileLoaded({ fileFormat, filePath }));
 
         if (html5FriendlyPath) {
-          this.setState({ userHtml5ified: true });
+          this.dispatch(localStateActions.setUserHtml5ified(true));
         } else if (!doesPlayerSupportFile(streams)) {
           const { customOutDir } = this.props.store.globalState;
           const html5ifiedDummyPath = getOutPath(customOutDir, filePath, 'html5ified-dummy.mkv');
@@ -438,8 +437,8 @@ class App extends React.Component {
   }
 
   frameRenderEnabled = () => {
-    const { userHtml5ified, streams } = this.state;
-    const { rotationPreviewRequested } = this.props.store.localState;
+    const { streams } = this.state;
+    const { rotationPreviewRequested, userHtml5ified } = this.props.store.localState;
     if (rotationPreviewRequested) return true;
     return !userHtml5ified && !doesPlayerSupportFile(streams);
   }
