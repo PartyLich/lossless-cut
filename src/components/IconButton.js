@@ -1,24 +1,25 @@
+// @flow
 import React from 'react';
 import PropTypes from 'prop-types';
 
-
-const IconButton = (props) => {
-  const {
-    clickHandler,
-    icon,
-    ...rest
-  } = props;
-
-  return (
-    <i
-      className={`button fa ${ icon }`}
-      role="button"
-      tabIndex="0"
-      onClick={clickHandler}
-      {...rest}
-    />
-  );
+type Props = {
+  clickHandler: () => any,
+  icon: string,
 };
+
+const IconButton = ({
+  clickHandler,
+  icon = '',
+  ...props
+}: Props) => (
+  <i
+    {...props}
+    className={`button fa ${ icon }`}
+    role="button"
+    tabIndex="0"
+    onClick={clickHandler}
+  />
+);
 
 IconButton.propTypes = {
   clickHandler: PropTypes.func.isRequired,
