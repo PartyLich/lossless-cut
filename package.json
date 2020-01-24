@@ -93,6 +93,7 @@
     "electron-default-menu": "^1.0.1",
     "electron-is-dev": "^0.1.2",
     "electron-window-state": "^4.1.1",
+    "empty": "^0.10.1",
     "execa": "^0.5.1",
     "ffmpeg-static": "^2.7.0",
     "ffprobe-static": "^3.0.0",
