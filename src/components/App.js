@@ -134,7 +134,6 @@ const getInitialLocalState = () => ({
   detectedFileFormat: undefined,
   streams: [],
   startTimeOffset: 0,
-  rotationPreviewRequested: false,
 });
 
 
@@ -306,7 +305,7 @@ class App extends React.Component {
     const { currentTime } = e.target;
     if (this.props.store.localState.currentTime === currentTime) return;
 
-    this.setState({ rotationPreviewRequested: false }); // Reset this
+    this.dispatch(localStateActions.setRotationPreview(false));
     this.dispatch(localStateActions.setCurrentTime(currentTime));
     this.throttledRenderFrame({ time: currentTime });
   }
@@ -439,7 +438,8 @@ class App extends React.Component {
   }
 
   frameRenderEnabled = () => {
-    const { rotationPreviewRequested, userHtml5ified, streams } = this.state;
+    const { userHtml5ified, streams } = this.state;
+    const { rotationPreviewRequested } = this.props.store.localState;
     if (rotationPreviewRequested) return true;
     return !userHtml5ified && !doesPlayerSupportFile(streams);
   }
@@ -464,8 +464,8 @@ class App extends React.Component {
 
   increaseRotation = () => {
     this.dispatch(localStateActions.increaseRotation());
-
-    this.setState({ rotationPreviewRequested: true }, () => this.throttledRenderFrame());
+    this.dispatch(localStateActions.setRotationPreview(false));
+    this.throttledRenderFrame();
   }
 
   toggleCaptureFormat = () => {
@@ -714,6 +714,7 @@ class App extends React.Component {
       framePath,
       helpVisible,
       playing,
+      rotationPreviewRequested,
       working,
     } = this.props.store.localState;
 
@@ -734,7 +735,7 @@ class App extends React.Component {
           <ProgressIndicator cutProgress={cutProgress} />
         )}
 
-        {this.state.rotationPreviewRequested && (
+        {rotationPreviewRequested && (
           <div className="RotationPreview">
             Lossless rotation preview
           </div>

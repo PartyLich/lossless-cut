@@ -15,6 +15,7 @@ const HELP_TOGGLE: 'localState/HELP_TOGGLE' = 'localState/HELP_TOGGLE';
 
 const FILE_LOADED: 'localState/FILE_LOADED' = 'localState/FILE_LOADED';
 const ROTATION_INC: 'localState/ROTATION_INC' = 'localState/ROTATION_INC';
+const ROTATION_PREVIEW_SET: 'localState/ROTATION_PREVIEW_SET' = 'localState/ROTATION_PREVIEW_SET';
 const STATE_RESET: 'localState/STATE_RESET' = 'localState/STATE_RESET';
 
 type ResetLocalStateAction = TypedFSA<typeof STATE_RESET, void>;
@@ -35,6 +36,7 @@ type FileLoadPayload = {|
 |};
 type FileLoadedEvent = TypedFSA<typeof FILE_LOADED, FileLoadPayload>;
 type IncreaseRotationAction = TypedFSA<typeof ROTATION_INC, void>;
+type SetRotationPreviewAction = TypedFSA<typeof ROTATION_PREVIEW_SET, {| rotationPreviewRequested: boolean |}>;
 type ToggleHelpAction = TypedFSA<typeof HELP_TOGGLE, string>;
 
 type Action =
@@ -47,6 +49,7 @@ type Action =
     | SetFileFormatAction
     | SetFilePathAction
     | SetFramePathAction
+    | SetRotationPreviewAction
     | FileLoadedEvent
     | IncreaseRotationAction
     | ToggleHelpAction
@@ -94,6 +97,11 @@ export const setFilePath = (filePath: string): SetFilePathAction => ({
 export const setFramePath = (framePath: string): SetFramePathAction => ({
   type: FRAME_PATH_SET,
   payload: { framePath },
+});
+
+export const setRotationPreview = (rotationPreviewRequested: boolean): SetRotationPreviewAction => ({
+  type: ROTATION_PREVIEW_SET,
+  payload: { rotationPreviewRequested },
 });
 
 export const fileLoaded = ({
@@ -151,6 +159,7 @@ const localState = (state = initialState, action: Action) => {
     case FILE_FORMAT_SET:
     case FILE_PATH_SET:
     case FRAME_PATH_SET:
+    case ROTATION_PREVIEW_SET:
       return { ...state, ...action.payload };
 
     case ROTATION_INC:

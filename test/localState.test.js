@@ -333,3 +333,19 @@ test('localState setCurrentTime', (t) => {
 
   t.end();
 });
+
+test('localState setRotationPreview', (t) => {
+  const action = actions.setRotationPreview;
+
+  {
+    const msg = 'sets rotationPreviewRequested';
+    const expected = {
+      ...createState(),
+      rotationPreviewRequested: true,
+    };
+    const actual = reducer(undefined, action(true));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
