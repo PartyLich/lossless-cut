@@ -12,6 +12,7 @@ const FILE_FORMAT_SET: 'localState/FILE_FORMAT_SET' = 'localState/FILE_FORMAT_SE
 const FILE_PATH_SET: 'localState/FILE_PATH_SET' = 'localState/FILE_PATH_SET';
 const FRAME_PATH_SET: 'localState/FRAME_PATH_SET' = 'localState/FRAME_PATH_SET';
 const USERHTML5IFIED_SET: 'localState/USERHTML5IFIED_SET' = 'localState/USERHTML5IFIED_SET';
+const HTML5FRIENDLYPATH_SET: 'localState/HTML5FRIENDLYPATH_SET' = 'localState/HTML5FRIENDLYPATH_SET';
 const HELP_TOGGLE: 'localState/HELP_TOGGLE' = 'localState/HELP_TOGGLE';
 
 const FILE_LOADED: 'localState/FILE_LOADED' = 'localState/FILE_LOADED';
@@ -39,6 +40,7 @@ type FileLoadedEvent = TypedFSA<typeof FILE_LOADED, FileLoadPayload>;
 type IncreaseRotationAction = TypedFSA<typeof ROTATION_INC, void>;
 type SetRotationPreviewAction = TypedFSA<typeof ROTATION_PREVIEW_SET, {| rotationPreviewRequested: boolean |}>;
 type SetUserHtml5ifiedAction = TypedFSA<typeof USERHTML5IFIED_SET, {| userHtml5ified: boolean |}>;
+type SetHtml5FriendlyPathAction = TypedFSA<typeof HTML5FRIENDLYPATH_SET, {| html5FriendlyPath: ?string |}>;
 type ToggleHelpAction = TypedFSA<typeof HELP_TOGGLE, string>;
 
 type Action =
@@ -56,6 +58,7 @@ type Action =
     | IncreaseRotationAction
     | ToggleHelpAction
     | SetUserHtml5ifiedAction
+    | SetHtml5FriendlyPathAction
     ;
 
 export const resetLocalState = (): ResetLocalStateAction => ({
@@ -110,6 +113,11 @@ export const setRotationPreview = (rotationPreviewRequested: boolean): SetRotati
 export const setUserHtml5ified = (userHtml5ified: boolean): SetUserHtml5ifiedAction => ({
   type: USERHTML5IFIED_SET,
   payload: { userHtml5ified },
+});
+
+export const setHtml5FriendlyPath = (html5FriendlyPath: ?string): SetHtml5FriendlyPathAction => ({
+  type: HTML5FRIENDLYPATH_SET,
+  payload: { html5FriendlyPath },
 });
 
 export const fileLoaded = ({
@@ -169,6 +177,7 @@ const localState = (state = initialState, action: Action) => {
     case FRAME_PATH_SET:
     case ROTATION_PREVIEW_SET:
     case USERHTML5IFIED_SET:
+    case HTML5FRIENDLYPATH_SET:
       return { ...state, ...action.payload };
 
     case ROTATION_INC:

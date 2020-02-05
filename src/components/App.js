@@ -129,7 +129,6 @@ const showError = (error) => errorToast(error.message);
 
 
 const getInitialLocalState = () => ({
-  html5FriendlyPath: undefined,
   detectedFileFormat: undefined,
   streams: [],
   startTimeOffset: 0,
@@ -182,9 +181,9 @@ class App extends React.Component {
         setFileNameTitle(filePath);
         this.setState({
           streams,
-          html5FriendlyPath,
           detectedFileFormat: fileFormat,
         });
+        this.dispatch(localStateActions.setHtml5FriendlyPath(html5FriendlyPath));
         this.dispatch(localStateActions.fileLoaded({ fileFormat, filePath }));
 
         if (html5FriendlyPath) {
@@ -193,7 +192,7 @@ class App extends React.Component {
           const { customOutDir } = this.props.store.globalState;
           const html5ifiedDummyPath = getOutPath(customOutDir, filePath, 'html5ified-dummy.mkv');
           await html5ifyDummy(filePath, html5ifiedDummyPath);
-          this.setState({ html5FriendlyPath: html5ifiedDummyPath });
+          this.dispatch(localStateActions.setHtml5FriendlyPath(html5ifiedDummyPath));
           this.throttledRenderFrame();
         }
       } catch (err) {
@@ -332,8 +331,7 @@ class App extends React.Component {
   }
 
   getFileUri() {
-    const { html5FriendlyPath } = this.state;
-    const { filePath } = this.props.store.localState;
+    const { filePath, html5FriendlyPath } = this.props.store.localState;
     return (html5FriendlyPath || filePath || '').replace(/#/g, '%23');
   }
 

@@ -365,3 +365,19 @@ test('localState userHtml5ified', (t) => {
 
   t.end();
 });
+
+test('localState html5FriendlyPath', (t) => {
+  const action = actions.setHtml5FriendlyPath;
+
+  {
+    const msg = 'sets html5FriendlyPath';
+    const expected = {
+      ...createState(),
+      html5FriendlyPath: 'foobar',
+    };
+    const actual = reducer(undefined, action('foobar'));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
