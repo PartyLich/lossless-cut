@@ -130,7 +130,6 @@ const showError = (error) => errorToast(error.message);
 
 const getInitialLocalState = () => ({
   detectedFileFormat: undefined,
-  streams: [],
   startTimeOffset: 0,
 });
 
@@ -180,9 +179,9 @@ class App extends React.Component {
 
         setFileNameTitle(filePath);
         this.setState({
-          streams,
           detectedFileFormat: fileFormat,
         });
+        this.dispatch(localStateActions.setStreams(streams));
         this.dispatch(localStateActions.setHtml5FriendlyPath(html5FriendlyPath));
         this.dispatch(localStateActions.fileLoaded({ fileFormat, filePath }));
 
@@ -435,8 +434,11 @@ class App extends React.Component {
   }
 
   frameRenderEnabled = () => {
-    const { streams } = this.state;
-    const { rotationPreviewRequested, userHtml5ified } = this.props.store.localState;
+    const {
+      rotationPreviewRequested,
+      streams,
+      userHtml5ified,
+    } = this.props.store.localState;
     if (rotationPreviewRequested) return true;
     return !userHtml5ified && !doesPlayerSupportFile(streams);
   }

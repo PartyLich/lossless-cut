@@ -13,6 +13,7 @@ const FILE_PATH_SET: 'localState/FILE_PATH_SET' = 'localState/FILE_PATH_SET';
 const FRAME_PATH_SET: 'localState/FRAME_PATH_SET' = 'localState/FRAME_PATH_SET';
 const USERHTML5IFIED_SET: 'localState/USERHTML5IFIED_SET' = 'localState/USERHTML5IFIED_SET';
 const HTML5FRIENDLYPATH_SET: 'localState/HTML5FRIENDLYPATH_SET' = 'localState/HTML5FRIENDLYPATH_SET';
+const STREAMS_SET: 'localState/STREAMS_SET' = 'localState/STREAMS_SET';
 const HELP_TOGGLE: 'localState/HELP_TOGGLE' = 'localState/HELP_TOGGLE';
 
 const FILE_LOADED: 'localState/FILE_LOADED' = 'localState/FILE_LOADED';
@@ -41,6 +42,7 @@ type IncreaseRotationAction = TypedFSA<typeof ROTATION_INC, void>;
 type SetRotationPreviewAction = TypedFSA<typeof ROTATION_PREVIEW_SET, {| rotationPreviewRequested: boolean |}>;
 type SetUserHtml5ifiedAction = TypedFSA<typeof USERHTML5IFIED_SET, {| userHtml5ified: boolean |}>;
 type SetHtml5FriendlyPathAction = TypedFSA<typeof HTML5FRIENDLYPATH_SET, {| html5FriendlyPath: ?string |}>;
+type SetStreamsAction = TypedFSA<typeof STREAMS_SET, {| streams: Array<{}> |}>;
 type ToggleHelpAction = TypedFSA<typeof HELP_TOGGLE, string>;
 
 type Action =
@@ -59,6 +61,7 @@ type Action =
     | ToggleHelpAction
     | SetUserHtml5ifiedAction
     | SetHtml5FriendlyPathAction
+    | SetStreamsAction
     ;
 
 export const resetLocalState = (): ResetLocalStateAction => ({
@@ -120,6 +123,11 @@ export const setHtml5FriendlyPath = (html5FriendlyPath: ?string): SetHtml5Friend
   payload: { html5FriendlyPath },
 });
 
+export const setStreams = (streams: Array<{}>): SetStreamsAction => ({
+  type: STREAMS_SET,
+  payload: { streams },
+});
+
 export const fileLoaded = ({
   fileFormat,
   filePath,
@@ -178,6 +186,7 @@ const localState = (state = initialState, action: Action) => {
     case ROTATION_PREVIEW_SET:
     case USERHTML5IFIED_SET:
     case HTML5FRIENDLYPATH_SET:
+    case STREAMS_SET:
       return { ...state, ...action.payload };
 
     case ROTATION_INC:

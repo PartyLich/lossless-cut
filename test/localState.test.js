@@ -381,3 +381,19 @@ test('localState html5FriendlyPath', (t) => {
 
   t.end();
 });
+
+test('localState streams', (t) => {
+  const action = actions.setStreams;
+
+  {
+    const msg = 'sets streams';
+    const expected = {
+      ...createState(),
+      streams: ['foo', 'bar', 'baz'],
+    };
+    const actual = reducer(undefined, action(['foo', 'bar', 'baz']));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
