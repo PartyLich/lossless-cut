@@ -413,3 +413,19 @@ test('localState detectedFileFormat', (t) => {
 
   t.end();
 });
+
+test('localState startTimeOffset', (t) => {
+  const action = actions.setStartTimeOffset;
+
+  {
+    const msg = 'sets startTimeOffset';
+    const expected = {
+      ...createState(),
+      startTimeOffset: 42,
+    };
+    const actual = reducer(undefined, action(42));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});

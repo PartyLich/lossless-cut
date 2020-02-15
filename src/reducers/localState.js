@@ -14,6 +14,7 @@ const FILE_PATH_SET: 'localState/FILE_PATH_SET' = 'localState/FILE_PATH_SET';
 const FRAME_PATH_SET: 'localState/FRAME_PATH_SET' = 'localState/FRAME_PATH_SET';
 const USERHTML5IFIED_SET: 'localState/USERHTML5IFIED_SET' = 'localState/USERHTML5IFIED_SET';
 const HTML5FRIENDLYPATH_SET: 'localState/HTML5FRIENDLYPATH_SET' = 'localState/HTML5FRIENDLYPATH_SET';
+const START_TIME_OFFSET_SET: 'localState/START_TIME_OFFSET_SET' = 'localState/START_TIME_OFFSET_SET';
 const STREAMS_SET: 'localState/STREAMS_SET' = 'localState/STREAMS_SET';
 const HELP_TOGGLE: 'localState/HELP_TOGGLE' = 'localState/HELP_TOGGLE';
 
@@ -51,6 +52,9 @@ type SetHtml5FriendlyPathAction = TypedFSA<typeof HTML5FRIENDLYPATH_SET, {|
       html5FriendlyPath: ?string
     |}>;
 type SetStreamsAction = TypedFSA<typeof STREAMS_SET, {| streams: Array<{}> |}>;
+type SetStartOffsetAction = TypedFSA<typeof START_TIME_OFFSET_SET, {|
+      startTimeOffset: number
+    |}>;
 type SetDetectedFormatAction = TypedFSA<typeof DETECTED_FORMAT_SET, {|
       detectedFileFormat: string
     |}>;
@@ -73,6 +77,7 @@ type Action =
     | ToggleHelpAction
     | SetUserHtml5ifiedAction
     | SetHtml5FriendlyPathAction
+    | SetStartOffsetAction
     | SetStreamsAction
     ;
 
@@ -146,6 +151,13 @@ export const setStreams = (streams: Array<{}>): SetStreamsAction => ({
   payload: { streams },
 });
 
+export const setStartTimeOffset = (
+    startTimeOffset: number
+): SetStartOffsetAction => ({
+  type: START_TIME_OFFSET_SET,
+  payload: { startTimeOffset },
+});
+
 export const setDetectedFormat = (
     detectedFileFormat: string
 ): SetDetectedFormatAction => ({
@@ -212,6 +224,7 @@ const localState = (state = initialState, action: Action) => {
     case ROTATION_PREVIEW_SET:
     case USERHTML5IFIED_SET:
     case HTML5FRIENDLYPATH_SET:
+    case START_TIME_OFFSET_SET:
     case STREAMS_SET:
       return { ...state, ...action.payload };
 

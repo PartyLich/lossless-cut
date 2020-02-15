@@ -128,11 +128,6 @@ const throttledRenderFrame = async (
 const showError = (error) => errorToast(error.message);
 
 
-const getInitialLocalState = () => ({
-  startTimeOffset: 0,
-});
-
-
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -140,9 +135,7 @@ class App extends React.Component {
     this.store = props.store;
     this.dispatch = props.dispatch;
 
-    this.state = {
-      ...getInitialLocalState(),
-    };
+    this.state = {};
 
     this.queue = new PQueue({ concurrency: 1 });
 
@@ -232,14 +225,16 @@ class App extends React.Component {
     }));
 
     ipcRenderer.on('set-start-offset', async () => {
-      const { startTimeOffset: startTimeOffsetOld } = this.state;
+      const {
+        startTimeOffset: startTimeOffsetOld,
+      } = this.props.store.localState;
       const startTimeOffset = await promptTimeOffset(
         startTimeOffsetOld !== undefined ? formatDuration(startTimeOffsetOld) : undefined,
       );
 
       if (startTimeOffset === undefined) return;
 
-      this.setState({ startTimeOffset });
+      this.dispatch(localStateActions.setStartTimeOffset(startTimeOffset));
     });
 
     ipcRenderer.on('extract-all-streams', async () => {
@@ -409,8 +404,10 @@ class App extends React.Component {
   }
 
   getOffsetCurrentTime() {
-    const { currentTime } = this.props.store.localState;
-    const { startTimeOffset } = this.state;
+    const {
+      currentTime,
+      startTimeOffset,
+    } = this.props.store.localState;
     return currentTime + startTimeOffset;
   }
 
@@ -670,7 +667,7 @@ class App extends React.Component {
     const video = getVideo();
     video.currentTime = 0;
     video.playbackRate = 1;
-    this.setState(getInitialLocalState());
+    this.setState({});
     this.dispatch(localStateActions.resetLocalState());
     this.dispatch(cutSegmentsActions.resetCutSegmentState());
     this.dispatch(cutTimeActions.resetState());
@@ -711,6 +708,7 @@ class App extends React.Component {
       helpVisible,
       playing,
       rotationPreviewRequested,
+      startTimeOffset,
       working,
     } = this.props.store.localState;
 
@@ -787,7 +785,7 @@ class App extends React.Component {
             <div style={{ position: 'relative' }}>
               <CutTimeInput
                 type="start"
-                startTimeOffset={this.state.startTimeOffset}
+                startTimeOffset={startTimeOffset}
                 setCutTime={this.setCutTime}
                 setCutText={this.setCutText}
                 cutText={this.props.store.cutTime.startText}
@@ -815,7 +813,7 @@ class App extends React.Component {
             <div style={{ position: 'relative' }}>
               <CutTimeInput
                 type="end"
-                startTimeOffset={this.state.startTimeOffset}
+                startTimeOffset={startTimeOffset}
                 cutText={this.props.store.cutTime.endText}
                 setCutTime={this.setCutTime}
                 setCutText={this.setCutText}
