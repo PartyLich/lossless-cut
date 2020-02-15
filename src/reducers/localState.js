@@ -7,6 +7,7 @@ const CURRENT_TIME_SET: 'localState/CURRENT_TIME_SET' = 'localState/CURRENT_TIME
 const WORKING_SET: 'localState/WORKING_SET' = 'localState/WORKING_SET';
 const PLAYING_SET: 'localState/PLAYING_SET' = 'localState/PLAYING_SET';
 const CUT_PROGRESS_SET: 'localState/CUT_PROGRESS_SET' = 'localState/CUT_PROGRESS_SET';
+const DETECTED_FORMAT_SET: 'localState/DETECTED_FORMAT_SET' = 'localState/DETECTED_FORMAT_SET';
 const DURATION_SET: 'localState/DURATION_SET' = 'localState/DURATION_SET';
 const FILE_FORMAT_SET: 'localState/FILE_FORMAT_SET' = 'localState/FILE_FORMAT_SET';
 const FILE_PATH_SET: 'localState/FILE_PATH_SET' = 'localState/FILE_PATH_SET';
@@ -50,6 +51,9 @@ type SetHtml5FriendlyPathAction = TypedFSA<typeof HTML5FRIENDLYPATH_SET, {|
       html5FriendlyPath: ?string
     |}>;
 type SetStreamsAction = TypedFSA<typeof STREAMS_SET, {| streams: Array<{}> |}>;
+type SetDetectedFormatAction = TypedFSA<typeof DETECTED_FORMAT_SET, {|
+      detectedFileFormat: string
+    |}>;
 type ToggleHelpAction = TypedFSA<typeof HELP_TOGGLE, string>;
 
 type Action =
@@ -59,6 +63,7 @@ type Action =
     | SetCurrentTimeAction
     | SetCutProgressAction
     | SetDurationAction
+    | SetDetectedFormatAction
     | SetFileFormatAction
     | SetFilePathAction
     | SetFramePathAction
@@ -141,6 +146,13 @@ export const setStreams = (streams: Array<{}>): SetStreamsAction => ({
   payload: { streams },
 });
 
+export const setDetectedFormat = (
+    detectedFileFormat: string
+): SetDetectedFormatAction => ({
+  type: DETECTED_FORMAT_SET,
+  payload: { detectedFileFormat },
+});
+
 export const fileLoaded = ({
   fileFormat,
   filePath,
@@ -171,7 +183,7 @@ const initialState = {
   currentTime: 0,
   duration: 0,
   fileFormat: '',
-  detectedFileFormat: undefined,
+  detectedFileFormat: '',
   streams: [],
   rotation: 360,
   cutProgress: undefined,
@@ -193,6 +205,7 @@ const localState = (state = initialState, action: Action) => {
     case CURRENT_TIME_SET:
     case CUT_PROGRESS_SET:
     case DURATION_SET:
+    case DETECTED_FORMAT_SET:
     case FILE_FORMAT_SET:
     case FILE_PATH_SET:
     case FRAME_PATH_SET:

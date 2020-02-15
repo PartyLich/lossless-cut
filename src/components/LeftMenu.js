@@ -94,7 +94,7 @@ LeftMenu.propTypes = {
 LeftMenu.defaultProps = {
   autoMerge: false,
   currentSeg: 0,
-  detectedFileFormat: undefined,
+  detectedFileFormat: '',
   fileFormat: undefined,
   playbackRate: 1,
 };

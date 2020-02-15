@@ -15,7 +15,7 @@ const createState = () => Object.assign({}, {
   currentTime: 0,
   duration: 0,
   fileFormat: '',
-  detectedFileFormat: undefined,
+  detectedFileFormat: '',
   streams: [],
   rotation: 360,
   cutProgress: undefined,
@@ -392,6 +392,22 @@ test('localState streams', (t) => {
       streams: ['foo', 'bar', 'baz'],
     };
     const actual = reducer(undefined, action(['foo', 'bar', 'baz']));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('localState detectedFileFormat', (t) => {
+  const action = actions.setDetectedFormat;
+
+  {
+    const msg = 'sets detectedFileFormat';
+    const expected = {
+      ...createState(),
+      detectedFileFormat: 'foobar',
+    };
+    const actual = reducer(undefined, action('foobar'));
     t.deepEqual(actual, expected, msg);
   }
 

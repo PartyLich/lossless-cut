@@ -129,7 +129,6 @@ const showError = (error) => errorToast(error.message);
 
 
 const getInitialLocalState = () => ({
-  detectedFileFormat: undefined,
   startTimeOffset: 0,
 });
 
@@ -178,9 +177,7 @@ class App extends React.Component {
         const { streams } = await getAllStreams(filePath);
 
         setFileNameTitle(filePath);
-        this.setState({
-          detectedFileFormat: fileFormat,
-        });
+        this.dispatch(localStateActions.setDetectedFormat(fileFormat));
         this.dispatch(localStateActions.setStreams(streams));
         this.dispatch(localStateActions.setHtml5FriendlyPath(html5FriendlyPath));
         this.dispatch(localStateActions.fileLoaded({ fileFormat, filePath }));
@@ -692,7 +689,6 @@ class App extends React.Component {
 
   render() {
     const {
-      detectedFileFormat,
       playbackRate,
     } = this.state;
     const { cutSegments } = this.props.store.cutSegments;
@@ -707,6 +703,7 @@ class App extends React.Component {
     const {
       currentTime,
       cutProgress,
+      detectedFileFormat,
       duration: durationRaw,
       fileFormat,
       filePath,
