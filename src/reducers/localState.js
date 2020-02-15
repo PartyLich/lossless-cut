@@ -22,7 +22,8 @@ const ROTATION_PREVIEW_SET: 'localState/ROTATION_PREVIEW_SET' = 'localState/ROTA
 const STATE_RESET: 'localState/STATE_RESET' = 'localState/STATE_RESET';
 
 type ResetLocalStateAction = TypedFSA<typeof STATE_RESET, void>;
-type SetCurrentTimeAction = TypedFSA<typeof CURRENT_TIME_SET, {| currentTime: number |}>;
+type SetCurrentTimeAction =
+        TypedFSA<typeof CURRENT_TIME_SET, {| currentTime: number |}>;
 type SetWorkingAction = TypedFSA<typeof WORKING_SET, {| working: boolean |}>;
 type SetPlayingAction = TypedFSA<typeof PLAYING_SET, {| playing: boolean |}>;
 type SetCutProgressAction =
@@ -39,9 +40,15 @@ type FileLoadPayload = {|
 |};
 type FileLoadedEvent = TypedFSA<typeof FILE_LOADED, FileLoadPayload>;
 type IncreaseRotationAction = TypedFSA<typeof ROTATION_INC, void>;
-type SetRotationPreviewAction = TypedFSA<typeof ROTATION_PREVIEW_SET, {| rotationPreviewRequested: boolean |}>;
-type SetUserHtml5ifiedAction = TypedFSA<typeof USERHTML5IFIED_SET, {| userHtml5ified: boolean |}>;
-type SetHtml5FriendlyPathAction = TypedFSA<typeof HTML5FRIENDLYPATH_SET, {| html5FriendlyPath: ?string |}>;
+type SetRotationPreviewAction = TypedFSA<typeof ROTATION_PREVIEW_SET, {|
+      rotationPreviewRequested: boolean
+    |}>;
+type SetUserHtml5ifiedAction = TypedFSA<typeof USERHTML5IFIED_SET, {|
+      userHtml5ified: boolean
+    |}>;
+type SetHtml5FriendlyPathAction = TypedFSA<typeof HTML5FRIENDLYPATH_SET, {|
+      html5FriendlyPath: ?string
+    |}>;
 type SetStreamsAction = TypedFSA<typeof STREAMS_SET, {| streams: Array<{}> |}>;
 type ToggleHelpAction = TypedFSA<typeof HELP_TOGGLE, string>;
 
@@ -108,17 +115,23 @@ export const setFramePath = (framePath: string): SetFramePathAction => ({
   payload: { framePath },
 });
 
-export const setRotationPreview = (rotationPreviewRequested: boolean): SetRotationPreviewAction => ({
+export const setRotationPreview = (
+    rotationPreviewRequested: boolean
+): SetRotationPreviewAction => ({
   type: ROTATION_PREVIEW_SET,
   payload: { rotationPreviewRequested },
 });
 
-export const setUserHtml5ified = (userHtml5ified: boolean): SetUserHtml5ifiedAction => ({
+export const setUserHtml5ified = (
+    userHtml5ified: boolean
+): SetUserHtml5ifiedAction => ({
   type: USERHTML5IFIED_SET,
   payload: { userHtml5ified },
 });
 
-export const setHtml5FriendlyPath = (html5FriendlyPath: ?string): SetHtml5FriendlyPathAction => ({
+export const setHtml5FriendlyPath = (
+    html5FriendlyPath: ?string
+): SetHtml5FriendlyPathAction => ({
   type: HTML5FRIENDLYPATH_SET,
   payload: { html5FriendlyPath },
 });
