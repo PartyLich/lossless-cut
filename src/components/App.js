@@ -638,8 +638,6 @@ class App extends React.Component {
   capture = async () => {
     const {
       customOutDir: outputDir,
-    } = this.state;
-    const {
       captureFormat,
     } = this.props.store.globalState;
     const { filePath, currentTime } = this.props.store.localState;
