@@ -128,16 +128,6 @@ const throttledRenderFrame = async (
 const showError = (error) => errorToast(error.message);
 
 
-const getInitialLocalState = () => ({
-  html5FriendlyPath: undefined,
-  userHtml5ified: false,
-  detectedFileFormat: undefined,
-  streams: [],
-  startTimeOffset: 0,
-  rotationPreviewRequested: false,
-});
-
-
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -145,9 +135,7 @@ class App extends React.Component {
     this.store = props.store;
     this.dispatch = props.dispatch;
 
-    this.state = {
-      ...getInitialLocalState(),
-    };
+    this.state = {};
 
     this.queue = new PQueue({ concurrency: 1 });
 
@@ -182,20 +170,18 @@ class App extends React.Component {
         const { streams } = await getAllStreams(filePath);
 
         setFileNameTitle(filePath);
-        this.setState({
-          streams,
-          html5FriendlyPath,
-          detectedFileFormat: fileFormat,
-        });
+        this.dispatch(localStateActions.setDetectedFormat(fileFormat));
+        this.dispatch(localStateActions.setStreams(streams));
+        this.dispatch(localStateActions.setHtml5FriendlyPath(html5FriendlyPath));
         this.dispatch(localStateActions.fileLoaded({ fileFormat, filePath }));
 
         if (html5FriendlyPath) {
-          this.setState({ userHtml5ified: true });
+          this.dispatch(localStateActions.setUserHtml5ified(true));
         } else if (!doesPlayerSupportFile(streams)) {
           const { customOutDir } = this.props.store.globalState;
           const html5ifiedDummyPath = getOutPath(customOutDir, filePath, 'html5ified-dummy.mkv');
           await html5ifyDummy(filePath, html5ifiedDummyPath);
-          this.setState({ html5FriendlyPath: html5ifiedDummyPath });
+          this.dispatch(localStateActions.setHtml5FriendlyPath(html5ifiedDummyPath));
           this.throttledRenderFrame();
         }
       } catch (err) {
@@ -239,14 +225,16 @@ class App extends React.Component {
     }));
 
     ipcRenderer.on('set-start-offset', async () => {
-      const { startTimeOffset: startTimeOffsetOld } = this.state;
+      const {
+        startTimeOffset: startTimeOffsetOld,
+      } = this.props.store.localState;
       const startTimeOffset = await promptTimeOffset(
         startTimeOffsetOld !== undefined ? formatDuration(startTimeOffsetOld) : undefined,
       );
 
       if (startTimeOffset === undefined) return;
 
-      this.setState({ startTimeOffset });
+      this.dispatch(localStateActions.setStartTimeOffset(startTimeOffset));
     });
 
     ipcRenderer.on('extract-all-streams', async () => {
@@ -306,7 +294,7 @@ class App extends React.Component {
     const { currentTime } = e.target;
     if (this.props.store.localState.currentTime === currentTime) return;
 
-    this.setState({ rotationPreviewRequested: false }); // Reset this
+    this.dispatch(localStateActions.setRotationPreview(false));
     this.dispatch(localStateActions.setCurrentTime(currentTime));
     this.throttledRenderFrame({ time: currentTime });
   }
@@ -334,8 +322,7 @@ class App extends React.Component {
   }
 
   getFileUri() {
-    const { html5FriendlyPath } = this.state;
-    const { filePath } = this.props.store.localState;
+    const { filePath, html5FriendlyPath } = this.props.store.localState;
     return (html5FriendlyPath || filePath || '').replace(/#/g, '%23');
   }
 
@@ -417,8 +404,10 @@ class App extends React.Component {
   }
 
   getOffsetCurrentTime() {
-    const { currentTime } = this.props.store.localState;
-    const { startTimeOffset } = this.state;
+    const {
+      currentTime,
+      startTimeOffset,
+    } = this.props.store.localState;
     return currentTime + startTimeOffset;
   }
 
@@ -439,7 +428,11 @@ class App extends React.Component {
   }
 
   frameRenderEnabled = () => {
-    const { rotationPreviewRequested, userHtml5ified, streams } = this.state;
+    const {
+      rotationPreviewRequested,
+      streams,
+      userHtml5ified,
+    } = this.props.store.localState;
     if (rotationPreviewRequested) return true;
     return !userHtml5ified && !doesPlayerSupportFile(streams);
   }
@@ -464,8 +457,8 @@ class App extends React.Component {
 
   increaseRotation = () => {
     this.dispatch(localStateActions.increaseRotation());
-
-    this.setState({ rotationPreviewRequested: true }, () => this.throttledRenderFrame());
+    this.dispatch(localStateActions.setRotationPreview(false));
+    this.throttledRenderFrame();
   }
 
   toggleCaptureFormat = () => {
@@ -645,8 +638,6 @@ class App extends React.Component {
   capture = async () => {
     const {
       customOutDir: outputDir,
-    } = this.state;
-    const {
       captureFormat,
     } = this.props.store.globalState;
     const { filePath, currentTime } = this.props.store.localState;
@@ -674,7 +665,7 @@ class App extends React.Component {
     const video = getVideo();
     video.currentTime = 0;
     video.playbackRate = 1;
-    this.setState(getInitialLocalState());
+    this.setState({});
     this.dispatch(localStateActions.resetLocalState());
     this.dispatch(cutSegmentsActions.resetCutSegmentState());
     this.dispatch(cutTimeActions.resetState());
@@ -693,7 +684,6 @@ class App extends React.Component {
 
   render() {
     const {
-      detectedFileFormat,
       playbackRate,
     } = this.state;
     const { cutSegments } = this.props.store.cutSegments;
@@ -708,12 +698,15 @@ class App extends React.Component {
     const {
       currentTime,
       cutProgress,
+      detectedFileFormat,
       duration: durationRaw,
       fileFormat,
       filePath,
       framePath,
       helpVisible,
       playing,
+      rotationPreviewRequested,
+      startTimeOffset,
       working,
     } = this.props.store.localState;
 
@@ -734,7 +727,7 @@ class App extends React.Component {
           <ProgressIndicator cutProgress={cutProgress} />
         )}
 
-        {this.state.rotationPreviewRequested && (
+        {rotationPreviewRequested && (
           <div className="RotationPreview">
             Lossless rotation preview
           </div>
@@ -790,7 +783,7 @@ class App extends React.Component {
             <div style={{ position: 'relative' }}>
               <CutTimeInput
                 type="start"
-                startTimeOffset={this.state.startTimeOffset}
+                startTimeOffset={startTimeOffset}
                 setCutTime={this.setCutTime}
                 setCutText={this.setCutText}
                 cutText={this.props.store.cutTime.startText}
@@ -818,7 +811,7 @@ class App extends React.Component {
             <div style={{ position: 'relative' }}>
               <CutTimeInput
                 type="end"
-                startTimeOffset={this.state.startTimeOffset}
+                startTimeOffset={startTimeOffset}
                 cutText={this.props.store.cutTime.endText}
                 setCutTime={this.setCutTime}
                 setCutText={this.setCutText}

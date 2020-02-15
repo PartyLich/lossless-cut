@@ -7,18 +7,25 @@ const CURRENT_TIME_SET: 'localState/CURRENT_TIME_SET' = 'localState/CURRENT_TIME
 const WORKING_SET: 'localState/WORKING_SET' = 'localState/WORKING_SET';
 const PLAYING_SET: 'localState/PLAYING_SET' = 'localState/PLAYING_SET';
 const CUT_PROGRESS_SET: 'localState/CUT_PROGRESS_SET' = 'localState/CUT_PROGRESS_SET';
+const DETECTED_FORMAT_SET: 'localState/DETECTED_FORMAT_SET' = 'localState/DETECTED_FORMAT_SET';
 const DURATION_SET: 'localState/DURATION_SET' = 'localState/DURATION_SET';
 const FILE_FORMAT_SET: 'localState/FILE_FORMAT_SET' = 'localState/FILE_FORMAT_SET';
 const FILE_PATH_SET: 'localState/FILE_PATH_SET' = 'localState/FILE_PATH_SET';
 const FRAME_PATH_SET: 'localState/FRAME_PATH_SET' = 'localState/FRAME_PATH_SET';
+const USERHTML5IFIED_SET: 'localState/USERHTML5IFIED_SET' = 'localState/USERHTML5IFIED_SET';
+const HTML5FRIENDLYPATH_SET: 'localState/HTML5FRIENDLYPATH_SET' = 'localState/HTML5FRIENDLYPATH_SET';
+const START_TIME_OFFSET_SET: 'localState/START_TIME_OFFSET_SET' = 'localState/START_TIME_OFFSET_SET';
+const STREAMS_SET: 'localState/STREAMS_SET' = 'localState/STREAMS_SET';
 const HELP_TOGGLE: 'localState/HELP_TOGGLE' = 'localState/HELP_TOGGLE';
 
 const FILE_LOADED: 'localState/FILE_LOADED' = 'localState/FILE_LOADED';
 const ROTATION_INC: 'localState/ROTATION_INC' = 'localState/ROTATION_INC';
+const ROTATION_PREVIEW_SET: 'localState/ROTATION_PREVIEW_SET' = 'localState/ROTATION_PREVIEW_SET';
 const STATE_RESET: 'localState/STATE_RESET' = 'localState/STATE_RESET';
 
 type ResetLocalStateAction = TypedFSA<typeof STATE_RESET, void>;
-type SetCurrentTimeAction = TypedFSA<typeof CURRENT_TIME_SET, {| currentTime: number |}>;
+type SetCurrentTimeAction =
+        TypedFSA<typeof CURRENT_TIME_SET, {| currentTime: number |}>;
 type SetWorkingAction = TypedFSA<typeof WORKING_SET, {| working: boolean |}>;
 type SetPlayingAction = TypedFSA<typeof PLAYING_SET, {| playing: boolean |}>;
 type SetCutProgressAction =
@@ -35,6 +42,22 @@ type FileLoadPayload = {|
 |};
 type FileLoadedEvent = TypedFSA<typeof FILE_LOADED, FileLoadPayload>;
 type IncreaseRotationAction = TypedFSA<typeof ROTATION_INC, void>;
+type SetRotationPreviewAction = TypedFSA<typeof ROTATION_PREVIEW_SET, {|
+      rotationPreviewRequested: boolean
+    |}>;
+type SetUserHtml5ifiedAction = TypedFSA<typeof USERHTML5IFIED_SET, {|
+      userHtml5ified: boolean
+    |}>;
+type SetHtml5FriendlyPathAction = TypedFSA<typeof HTML5FRIENDLYPATH_SET, {|
+      html5FriendlyPath: ?string
+    |}>;
+type SetStreamsAction = TypedFSA<typeof STREAMS_SET, {| streams: Array<{}> |}>;
+type SetStartOffsetAction = TypedFSA<typeof START_TIME_OFFSET_SET, {|
+      startTimeOffset: number
+    |}>;
+type SetDetectedFormatAction = TypedFSA<typeof DETECTED_FORMAT_SET, {|
+      detectedFileFormat: string
+    |}>;
 type ToggleHelpAction = TypedFSA<typeof HELP_TOGGLE, string>;
 
 type Action =
@@ -44,12 +67,18 @@ type Action =
     | SetCurrentTimeAction
     | SetCutProgressAction
     | SetDurationAction
+    | SetDetectedFormatAction
     | SetFileFormatAction
     | SetFilePathAction
     | SetFramePathAction
+    | SetRotationPreviewAction
     | FileLoadedEvent
     | IncreaseRotationAction
     | ToggleHelpAction
+    | SetUserHtml5ifiedAction
+    | SetHtml5FriendlyPathAction
+    | SetStartOffsetAction
+    | SetStreamsAction
     ;
 
 export const resetLocalState = (): ResetLocalStateAction => ({
@@ -96,6 +125,46 @@ export const setFramePath = (framePath: string): SetFramePathAction => ({
   payload: { framePath },
 });
 
+export const setRotationPreview = (
+    rotationPreviewRequested: boolean
+): SetRotationPreviewAction => ({
+  type: ROTATION_PREVIEW_SET,
+  payload: { rotationPreviewRequested },
+});
+
+export const setUserHtml5ified = (
+    userHtml5ified: boolean
+): SetUserHtml5ifiedAction => ({
+  type: USERHTML5IFIED_SET,
+  payload: { userHtml5ified },
+});
+
+export const setHtml5FriendlyPath = (
+    html5FriendlyPath: ?string
+): SetHtml5FriendlyPathAction => ({
+  type: HTML5FRIENDLYPATH_SET,
+  payload: { html5FriendlyPath },
+});
+
+export const setStreams = (streams: Array<{}>): SetStreamsAction => ({
+  type: STREAMS_SET,
+  payload: { streams },
+});
+
+export const setStartTimeOffset = (
+    startTimeOffset: number
+): SetStartOffsetAction => ({
+  type: START_TIME_OFFSET_SET,
+  payload: { startTimeOffset },
+});
+
+export const setDetectedFormat = (
+    detectedFileFormat: string
+): SetDetectedFormatAction => ({
+  type: DETECTED_FORMAT_SET,
+  payload: { detectedFileFormat },
+});
+
 export const fileLoaded = ({
   fileFormat,
   filePath,
@@ -126,7 +195,7 @@ const initialState = {
   currentTime: 0,
   duration: 0,
   fileFormat: '',
-  detectedFileFormat: undefined,
+  detectedFileFormat: '',
   streams: [],
   rotation: 360,
   cutProgress: undefined,
@@ -148,9 +217,15 @@ const localState = (state = initialState, action: Action) => {
     case CURRENT_TIME_SET:
     case CUT_PROGRESS_SET:
     case DURATION_SET:
+    case DETECTED_FORMAT_SET:
     case FILE_FORMAT_SET:
     case FILE_PATH_SET:
     case FRAME_PATH_SET:
+    case ROTATION_PREVIEW_SET:
+    case USERHTML5IFIED_SET:
+    case HTML5FRIENDLYPATH_SET:
+    case START_TIME_OFFSET_SET:
+    case STREAMS_SET:
       return { ...state, ...action.payload };
 
     case ROTATION_INC:

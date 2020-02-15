@@ -15,7 +15,7 @@ const createState = () => Object.assign({}, {
   currentTime: 0,
   duration: 0,
   fileFormat: '',
-  detectedFileFormat: undefined,
+  detectedFileFormat: '',
   streams: [],
   rotation: 360,
   cutProgress: undefined,
@@ -328,6 +328,102 @@ test('localState setCurrentTime', (t) => {
       currentTime: 1636,
     };
     const actual = reducer(undefined, action(1636));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('localState setRotationPreview', (t) => {
+  const action = actions.setRotationPreview;
+
+  {
+    const msg = 'sets rotationPreviewRequested';
+    const expected = {
+      ...createState(),
+      rotationPreviewRequested: true,
+    };
+    const actual = reducer(undefined, action(true));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('localState userHtml5ified', (t) => {
+  const action = actions.setUserHtml5ified;
+
+  {
+    const msg = 'sets userHtml5ified';
+    const expected = {
+      ...createState(),
+      userHtml5ified: true,
+    };
+    const actual = reducer(undefined, action(true));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('localState html5FriendlyPath', (t) => {
+  const action = actions.setHtml5FriendlyPath;
+
+  {
+    const msg = 'sets html5FriendlyPath';
+    const expected = {
+      ...createState(),
+      html5FriendlyPath: 'foobar',
+    };
+    const actual = reducer(undefined, action('foobar'));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('localState streams', (t) => {
+  const action = actions.setStreams;
+
+  {
+    const msg = 'sets streams';
+    const expected = {
+      ...createState(),
+      streams: ['foo', 'bar', 'baz'],
+    };
+    const actual = reducer(undefined, action(['foo', 'bar', 'baz']));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('localState detectedFileFormat', (t) => {
+  const action = actions.setDetectedFormat;
+
+  {
+    const msg = 'sets detectedFileFormat';
+    const expected = {
+      ...createState(),
+      detectedFileFormat: 'foobar',
+    };
+    const actual = reducer(undefined, action('foobar'));
+    t.deepEqual(actual, expected, msg);
+  }
+
+  t.end();
+});
+
+test('localState startTimeOffset', (t) => {
+  const action = actions.setStartTimeOffset;
+
+  {
+    const msg = 'sets startTimeOffset';
+    const expected = {
+      ...createState(),
+      startTimeOffset: 42,
+    };
+    const actual = reducer(undefined, action(42));
     t.deepEqual(actual, expected, msg);
   }
 
