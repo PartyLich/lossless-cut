@@ -1,3 +1,4 @@
+// @flow
 import React from 'react';
 import PropTypes from 'prop-types';
 
@@ -5,6 +6,23 @@ import withBlur from '../withBlur';
 
 import './RightMenu.scss';
 
+
+type Props = {
+  captureFormat: string,
+  keyframeCut: boolean,
+  outputDir: string,
+  rotationStr: string,
+  includeAllStreams: boolean,
+  isRotationSet: boolean,
+  stripAudio: boolean,
+  captureFrame: function,
+  increaseRotation: function,
+  setOutputDir: function,
+  toggleKeyframeCut: function,
+  toggleCaptureFormat: function,
+  toggleIncludeAllStreams: function,
+  toggleStripAudio: function,
+}
 
 const RightMenu = ({
   keyframeCut,
@@ -22,7 +40,7 @@ const RightMenu = ({
   increaseRotation,
   setOutputDir,
   captureFrame,
-}) => (
+}: Props) => (
   <div className="RightMenu">
     <button
       type="button"
