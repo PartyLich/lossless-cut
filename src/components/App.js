@@ -229,7 +229,9 @@ class App extends React.Component {
         startTimeOffset: startTimeOffsetOld,
       } = this.props.store.localState;
       const startTimeOffset = await promptTimeOffset(
-        startTimeOffsetOld !== undefined ? formatDuration(startTimeOffsetOld) : undefined,
+        startTimeOffsetOld !== undefined
+            ? formatDuration(startTimeOffsetOld)
+            : undefined,
       );
 
       if (startTimeOffset === undefined) return;
