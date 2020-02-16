@@ -40,6 +40,10 @@ function createWindow() {
 
   mainWindow.loadFile(isDev ? 'index.html' : 'build/index.html');
 
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.send('initial-render');
+  });
+
   mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
