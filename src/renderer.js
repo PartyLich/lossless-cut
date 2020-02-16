@@ -1,17 +1,18 @@
 import { ipcRenderer, remote } from 'electron';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 
-import {
-  App,
-  Provider,
-  withStore,
-} from './components';
+import { App } from './components';
+import { configureStore } from './configureStore';
 
-function initialRender(event, ...args) {
+
+const store = configureStore();
+
+function initialRender(event) {
   ReactDOM.render(
-    <Provider>
-      {withStore(App)()}
+    <Provider store={store}>
+      <App />
     </Provider>,
     document.getElementById('app')
   );

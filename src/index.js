@@ -5,8 +5,10 @@ import windowStateKeeper from 'electron-window-state';
 
 import menu from './menu';
 import { checkNewVersion } from './updateChecker';
+import { configureStore } from './configureStore';
 
 app.name = 'LosslessCut';
+const store = configureStore();
 
 // Not sure what the original author was trying to do here
 // if (!isDev) process.env.NODE_ENV = 'production';
