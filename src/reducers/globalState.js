@@ -57,7 +57,7 @@ export const setCustomDir = (dir?: string): SetCustomDirAction => ({
   payload: { customOutDir: dir || '' },
 });
 
-type State = {
+export type State = {
   +stripAudio: boolean,
   +includeAllStreams: boolean,
   +captureFormat: string,
@@ -68,7 +68,7 @@ type State = {
 
 const isPng = (state: State): boolean => state.captureFormat === 'png';
 
-const initialState: State = {
+export const initialState: State = {
   stripAudio: false,
   includeAllStreams: true,
   captureFormat: 'jpeg',
