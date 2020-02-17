@@ -1,9 +1,11 @@
-import combineReducers from './combineReducers';
+import { combineReducers } from 'redux';
+
 import withReset from './withReset';
 import cutSegments from './cutSegments';
 import globalState from './globalState';
 import localState from './localState';
 import cutTime from './cutTimeInput';
+
 
 const ROOT_RESET = 'rootReducer/ROOT_RESET';
 
