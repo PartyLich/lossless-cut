@@ -1,14 +1,16 @@
 import isDev from 'electron-is-dev';
 import { app, BrowserWindow, ipcMain } from 'electron';
-// const windowStateKeeper = require('electron-window-state');
 import windowStateKeeper from 'electron-window-state';
 
 import menu from './menu';
 import { checkNewVersion } from './updateChecker';
 import { configureStore } from './configureStore';
+import * as persistence from './persistence';
+
 
 app.name = 'LosslessCut';
-const store = configureStore();
+
+const store = configureStore(persistence.loadState());
 
 // Not sure what the original author was trying to do here
 // if (!isDev) process.env.NODE_ENV = 'production';
@@ -69,6 +71,7 @@ app.on('ready', async () => {
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
+  persistence.saveState(store.getState().globalState);
   app.quit();
 });
 
