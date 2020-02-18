@@ -8,6 +8,7 @@ import {
 
 
 import rootReducer from './reducers';
+import { logger } from './middleware';
 
 
 export default function useStore(initialState) {
@@ -27,6 +28,7 @@ export function configureMainStore(initialState) {
       rootReducer,
       initialState,
       applyMiddleware(
+          logger,
           forwardToRenderer, // IMPORTANT! This goes last
       ),
   );

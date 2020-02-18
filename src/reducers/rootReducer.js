@@ -13,23 +13,11 @@ export const resetRoot = () => ({
   type: ROOT_RESET,
 });
 
-const logger = (_, { type, payload } = {}) => {
-  const log = `Action: ${ type }
-Payload: ${ JSON.stringify(payload) }`;
-
-  switch (type) {
-    default:
-      console.log(log);
-      return null;
-  }
-};
-
 const rootReducer = combineReducers({
   globalState,
   localState,
   cutSegments,
   cutTime,
-  logger,
 });
 
 export default withReset(ROOT_RESET, rootReducer);
