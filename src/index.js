@@ -1,16 +1,18 @@
 import isDev from 'electron-is-dev';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import windowStateKeeper from 'electron-window-state';
+import { replayActionMain } from 'electron-redux';
 
 import menu from './menu';
 import { checkNewVersion } from './updateChecker';
-import { configureStore } from './configureStore';
+import { configureMainStore } from './configureStore';
 import * as persistence from './persistence';
 
 
 app.name = 'LosslessCut';
 
-const store = configureStore(persistence.loadState());
+const store = configureMainStore(persistence.loadState());
+replayActionMain(store);
 
 // Not sure what the original author was trying to do here
 // if (!isDev) process.env.NODE_ENV = 'production';
