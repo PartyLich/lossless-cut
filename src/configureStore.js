@@ -5,6 +5,7 @@ import {
   forwardToMain,
   getInitialStateRenderer,
 } from 'electron-redux';
+import isDev from 'electron-is-dev';
 
 
 import rootReducer from './reducers';
@@ -24,13 +25,19 @@ export function configureStore(initialState) {
 }
 
 export function configureMainStore(initialState) {
+  const middleware = isDev
+      ? [
+        logger,
+        forwardToRenderer, // IMPORTANT! This goes last
+      ]
+      : [
+        forwardToRenderer, // IMPORTANT! This goes last
+      ];
+
   return createStore(
       rootReducer,
       initialState,
-      applyMiddleware(
-          logger,
-          forwardToRenderer, // IMPORTANT! This goes last
-      ),
+      applyMiddleware(...middleware),
   );
 }
 
