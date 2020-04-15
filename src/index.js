@@ -1,3 +1,4 @@
+// @flow
 import isDev from 'electron-is-dev';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import windowStateKeeper from 'electron-window-state';
@@ -55,6 +56,8 @@ function createWindow() {
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = null;
+
+    persistence.saveState(store.getState().globalState);
   });
 }
 
@@ -73,7 +76,6 @@ app.on('ready', async () => {
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
-  persistence.saveState(store.getState().globalState);
   app.quit();
 });
 
