@@ -3,13 +3,14 @@ import { ipcRenderer, remote } from 'electron';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
+import { replayActionRenderer } from 'electron-redux';
 
 import { App } from './components';
-import { configureStore } from './configureStore';
-import loadState from './persistence';
+import { configureRendererStore } from './configureStore';
 
 
-const store = configureStore(loadState());
+const store = configureRendererStore();
+replayActionRenderer(store);
 const container = document.getElementById('app');
 
 function initialRender(event) {

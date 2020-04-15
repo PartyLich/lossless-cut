@@ -1,7 +1,7 @@
 // @flow
 import React from 'react';
 import PropTypes from 'prop-types';
-import typeof Color from 'color';
+import Color from 'color';
 
 import './TimelineSeg.scss';
 
@@ -16,7 +16,7 @@ type Props = {
   isActive: boolean,
   segNum: number,
   onSegClick: function,
-  color: Color,
+  color: typeof Color,
 }
 
 const startMarkerClass = 'cut-time-marker--start';
@@ -41,19 +41,21 @@ const TimelineSeg = ({
   const startTimePos = `${ (apparentCutStart / duration) * 100 }%`;
   const endTimePos = `${ (apparentCutEnd / duration) * 100 }%`;
   const markerBorder = isActive ? `2px solid ${ color.string() }` : undefined;
+  const background = Color(color.color).alpha(0.5)
+      .string();
 
   const startMarkerStyle = {
-    background: color.alpha(0.5).string(),
+    background,
     left: startTimePos,
     borderLeft: markerBorder,
   };
   const endMarkerStyle = {
-    background: color.alpha(0.5).string(),
+    background,
     left: endTimePos,
     borderRight: markerBorder,
   };
   const cutSectionStyle = {
-    background: color.alpha(0.5).string(),
+    background,
     left: startTimePos,
     width: cutSectionWidth,
   };

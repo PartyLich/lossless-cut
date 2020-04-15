@@ -92,6 +92,7 @@
     "color": "^3.1.2",
     "electron-default-menu": "^1.0.1",
     "electron-is-dev": "^0.1.2",
+    "electron-redux": "^1.4.0",
     "electron-store": "^5.1.0",
     "electron-window-state": "^4.1.1",
     "empty": "^0.10.1",

@@ -6,6 +6,7 @@ import throttle from 'lodash/throttle';
 import Hammer from 'react-hammerjs';
 import trash from 'trash';
 import PQueue from 'p-queue';
+import Color from 'color';
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -718,7 +719,8 @@ class App extends React.Component {
     const currentTimePos = `${ (currentTime / duration) * 100 }%`;
 
     const segColor = this.getCutSeg().color;
-    const segBgColor = segColor.alpha(0.5).string();
+    const segBgColor = Color(segColor.color).alpha(0.5)
+        .string();
 
     return (
       <div>
