@@ -2,7 +2,7 @@
   "name": "lossless-cut",
   "productName": "losslessCut",
   "description": "Lossless video editor",
-  "copyright": "Copyright © 2019 ${author}",
+  "copyright": "Copyright © 2020 ${author}",
   "version": "2.10.0",
   "main": "build/index.js",
   "scripts": {
