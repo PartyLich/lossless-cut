@@ -1,12 +1,17 @@
+// @flow
 import React from 'react';
 import PropTypes from 'prop-types';
 
 import './ProgressIndicator.scss';
 
 
+type Props = {
+  cutProgress: number | void,
+}
+
 const className = 'ProgressIndicator';
 
-const ProgressIndicator = ({ cutProgress }) => (
+const ProgressIndicator = ({ cutProgress }: Props) => (
   <div className={className}>
     <i
       className="fa fa-cog fa-spin fa-3x fa-fw"

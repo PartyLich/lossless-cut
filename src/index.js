@@ -1,12 +1,19 @@
+// @flow
 import isDev from 'electron-is-dev';
 import { app, BrowserWindow, ipcMain } from 'electron';
-// const windowStateKeeper = require('electron-window-state');
 import windowStateKeeper from 'electron-window-state';
+import { replayActionMain } from 'electron-redux';
 
 import menu from './menu';
-import { checkNewVersion } from './update-checker';
+import { checkNewVersion } from './updateChecker';
+import { configureMainStore } from './configureStore';
+import * as persistence from './persistence';
 
-app.setName('LosslessCut');
+
+app.name = 'LosslessCut';
+
+const store = configureMainStore(persistence.loadState());
+replayActionMain(store);
 
 // Not sure what the original author was trying to do here
 // if (!isDev) process.env.NODE_ENV = 'production';
@@ -40,11 +47,17 @@ function createWindow() {
 
   mainWindow.loadFile(isDev ? 'index.html' : 'build/index.html');
 
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (mainWindow) mainWindow.webContents.send('initial-render');
+  });
+
   mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = null;
+
+    persistence.saveState(store.getState().globalState);
   });
 }
 
@@ -75,7 +88,7 @@ app.on('activate', () => {
 });
 
 ipcMain.on('renderer-ready', () => {
-  if (!isDev) {
+  if (!isDev && mainWindow) {
     const fileToOpen = process.argv[1];
     if (fileToOpen) mainWindow.webContents.send('file-opened', [fileToOpen]);
   }

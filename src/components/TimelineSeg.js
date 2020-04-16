@@ -1,24 +1,39 @@
+// @flow
 import React from 'react';
 import PropTypes from 'prop-types';
+import Color from 'color';
 
 import './TimelineSeg.scss';
 
+
+type Props = {
+  isCutRangeValid: boolean,
+  duration: ?number,
+  cutStartTime: ?number,
+  cutEndTime: ?number,
+  apparentCutStart: number,
+  apparentCutEnd: number,
+  isActive: boolean,
+  segNum: number,
+  onSegClick: function,
+  color: typeof Color,
+}
 
 const startMarkerClass = 'cut-time-marker--start';
 const endMarkerClass = 'cut-time-marker--end';
 
 const TimelineSeg = ({
   isCutRangeValid,
-  duration: durationRaw,
-  cutStartTime,
-  cutEndTime,
+  duration: durationRaw = undefined,
+  cutStartTime = undefined,
+  cutEndTime = undefined,
   apparentCutStart,
   apparentCutEnd,
   isActive,
   segNum,
   onSegClick,
   color,
-}) => {
+}: Props) => {
   const markerWidth = 4;
   const duration = durationRaw || 1;
   const cutSectionWidth = `calc(${ ((apparentCutEnd - apparentCutStart) / duration) * 100 }% - ${ markerWidth * 2 }px)`;
@@ -26,19 +41,21 @@ const TimelineSeg = ({
   const startTimePos = `${ (apparentCutStart / duration) * 100 }%`;
   const endTimePos = `${ (apparentCutEnd / duration) * 100 }%`;
   const markerBorder = isActive ? `2px solid ${ color.string() }` : undefined;
+  const background = Color(color.color).alpha(0.5)
+      .string();
 
   const startMarkerStyle = {
-    background: color.alpha(0.5).string(),
+    background,
     left: startTimePos,
     borderLeft: markerBorder,
   };
   const endMarkerStyle = {
-    background: color.alpha(0.5).string(),
+    background,
     left: endTimePos,
     borderRight: markerBorder,
   };
   const cutSectionStyle = {
-    background: color.alpha(0.5).string(),
+    background,
     left: startTimePos,
     width: cutSectionWidth,
   };

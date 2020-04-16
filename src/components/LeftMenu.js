@@ -1,3 +1,4 @@
+// @flow
 import React from 'react';
 import PropTypes from 'prop-types';
 import round from 'lodash/round';
@@ -5,20 +6,35 @@ import round from 'lodash/round';
 import './LeftMenu.scss';
 
 
+type Props = {
+  autoMerge: boolean,
+  currentSeg: number,
+  cutSegments: Array<{}>,
+  detectedFileFormat: string,
+  selectableFormats: Array<string>,
+  fileFormat: ?string,
+  playbackRate: number,
+  segBgColor: string,
+  selectOnChange: () => void,
+  deleteSegmentHandler: function,
+  addCutSegmentHandler: function,
+  autoMergeToggle: function,
+}
+
 const LeftMenu = ({
-  autoMerge,
-  currentSeg,
+  autoMerge = false,
+  currentSeg = 0,
   cutSegments,
-  detectedFileFormat,
+  detectedFileFormat = '',
   selectableFormats,
-  fileFormat,
-  playbackRate,
+  fileFormat = undefined,
+  playbackRate = 1,
   segBgColor,
   selectOnChange,
   deleteSegmentHandler,
   addCutSegmentHandler,
   autoMergeToggle,
-}) => (
+}: Props) => (
   <div className="left-menu">
     <select
       style={{ width: 60 }}
@@ -94,7 +110,7 @@ LeftMenu.propTypes = {
 LeftMenu.defaultProps = {
   autoMerge: false,
   currentSeg: 0,
-  detectedFileFormat: undefined,
+  detectedFileFormat: '',
   fileFormat: undefined,
   playbackRate: 1,
 };

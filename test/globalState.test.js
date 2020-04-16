@@ -17,9 +17,9 @@ const createState = () => Object.assign({}, {
 
 test('globalState reducer', (t) => {
   {
-    const msg = 'with no args, return default state';
+    const msg = 'with empty args, return default state';
     const expected = createState();
-    const actual = reducer();
+    const actual = reducer(undefined, {});
     t.deepEqual(actual, expected, msg);
   }
 

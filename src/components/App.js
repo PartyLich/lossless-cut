@@ -5,8 +5,8 @@ import clamp from 'lodash/clamp';
 import throttle from 'lodash/throttle';
 import Hammer from 'react-hammerjs';
 import trash from 'trash';
-import classnames from 'classnames';
 import PQueue from 'p-queue';
+import Color from 'color';
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -26,10 +26,12 @@ import {
 // local
 import HelpSheet from '../HelpSheet';
 import { showMergeDialog, showOpenAndMergeDialog } from '../merge/merge';
-import captureFrame from '../capture-frame';
+import captureFrame from '../captureFrame';
+import Errors from '../errors';
+import withBlur from '../withBlur';
 import {
   getOutPath, formatDuration,
-  toast, errorToast, showFfmpegFail,
+  errorToast,
   setFileNameTitle,
   promptTimeOffset,
 } from '../util';
@@ -39,21 +41,24 @@ import {
   CutTimeInput,
   DragDropField,
   JumpCutButton,
+  JumpEndButton,
   LeftMenu,
   Player,
+  PlayButton,
   ProgressIndicator,
   RightMenu,
+  ShortStepButton,
   TimelineSeg,
+  TimelineWrapper,
 } from '.';
 
 // Stylesheets
 import '../font-awesome-4.6.3/scss/font-awesome.scss';
 import './App.scss';
-import './TimelineWrapper.scss';
 
-import * as globalStateReducer from '../reducers/globalState';
-import * as localStateReducer from '../reducers/localState';
-import * as cutSegmentsReducer from '../reducers/cutSegments';
+import * as globalStateActions from '../reducers/globalState';
+import * as localStateActions from '../reducers/localState';
+import * as cutSegmentsActions from '../reducers/cutSegments';
 import * as cutTimeActions from '../reducers/cutTimeInput';
 
 
@@ -84,29 +89,44 @@ function shortStep(dir) {
   seekRel(dir / 60);
 }
 
-function withBlur(cb) {
-  return (e) => {
-    e.target.blur();
-    cb(e);
-  };
-}
-
 function doesPlayerSupportFile(streams) {
   // TODO improve, whitelist supported codecs instead
   return !streams.find((s) => ['hevc', 'prores'].includes(s.codec_name));
   // return true;
 }
 
-const getInitialLocalState = () => ({
-  html5FriendlyPath: undefined,
-  userHtml5ified: false,
-  currentTime: undefined,
-  detectedFileFormat: undefined,
-  streams: [],
-  cutProgress: undefined,
-  startTimeOffset: 0,
-  rotationPreviewRequested: false,
-});
+const throttledRenderFrame = async (
+  dispatch,
+  queue,
+  frameRenderEnabled = false,
+  filePath = '',
+  framePath = '',
+  time = 0,
+  rotation = 0,
+) => {
+  if (!queue) return;
+
+  if (queue.size < 2) {
+    queue.add(async () => {
+      if (!frameRenderEnabled) return;
+      if (time == null || !filePath) return;
+
+      try {
+        if (framePath) {
+          URL.revokeObjectURL(framePath);
+        }
+        const newFramePath = await renderFrame(time, filePath, rotation);
+        dispatch(localStateActions.setFramePath(newFramePath));
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  }
+
+  await queue.onIdle();
+};
+
+const showError = (error) => errorToast(error.message);
 
 
 class App extends React.Component {
@@ -116,18 +136,17 @@ class App extends React.Component {
     this.store = props.store;
     this.dispatch = props.dispatch;
 
-    this.state = {
-      ...getInitialLocalState(),
-    };
+    this.state = {};
 
     this.queue = new PQueue({ concurrency: 1 });
 
     this.setCurrentSeg = this.setCurrentSeg.bind(this);
     this.setCutTime = this.setCutTime.bind(this);
     this.setCutText = this.setCutText.bind(this);
-    this.toggleHelp = () => this.dispatch(localStateReducer.toggleHelp());
+    this.throttledRenderFrame = this.throttledRenderFrame.bind(this);
+    this.toggleHelp = () => this.dispatch(localStateActions.toggleHelp());
     this.onDurationChange = (duration) => {
-      this.dispatch(localStateReducer.setDuration(duration));
+      this.dispatch(localStateActions.setDuration(duration));
     };
 
     const load = async (filePath, html5FriendlyPath) => {
@@ -135,48 +154,45 @@ class App extends React.Component {
 
       console.log('Load', { filePath, html5FriendlyPath });
       if (working) {
-        errorToast('I\'m busy');
+        showError(Errors.Busy());
         return;
       }
 
       this.resetState();
-      this.dispatch(localStateReducer.setWorking(true));
+      this.dispatch(localStateActions.setWorking(true));
 
       try {
         const fileFormat = await getFormat(filePath);
         if (!fileFormat) {
-          errorToast('Unsupported file');
+          showError(Errors.UnsupportedFile());
           return;
         }
 
         const { streams } = await getAllStreams(filePath);
 
         setFileNameTitle(filePath);
-        this.setState({
-          streams,
-          html5FriendlyPath,
-          detectedFileFormat: fileFormat,
-        });
-        this.dispatch(localStateReducer.setFileFormat(fileFormat));
-        this.dispatch(localStateReducer.setFilePath(filePath));
+        this.dispatch(localStateActions.setDetectedFormat(fileFormat));
+        this.dispatch(localStateActions.setStreams(streams));
+        this.dispatch(localStateActions.setHtml5FriendlyPath(html5FriendlyPath));
+        this.dispatch(localStateActions.fileLoaded({ fileFormat, filePath }));
 
         if (html5FriendlyPath) {
-          this.setState({ userHtml5ified: true });
+          this.dispatch(localStateActions.setUserHtml5ified(true));
         } else if (!doesPlayerSupportFile(streams)) {
           const { customOutDir } = this.props.store.globalState;
           const html5ifiedDummyPath = getOutPath(customOutDir, filePath, 'html5ified-dummy.mkv');
           await html5ifyDummy(filePath, html5ifiedDummyPath);
-          this.setState({ html5FriendlyPath: html5ifiedDummyPath });
-          this.throttledRenderFrame(0);
+          this.dispatch(localStateActions.setHtml5FriendlyPath(html5ifiedDummyPath));
+          this.throttledRenderFrame();
         }
       } catch (err) {
         if (err.code === 1 || err.code === 'ENOENT') {
-          errorToast('Unsupported file');
+          showError(Errors.UnsupportedFile());
           return;
         }
-        showFfmpegFail(err);
+        showError(Errors.Ffmpeg(err));
       } finally {
-        this.dispatch(localStateReducer.setWorking(false));
+        this.dispatch(localStateActions.setWorking(false));
       }
     };
 
@@ -191,15 +207,15 @@ class App extends React.Component {
       if (!filePath) return;
 
       try {
-        this.dispatch(localStateReducer.setWorking(true));
+        this.dispatch(localStateActions.setWorking(true));
         const html5ifiedPath = getOutPath(customOutDir, filePath, 'html5ified.mp4');
         await html5ify(filePath, html5ifiedPath, encodeVideo);
-        this.dispatch(localStateReducer.setWorking(false));
+        this.dispatch(localStateActions.setWorking(false));
         load(filePath, html5ifiedPath);
       } catch (err) {
-        errorToast('Failed to html5ify file');
+        showError(Errors.html5ify());
         console.error('Failed to html5ify file', err);
-        this.dispatch(localStateReducer.setWorking(false));
+        this.dispatch(localStateActions.setWorking(false));
       }
     });
 
@@ -210,14 +226,18 @@ class App extends React.Component {
     }));
 
     ipcRenderer.on('set-start-offset', async () => {
-      const { startTimeOffset: startTimeOffsetOld } = this.state;
+      const {
+        startTimeOffset: startTimeOffsetOld,
+      } = this.props.store.localState;
       const startTimeOffset = await promptTimeOffset(
-        startTimeOffsetOld !== undefined ? formatDuration(startTimeOffsetOld) : undefined,
+        startTimeOffsetOld !== undefined
+            ? formatDuration(startTimeOffsetOld)
+            : undefined,
       );
 
       if (startTimeOffset === undefined) return;
 
-      this.setState({ startTimeOffset });
+      this.dispatch(localStateActions.setStartTimeOffset(startTimeOffset));
     });
 
     ipcRenderer.on('extract-all-streams', async () => {
@@ -226,13 +246,13 @@ class App extends React.Component {
       if (!filePath) return;
 
       try {
-        this.dispatch(localStateReducer.setWorking(true));
+        this.dispatch(localStateActions.setWorking(true));
         await extractAllStreams({ customOutDir, filePath });
-        this.dispatch(localStateReducer.setWorking(false));
+        this.dispatch(localStateActions.setWorking(false));
       } catch (err) {
-        errorToast('Failed to extract all streams');
+        showError(Errors.StreamExtract());
         console.error('Failed to extract all streams', err);
-        this.dispatch(localStateReducer.setWorking(false));
+        this.dispatch(localStateActions.setWorking(false));
       }
     });
 
@@ -262,12 +282,10 @@ class App extends React.Component {
     Mousetrap.bind('h', () => this.toggleHelp());
     Mousetrap.bind('+', () => this.addCutSegment());
     Mousetrap.bind('backspace', () => this.removeCutSegment());
-
-    // ipcRenderer.send('renderer-ready');
   }
 
   onPlayingChange(playing) {
-    this.dispatch(localStateReducer.setPlaying(playing));
+    this.dispatch(localStateActions.setPlaying(playing));
 
     if (!playing) {
       getVideo().playbackRate = 1;
@@ -277,25 +295,24 @@ class App extends React.Component {
 
   onTimeUpdate = (e) => {
     const { currentTime } = e.target;
-    if (this.state.currentTime === currentTime) return;
+    if (this.props.store.localState.currentTime === currentTime) return;
 
-    this.setState({ rotationPreviewRequested: false }); // Reset this
-    this.setState({ currentTime }, () => {
-      this.throttledRenderFrame();
-    });
+    this.dispatch(localStateActions.setRotationPreview(false));
+    this.dispatch(localStateActions.setCurrentTime(currentTime));
+    this.throttledRenderFrame({ time: currentTime });
   }
 
   onCutProgress = (cutProgress) => {
-    this.setState({ cutProgress });
+    this.dispatch(localStateActions.setCutProgress(cutProgress));
   }
 
   setCutStart = () => {
-    const { currentTime } = this.state;
+    const { currentTime } = this.props.store.localState;
     this.setCutTime('start', currentTime);
   }
 
   setCutEnd = () => {
-    const { currentTime } = this.state;
+    const { currentTime } = this.props.store.localState;
     this.setCutTime('end', currentTime);
   }
 
@@ -304,12 +321,11 @@ class App extends React.Component {
     const customOutDir = (filePaths && filePaths.length === 1)
       ? filePaths[0]
       : undefined;
-    this.dispatch(globalStateReducer.setCustomDir(customOutDir));
+    this.dispatch(globalStateActions.setCustomDir(customOutDir));
   }
 
   getFileUri() {
-    const { html5FriendlyPath } = this.state;
-    const { filePath } = this.props.store.localState;
+    const { filePath, html5FriendlyPath } = this.props.store.localState;
     return (html5FriendlyPath || filePath || '').replace(/#/g, '%23');
   }
 
@@ -349,7 +365,7 @@ class App extends React.Component {
   setCutTime(type, time) {
     const { currentSeg } = this.props.store.cutSegments;
 
-    this.dispatch(cutSegmentsReducer.setCutTime(currentSeg, type, time));
+    this.dispatch(cutSegmentsActions.setCutTime(currentSeg, type, time));
   }
 
   setCutText(type) {
@@ -370,11 +386,11 @@ class App extends React.Component {
   }
 
   setCurrentSeg(i) {
-    this.dispatch(cutSegmentsReducer.setCurrentSeg(i));
+    this.dispatch(cutSegmentsActions.setCurrentSeg(i));
   }
 
   setFileFormat(fileFormat) {
-    this.dispatch(localStateReducer.setFileFormat(fileFormat));
+    this.dispatch(localStateActions.setFileFormat(fileFormat));
   }
 
   getApparentCutStartTime(i) {
@@ -391,86 +407,85 @@ class App extends React.Component {
   }
 
   getOffsetCurrentTime() {
-    return (this.state.currentTime || 0) + this.state.startTimeOffset;
+    const {
+      currentTime,
+      startTimeOffset,
+    } = this.props.store.localState;
+    return currentTime + startTimeOffset;
   }
 
   mergeFiles = async (paths) => {
     try {
-      this.dispatch(localStateReducer.setWorking(true));
+      this.dispatch(localStateActions.setWorking(true));
 
       const { customOutDir } = this.props.store.globalState;
 
       // console.log('merge', paths);
       await mergeAnyFiles({ customOutDir, paths });
     } catch (err) {
-      errorToast('Failed to merge files. Make sure they are all of the exact same format and codecs');
+      showError(Errors.FailedMerge());
       console.error('Failed to merge files', err);
     } finally {
-      this.dispatch(localStateReducer.setWorking(false));
+      this.dispatch(localStateActions.setWorking(false));
     }
   }
 
   frameRenderEnabled = () => {
-    const { rotationPreviewRequested, userHtml5ified, streams } = this.state;
+    const {
+      rotationPreviewRequested,
+      streams,
+      userHtml5ified,
+    } = this.props.store.localState;
     if (rotationPreviewRequested) return true;
     return !userHtml5ified && !doesPlayerSupportFile(streams);
   }
 
   /* eslint-disable react/sort-comp */
-  throttledRenderFrame = async () => {
-    if (this.queue.size < 2) {
-      this.queue.add(async () => {
-        if (!this.frameRenderEnabled()) return;
+  throttledRenderFrame = async ({
+    time = this.props.store.localState.currentTime,
+    rotation = this.getEffectiveRotation(),
+  } = {}) => {
+    const { filePath, framePath } = this.props.store.localState;
 
-        const { currentTime } = this.state;
-        const { filePath } = this.props.store.localState;
-        const rotation = this.getEffectiveRotation();
-        if (currentTime == null || !filePath) return;
-
-        try {
-          if (this.props.store.localState.framePath) {
-            URL.revokeObjectURL(this.props.store.localState.framePath);
-          }
-          const framePath = await renderFrame(currentTime, filePath, rotation);
-          this.dispatch(localStateReducer.setFramePath(framePath));
-        } catch (err) {
-          console.error(err);
-        }
-      });
-    }
-
-    await this.queue.onIdle();
+    await throttledRenderFrame(
+        this.dispatch,
+        this.queue,
+        this.frameRenderEnabled(),
+        filePath,
+        framePath,
+        time,
+        rotation,
+    );
   };
 
   increaseRotation = () => {
-    this.dispatch(localStateReducer.increaseRotation());
-
-    this.setState({ rotationPreviewRequested: true }, () => this.throttledRenderFrame());
+    this.dispatch(localStateActions.increaseRotation());
+    this.dispatch(localStateActions.setRotationPreview(false));
+    this.throttledRenderFrame();
   }
 
   toggleCaptureFormat = () => {
-    this.dispatch(globalStateReducer.toggleCaptureFormat());
+    this.dispatch(globalStateActions.toggleCaptureFormat());
   }
 
   toggleIncludeAllStreams = () => {
-    this.dispatch(globalStateReducer.toggleAllStreams());
+    this.dispatch(globalStateActions.toggleAllStreams());
   }
 
   toggleStripAudio = () => {
-    this.dispatch(globalStateReducer.toggleStripAudio());
+    this.dispatch(globalStateActions.toggleStripAudio());
   };
 
   toggleKeyframeCut = () => {
-    this.dispatch(globalStateReducer.toggleKeyframeCut());
+    this.dispatch(globalStateActions.toggleKeyframeCut());
   }
 
   toggleAutoMerge = () => {
-    this.dispatch(globalStateReducer.toggleAutoMerge());
+    this.dispatch(globalStateActions.toggleAutoMerge());
   }
 
   addCutSegment = () => {
-    const { currentTime } = this.state;
-    const { duration } = this.props.store.localState;
+    const { duration, currentTime } = this.props.store.localState;
     const { cutSegments } = this.props.store.cutSegments;
 
     const cutStartTime = this.getCutStartTime();
@@ -483,16 +498,16 @@ class App extends React.Component {
     const end = suggestedEnd <= duration
       ? suggestedEnd
       : undefined;
-    this.dispatch(cutSegmentsReducer.addCutSegment(currentTime, end));
-    this.dispatch(cutSegmentsReducer.setCurrentSeg(cutSegments.length));
+    this.dispatch(cutSegmentsActions.addCutSegment(currentTime, end));
+    this.dispatch(cutSegmentsActions.setCurrentSeg(cutSegments.length));
   }
 
   removeCutSegment = () => {
     const { currentSeg, cutSegments } = this.props.store.cutSegments;
 
     const currentSegNew = Math.min(currentSeg, cutSegments.length - 2);
-    this.dispatch(cutSegmentsReducer.removeCutSegment(currentSeg));
-    this.dispatch(cutSegmentsReducer.setCurrentSeg(currentSegNew));
+    this.dispatch(cutSegmentsActions.removeCutSegment(currentSeg));
+    this.dispatch(cutSegmentsActions.setCurrentSeg(currentSegNew));
   }
 
   jumpCutStart = () => {
@@ -506,7 +521,7 @@ class App extends React.Component {
   /* eslint-disable react/sort-comp */
   handleTap = throttle((e) => {
     const { duration } = this.props.store.localState;
-    const target = document.querySelector('.timeline-wrapper');
+    const target = document.querySelector('.TimelineWrapper');
     const parentOffset = target.getBoundingClientRect().left +
       document.body.scrollLeft;
     const relX = e.srcEvent.pageX - parentOffset;
@@ -525,7 +540,10 @@ class App extends React.Component {
     return video.play().catch((err) => {
       console.log(err);
       if (err.name === 'NotSupportedError') {
-        toast.fire({ type: 'error', title: 'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu. Note that this will only create a temporary, low quality encoded file used for previewing your cuts, and will not affect the final cut. The final cut will still be lossless. Audio is also removed to make it faster, but only in the preview.', timer: 10000 });
+        errorToast(
+            'This format/codec is not supported. Try to convert it to a friendly format/codec in the player from the "File" menu. Note that this will only create a temporary, low quality encoded file used for previewing your cuts, and will not affect the final cut. The final cut will still be lossless. Audio is also removed to make it faster, but only in the preview.',
+            { timer: 10000 },
+        );
       }
     });
   }
@@ -536,7 +554,7 @@ class App extends React.Component {
     if (working || !window.confirm('Are you sure you want to move the source file to trash?')) return;
     const { filePath } = this.props.store.localState;
 
-    this.dispatch(localStateReducer.setWorking(true));
+    this.dispatch(localStateActions.setWorking(true));
     await trash(filePath);
     this.resetState();
   }
@@ -560,7 +578,7 @@ class App extends React.Component {
     } = this.props.store.localState;
 
     if (working) {
-      errorToast('I\'m busy');
+      showError(Errors.Busy());
       return;
     }
 
@@ -570,12 +588,12 @@ class App extends React.Component {
     const cutEndTime = this.getCutEndTime();
 
     if (!(this.isCutRangeValid() || cutEndTime === undefined || cutStartTime === undefined)) {
-      errorToast('Start time must be before end time');
+      showError(Errors.TimeValidation());
       return;
     }
 
     try {
-      this.dispatch(localStateReducer.setWorking(true));
+      this.dispatch(localStateActions.setWorking(true));
 
       const segments = cutSegments.map((seg, i) => ({
         cutFrom: this.getApparentCutStartTime(i),
@@ -610,31 +628,28 @@ class App extends React.Component {
       console.error('stderr:', err.stderr);
 
       if (err.code === 1 || err.code === 'ENOENT') {
-        errorToast(`Whoops! ffmpeg was unable to cut this video. Try each the following things before attempting to cut again:\n1. Select a different output format from the ${ fileFormat } button (matroska takes almost everything).\n2. toggle the button "all" to "ps"`);
+        showError(Errors.FailedCut(fileFormat));
         return;
       }
 
-      showFfmpegFail(err);
+      showError(Errors.Ffmpeg(err));
     } finally {
-      this.dispatch(localStateReducer.setWorking(false));
+      this.dispatch(localStateActions.setWorking(false));
     }
   }
 
   capture = async () => {
     const {
       customOutDir: outputDir,
-      currentTime,
-    } = this.state;
-    const {
       captureFormat,
     } = this.props.store.globalState;
-    const { filePath } = this.props.store.localState;
+    const { filePath, currentTime } = this.props.store.localState;
     if (!filePath) return;
     try {
       await captureFrame(outputDir, filePath, getVideo(), currentTime, captureFormat);
     } catch (err) {
       console.error(err);
-      errorToast('Failed to capture frame');
+      showError(Errors.FailedCapture());
     }
   }
 
@@ -653,9 +668,9 @@ class App extends React.Component {
     const video = getVideo();
     video.currentTime = 0;
     video.playbackRate = 1;
-    this.setState(getInitialLocalState());
-    this.dispatch(localStateReducer.resetLocalState());
-    this.dispatch(cutSegmentsReducer.resetCutSegmentState());
+    this.setState({});
+    this.dispatch(localStateActions.resetLocalState());
+    this.dispatch(cutSegmentsActions.resetCutSegmentState());
     this.dispatch(cutTimeActions.resetState());
     setFileNameTitle();
   }
@@ -669,16 +684,9 @@ class App extends React.Component {
     return this.getApparentCutStartTime(i) < this.getApparentCutEndTime(i);
   }
 
-  // toggleHelp() {
-  //   this.dispatch(localStateReducer.toggleHelp());
-  // }
-
 
   render() {
     const {
-      cutProgress,
-      currentTime,
-      detectedFileFormat,
       playbackRate,
     } = this.state;
     const { cutSegments } = this.props.store.cutSegments;
@@ -691,22 +699,28 @@ class App extends React.Component {
       captureFormat,
     } = this.props.store.globalState;
     const {
+      currentTime,
+      cutProgress,
+      detectedFileFormat,
       duration: durationRaw,
       fileFormat,
       filePath,
       framePath,
       helpVisible,
       playing,
+      rotationPreviewRequested,
+      startTimeOffset,
       working,
     } = this.props.store.localState;
 
     const selectableFormats = ['mov', 'mp4', 'matroska'].filter((f) => f !== detectedFileFormat);
 
     const duration = durationRaw || 1;
-    const currentTimePos = currentTime !== undefined && `${ (currentTime / duration) * 100 }%`;
+    const currentTimePos = `${ (currentTime / duration) * 100 }%`;
 
     const segColor = this.getCutSeg().color;
-    const segBgColor = segColor.alpha(0.5).string();
+    const segBgColor = Color(segColor.color).alpha(0.5)
+        .string();
 
     return (
       <div>
@@ -717,7 +731,7 @@ class App extends React.Component {
           <ProgressIndicator cutProgress={cutProgress} />
         )}
 
-        {this.state.rotationPreviewRequested && (
+        {rotationPreviewRequested && (
           <div className="RotationPreview">
             Lossless rotation preview
           </div>
@@ -742,11 +756,10 @@ class App extends React.Component {
             onPan={this.handleTap}
             options={{ recognizers: {} }}
           >
-            <div className="timeline-wrapper">
-              {currentTimePos !== undefined && (
-                <div className="current-time" style={{ left: currentTimePos }} />
-              )}
-
+            <TimelineWrapper
+              currentTimePos={currentTimePos}
+              currentTimeDisplay={formatDuration(this.getOffsetCurrentTime())}
+            >
               {cutSegments.map((seg, i) => (
                 <TimelineSeg
                   key={seg.uuid}
@@ -762,24 +775,19 @@ class App extends React.Component {
                   apparentCutEnd={this.getApparentCutEndTime(i)}
                 />
               ))}
-
-              <div className="current-time-display">{formatDuration(this.getOffsetCurrentTime())}</div>
-            </div>
+            </TimelineWrapper>
           </Hammer>
 
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <i
-              className="button fa fa-step-backward"
-              role="button"
-              tabIndex="0"
-              title="Jump to start of video"
-              onClick={() => seekAbs(0)}
+            <JumpEndButton
+              end="start"
+              clickHandler={() => seekAbs(0)}
             />
 
             <div style={{ position: 'relative' }}>
               <CutTimeInput
                 type="start"
-                startTimeOffset={this.state.startTimeOffset}
+                startTimeOffset={startTimeOffset}
                 setCutTime={this.setCutTime}
                 setCutText={this.setCutText}
                 cutText={this.props.store.cutTime.startText}
@@ -791,31 +799,23 @@ class App extends React.Component {
               />
             </div>
 
-            <i
-              className="button fa fa-caret-left"
-              role="button"
-              tabIndex="0"
-              onClick={() => shortStep(-1)}
+            <ShortStepButton
+              direction="left"
+              clickHandler={() => shortStep(-1)}
             />
-            <i
-              className={classnames({
-                'button': true, 'fa': true, 'fa-pause': playing, 'fa-play': !playing,
-              })}
-              role="button"
-              tabIndex="0"
-              onClick={this.playCommand}
+            <PlayButton
+              playing={playing}
+              clickHandler={this.playCommand}
             />
-            <i
-              className="button fa fa-caret-right"
-              role="button"
-              tabIndex="0"
-              onClick={() => shortStep(1)}
+            <ShortStepButton
+              direction="right"
+              clickHandler={() => shortStep(1)}
             />
 
             <div style={{ position: 'relative' }}>
               <CutTimeInput
                 type="end"
-                startTimeOffset={this.state.startTimeOffset}
+                startTimeOffset={startTimeOffset}
                 cutText={this.props.store.cutTime.endText}
                 setCutTime={this.setCutTime}
                 setCutText={this.setCutText}
@@ -827,12 +827,9 @@ class App extends React.Component {
               />
             </div>
 
-            <i
-              className="button fa fa-step-forward"
-              role="button"
-              tabIndex="0"
-              title="Jump to end of video"
-              onClick={() => seekAbs(duration)}
+            <JumpEndButton
+              end="end"
+              clickHandler={() => seekAbs(duration)}
             />
           </div>
 
