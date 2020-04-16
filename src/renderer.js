@@ -1,21 +1,31 @@
+// @flow
 import { ipcRenderer, remote } from 'electron';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import { replayActionRenderer } from 'electron-redux';
 
-import {
-  App,
-  Provider,
-  withStore,
-} from './components';
+import { App } from './components';
+import { configureRendererStore } from './configureStore';
 
 
-ReactDOM.render(
-  <Provider>
-    {withStore(App)()}
-  </Provider>,
-  document.getElementById('app')
-);
+const store = configureRendererStore();
+replayActionRenderer(store);
+const container = document.getElementById('app');
 
-ipcRenderer.send('renderer-ready');
+function initialRender(event) {
+  if (!container) throw Error('App container is missing from HTML');
+
+  ReactDOM.render(
+    <Provider store={store}>
+        <App />
+      </Provider>,
+      container
+  );
+
+  ipcRenderer.send('renderer-ready');
+}
+
+ipcRenderer.on('initial-render', initialRender);
 
 console.log('Version', remote.app.getVersion());

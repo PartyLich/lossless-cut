@@ -1,6 +1,7 @@
 // @flow
+import { combineReducers } from 'redux';
+
 import type { TypedFSA } from './types';
-import combineReducers from './combineReducers';
 import createSegment from '../createSegment';
 import withReset from './withReset';
 
