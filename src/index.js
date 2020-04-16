@@ -48,7 +48,7 @@ function createWindow() {
   mainWindow.loadFile(isDev ? 'index.html' : 'build/index.html');
 
   mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.send('initial-render');
+    if (mainWindow) mainWindow.webContents.send('initial-render');
   });
 
   mainWindow.on('closed', () => {
@@ -88,7 +88,7 @@ app.on('activate', () => {
 });
 
 ipcMain.on('renderer-ready', () => {
-  if (!isDev) {
+  if (!isDev && mainWindow) {
     const fileToOpen = process.argv[1];
     if (fileToOpen) mainWindow.webContents.send('file-opened', [fileToOpen]);
   }
