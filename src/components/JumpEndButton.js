@@ -12,7 +12,7 @@ const iconMap = {
   [END]: 'forward',
 };
 type Direction = typeof START | typeof END;
-    
+
 const JumpEndButton = (end: Direction) => ({
   clickHandler,
 }: { clickHandler: () => mixed }) => {
@@ -21,17 +21,17 @@ const JumpEndButton = (end: Direction) => ({
 
   return (
     <IconButton
-      icon={`fa-step-${ symbol  }`}
+      icon={`fa-step-${ symbol }`}
       clickHandler={clickHandler}
       title={`Jump to ${ end } of video`}
     />
   );
 };
 
-const Button = ({end, clickHandler}: {
-  end: Direction, 
+const Button = ({ end, clickHandler }: {
+  end: Direction,
   clickHandler: () => mixed,
-}) => JumpEndButton(end)({clickHandler});
+}) => JumpEndButton(end)({ clickHandler });
 Button.Start = JumpEndButton(START);
 Button.End = JumpEndButton(END);
 
